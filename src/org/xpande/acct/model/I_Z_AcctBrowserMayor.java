@@ -212,6 +212,32 @@ public interface I_Z_AcctBrowserMayor
 
 	public I_C_BPartner getC_BPartner() throws RuntimeException;
 
+    /** Column name C_Currency_1_ID */
+    public static final String COLUMNNAME_C_Currency_1_ID = "C_Currency_1_ID";
+
+	/** Set C_Currency_1_ID.
+	  * Moneda uno
+	  */
+	public void setC_Currency_1_ID(int C_Currency_1_ID);
+
+	/** Get C_Currency_1_ID.
+	  * Moneda uno
+	  */
+	public int getC_Currency_1_ID();
+
+    /** Column name C_Currency_2_ID */
+    public static final String COLUMNNAME_C_Currency_2_ID = "C_Currency_2_ID";
+
+	/** Set C_Currency_2_ID.
+	  * Moneda secundaria para procesos
+	  */
+	public void setC_Currency_2_ID(int C_Currency_2_ID);
+
+	/** Get C_Currency_2_ID.
+	  * Moneda secundaria para procesos
+	  */
+	public int getC_Currency_2_ID();
+
     /** Column name C_Currency_ID */
     public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
@@ -470,6 +496,17 @@ public interface I_Z_AcctBrowserMayor
 
 	/** Get Z_AcctBrowserMayor ID	  */
 	public int getZ_AcctBrowserMayor_ID();
+
+    /** Column name Z_AcctBrowSumMayor_ID */
+    public static final String COLUMNNAME_Z_AcctBrowSumMayor_ID = "Z_AcctBrowSumMayor_ID";
+
+	/** Set Z_AcctBrowSumMayor ID	  */
+	public void setZ_AcctBrowSumMayor_ID(int Z_AcctBrowSumMayor_ID);
+
+	/** Get Z_AcctBrowSumMayor ID	  */
+	public int getZ_AcctBrowSumMayor_ID();
+
+	public I_Z_AcctBrowSumMayor getZ_AcctBrowSumMayor() throws RuntimeException;
 
     /** Column name Z_MedioPago_ID */
     public static final String COLUMNNAME_Z_MedioPago_ID = "Z_MedioPago_ID";

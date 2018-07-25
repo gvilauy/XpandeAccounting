@@ -33,7 +33,7 @@ public class X_Z_AcctBrowserMayor extends PO implements I_Z_AcctBrowserMayor, I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20180720L;
+	private static final long serialVersionUID = 20180724L;
 
     /** Standard Constructor */
     public X_Z_AcctBrowserMayor (Properties ctx, int Z_AcctBrowserMayor_ID, String trxName)
@@ -50,6 +50,7 @@ public class X_Z_AcctBrowserMayor extends PO implements I_Z_AcctBrowserMayor, I_
 			setDateAcct (new Timestamp( System.currentTimeMillis() ));
 			setZ_AcctBrowser_ID (0);
 			setZ_AcctBrowserMayor_ID (0);
+			setZ_AcctBrowSumMayor_ID (0);
         } */
     }
 
@@ -320,6 +321,52 @@ public class X_Z_AcctBrowserMayor extends PO implements I_Z_AcctBrowserMayor, I_
 	public int getC_BPartner_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set C_Currency_1_ID.
+		@param C_Currency_1_ID 
+		Moneda uno
+	  */
+	public void setC_Currency_1_ID (int C_Currency_1_ID)
+	{
+		if (C_Currency_1_ID < 1) 
+			set_Value (COLUMNNAME_C_Currency_1_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Currency_1_ID, Integer.valueOf(C_Currency_1_ID));
+	}
+
+	/** Get C_Currency_1_ID.
+		@return Moneda uno
+	  */
+	public int getC_Currency_1_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_1_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set C_Currency_2_ID.
+		@param C_Currency_2_ID 
+		Moneda secundaria para procesos
+	  */
+	public void setC_Currency_2_ID (int C_Currency_2_ID)
+	{
+		if (C_Currency_2_ID < 1) 
+			set_Value (COLUMNNAME_C_Currency_2_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Currency_2_ID, Integer.valueOf(C_Currency_2_ID));
+	}
+
+	/** Get C_Currency_2_ID.
+		@return Moneda secundaria para procesos
+	  */
+	public int getC_Currency_2_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_2_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -678,6 +725,31 @@ public class X_Z_AcctBrowserMayor extends PO implements I_Z_AcctBrowserMayor, I_
 	public int getZ_AcctBrowserMayor_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Z_AcctBrowserMayor_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	public I_Z_AcctBrowSumMayor getZ_AcctBrowSumMayor() throws RuntimeException
+    {
+		return (I_Z_AcctBrowSumMayor)MTable.get(getCtx(), I_Z_AcctBrowSumMayor.Table_Name)
+			.getPO(getZ_AcctBrowSumMayor_ID(), get_TrxName());	}
+
+	/** Set Z_AcctBrowSumMayor ID.
+		@param Z_AcctBrowSumMayor_ID Z_AcctBrowSumMayor ID	  */
+	public void setZ_AcctBrowSumMayor_ID (int Z_AcctBrowSumMayor_ID)
+	{
+		if (Z_AcctBrowSumMayor_ID < 1) 
+			set_Value (COLUMNNAME_Z_AcctBrowSumMayor_ID, null);
+		else 
+			set_Value (COLUMNNAME_Z_AcctBrowSumMayor_ID, Integer.valueOf(Z_AcctBrowSumMayor_ID));
+	}
+
+	/** Get Z_AcctBrowSumMayor ID.
+		@return Z_AcctBrowSumMayor ID	  */
+	public int getZ_AcctBrowSumMayor_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_AcctBrowSumMayor_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
