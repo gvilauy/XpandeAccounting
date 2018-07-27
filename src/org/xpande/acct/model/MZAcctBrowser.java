@@ -64,8 +64,6 @@ public class MZAcctBrowser extends X_Z_AcctBrowser {
 
         try{
 
-            //message = this.validateFiltros();
-
             this.deleteDataMayor();
             this.getDataMayor();
             this.updateDataMayor();
@@ -119,6 +117,22 @@ public class MZAcctBrowser extends X_Z_AcctBrowser {
             }
             if (this.getEndDate() != null){
                 whereClause += " and f.dateacct <='" + this.getEndDate() + "'" ;
+            }
+
+            // Si tengo cuentas contables para filtrar, agrego condición
+            sql = " select count(*) from Z_AcctBrowFiltroCta where Z_AcctBrowser_ID =" + this.get_ID();
+            int contadorCta = DB.getSQLValueEx(get_TrxName(), sql);
+            if (contadorCta > 0) {
+                whereClause += " and f.account_id in (select distinct(c_elementvalue_id) " +
+                        " from Z_AcctBrowFiltroCta where Z_AcctBrowser_ID =" + this.get_ID() + ") ";
+            }
+
+            // Si tengo socios de negocio para filtrar, agrego condición
+            sql = " select count(*) from Z_AcctBrowFiltroBP where Z_AcctBrowser_ID =" + this.get_ID();
+            int contadorBP = DB.getSQLValueEx(get_TrxName(), sql);
+            if (contadorBP > 0) {
+                whereClause += " and f.c_bpartner_id in (select distinct(c_bpartner_id) " +
+                        " from Z_AcctBrowFiltroBP where Z_AcctBrowser_ID =" + this.get_ID() + ") ";
             }
 
             // Secuencia de tabla de detalle de consulta de mayor contable
@@ -402,5 +416,119 @@ public class MZAcctBrowser extends X_Z_AcctBrowser {
         return amt;
     }
 
+    @Override
+    protected boolean beforeSave(boolean newRecord) {
+
+        // Valido rango de fechas
+        if (this.getStartDate() != null){
+            if (this.getEndDate() != null){
+                if (this.getEndDate().before(this.getStartDate())){
+                    log.saveError("ATENCIÓN", "Fecha Hasta debe ser Mayor que Fecha Desde");
+                    return false;
+                }
+            }
+        }
+
+        // Valido segunda moneda cuando se requiere
+        if (this.getTipoFiltroMonAcct().equalsIgnoreCase(X_Z_AcctBrowser.TIPOFILTROMONACCT_DOSMONEDAS)){
+            if (this.getC_Currency_2_ID() <= 0){
+                log.saveError("ATENCIÓN", "Debe Indicar Segunda Moneda de Consulta a considerar");
+                return false;
+            }
+            if (this.getC_Currency_2_ID() == this.getC_Currency_ID()){
+                log.saveError("ATENCIÓN", "Debe Indicar Segunda Moneda de Consulta diferente a Primer Moneda");
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /***
+     * Interpreta texto de filtro de cuentas contables e inserta el resultado en la tabla de filtro de cuentas.
+     * Xpande. Created by Gabriel Vila on 7/26/18.
+     * @return
+     */
+    public String setCuentasFiltro(){
+
+        String message = null;
+
+        try{
+
+            if ((this.getTextoFiltro() == null) || (this.getTextoFiltro().trim().equalsIgnoreCase(""))){
+                return message;
+            }
+
+            // Split por separadores de cuentas
+            String ctas[] = this.getTextoFiltro().trim().split(";");
+            for (int i = 0; i < ctas.length; i++){
+                String tokenCta = ctas[i];
+
+                // Split por rango de cuenta en este token
+                String[] rangos = tokenCta.trim().split("-");
+                if (rangos.length >= 2){
+                    this.insertCtasFiltro(rangos[0], rangos[1]);
+                }
+                else{
+                    this.insertCtasFiltro(rangos[0], null);
+                }
+            }
+
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+
+        return message;
+    }
+
+    /***
+     * Inserta cuentas en tabla de filtros, segun texto de filtro ingresado.
+     * Xpande. Created by Gabriel Vila on 7/26/18.
+     * @param valueFrom
+     * @param valueTo
+     */
+    private void insertCtasFiltro(String valueFrom, String valueTo){
+
+        String sql = "";
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try{
+
+            String whereClause = "";
+            if (valueTo != null){
+                whereClause = " and (value >='" + valueFrom.trim() + "' and value <='" + valueTo.trim() + "') ";
+            }
+            else{
+                whereClause = " and value ='" + valueFrom.trim() + "' ";
+            }
+
+            sql = " select c_elementvalue_id " +
+                    " from c_elementvalue " +
+                    " where issummary ='N' and isactive ='Y' " + whereClause +
+                    " and c_elementvalue_id not in " +
+                    " (select c_elementvalue_id from Z_AcctBrowFiltroCta where Z_AcctBrowser_ID =" + this.get_ID() + ") " +
+                    " order by value ";
+
+        	pstmt = DB.prepareStatement(sql, get_TrxName());
+        	rs = pstmt.executeQuery();
+
+        	while(rs.next()){
+                MZAcctBrowFiltroCta filtroCta = new MZAcctBrowFiltroCta(getCtx(), 0, get_TrxName());
+                filtroCta.setZ_AcctBrowser_ID(this.get_ID());
+                filtroCta.setC_ElementValue_ID(rs.getInt("c_elementvalue_id"));
+                filtroCta.saveEx();
+        	}
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+        finally {
+            DB.close(rs, pstmt);
+        	rs = null; pstmt = null;
+        }
+
+    }
 
 }
