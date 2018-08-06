@@ -73,6 +73,9 @@ public class MZAcctConfig extends X_Z_AcctConfig {
         	   pExpenseAcctID = rs.getInt("P_Expense_Acct");
         	   pRevenueAcctID = rs.getInt("P_Revenue_Acct");
         	}
+        	else{
+        	    return;
+            }
 
         	// Actualizo las cuentas del producto, en caso de ya estar seteadas
             action = " update m_product_acct set P_InventoryClearing_Acct =" + pExpenseAcctID + ", " +

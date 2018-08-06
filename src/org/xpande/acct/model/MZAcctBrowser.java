@@ -65,6 +65,9 @@ public class MZAcctBrowser extends X_Z_AcctBrowser {
         try{
 
             this.deleteDataMayor();
+
+            this.setCuentasFiltro();
+
             this.getDataMayor();
             this.updateDataMayor();
 
