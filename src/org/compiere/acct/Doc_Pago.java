@@ -20,6 +20,7 @@ public class Doc_Pago extends Doc {
 
     private MZPago pago = null;
     private MDocType docType = null;
+    private BigDecimal amtMediosPago = Env.ZERO;
 
     /**
      *  Constructor
@@ -44,13 +45,17 @@ public class Doc_Pago extends Doc {
         setDateAcct(pago.getDateDoc());
         setC_Currency_ID(pago.getC_Currency_ID());
         setC_BPartner_ID(pago.getC_BPartner_ID());
-        setAmount(Doc.AMTTYPE_Gross, pago.getPayAmt());
+
 
         this.docType = (MDocType) pago.getC_DocType();
         setDocumentType(docType.getDocBaseType());
 
         //	Lineas del documento.
         p_lines = loadLines();
+
+        // Total del documento es igual al total de medios de pago, ya que para Pagos no se consideraran Resguardos en este asiento.
+        //setAmount(Doc.AMTTYPE_Gross, pago.getPayAmt());
+        setAmount(Doc.AMTTYPE_Gross, this.amtMediosPago);
 
         log.fine("Lines=" + p_lines.length);
 
@@ -128,11 +133,15 @@ public class Doc_Pago extends Doc {
 
         List<MZPagoMedioPago> medioPagoList = this.pago.getMediosPago();
 
+        this.amtMediosPago = Env.ZERO;
+
         for (MZPagoMedioPago medioPago: medioPagoList){
 
             DocLine docLine = new DocLine(medioPago, this);
             docLine.setAmount(medioPago.getTotalAmtMT());
             list.add(docLine);
+
+            this.amtMediosPago = this.amtMediosPago.add(medioPago.getTotalAmtMT());
         }
 
         //	Convert to Array
