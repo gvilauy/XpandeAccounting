@@ -2,8 +2,11 @@ package org.compiere.acct;
 
 import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
+import org.compiere.model.MBPBankAccount;
 import org.compiere.model.MDocType;
 import org.compiere.util.Env;
+import org.xpande.acct.utils.AccountUtils;
+import org.xpande.comercial.utils.AcctUtils;
 import org.xpande.financial.model.*;
 
 import java.math.BigDecimal;
@@ -109,7 +112,15 @@ public class Doc_Pago extends Doc {
             for (int i = 0; i < p_lines.length; i++)
             {
                 BigDecimal amt = p_lines[i].getAmtSource();
-                fact.createLine (p_lines[i], getAccount(Doc.ACCTTYPE_BankInTransit, as), getC_Currency_ID(), null, amt);
+
+                // Obtengo cuenta contable para Cuenta Bancaria
+                MZPagoMedioPago medioPago = new MZPagoMedioPago(getCtx(), p_lines[i].get_ID(), this.getTrxName());
+                int cValidCombinationID = AccountUtils.getBankValidCombinationID(getCtx(), Doc.ACCTTYPE_BankInTransit, medioPago.getC_BankAccount_ID(), as, null);
+
+                if (cValidCombinationID > 0){
+                    MAccount acctBankCr = MAccount.get(getCtx(), cValidCombinationID);
+                    fact.createLine (p_lines[i], acctBankCr, getC_Currency_ID(), null, amt);
+                }
             }
         }
         else{
