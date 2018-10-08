@@ -105,20 +105,25 @@ public class Doc_Pago extends Doc {
         if (!this.pago.isSOTrx()){
 
             // DR : Monto total del Pago - Cuenta del Socio de Negocio
-            int payables_ID = getValidCombination_ID (Doc.ACCTTYPE_V_Liability, as);
-            fact.createLine(null, MAccount.get(getCtx(), payables_ID), getC_Currency_ID(), grossAmt, null);
+            //int payables_ID = getValidCombination_ID (Doc.ACCTTYPE_V_Liability, as);
+            //fact.createLine(null, MAccount.get(getCtx(), payables_ID), getC_Currency_ID(), grossAmt, null);
 
             // CR - Lineas de Medios de Pago - Monto de cada linea - Cuenta contable asociada a la cuenta bancaria.
             for (int i = 0; i < p_lines.length; i++)
             {
                 BigDecimal amt = p_lines[i].getAmtSource();
 
-                // Obtengo cuenta contable para Cuenta Bancaria
                 MZPagoMedioPago medioPago = new MZPagoMedioPago(getCtx(), p_lines[i].get_ID(), this.getTrxName());
-                int cValidCombinationID = AccountUtils.getBankValidCombinationID(getCtx(), Doc.ACCTTYPE_BankInTransit, medioPago.getC_BankAccount_ID(), as, null);
 
-                if (cValidCombinationID > 0){
-                    MAccount acctBankCr = MAccount.get(getCtx(), cValidCombinationID);
+                // DR - Lineas de Medios de Pago - Monto de cada linea - Cuenta del medio de pago a emitir
+                int mpEmitidos_ID = getValidCombination_ID (Doc.ACCTYPE_MP_Emitidos, as);
+                fact.createLine(p_lines[i], MAccount.get(getCtx(), mpEmitidos_ID), getC_Currency_ID(), amt, null);
+
+                // CR - Lineas de Medios de Pago - Monto de cada linea - Cuenta contable asociada a la cuenta bancaria.
+                int bankInTransitID = AccountUtils.getBankValidCombinationID(getCtx(), Doc.ACCTTYPE_BankInTransit, medioPago.getC_BankAccount_ID(), as, null);
+
+                if (bankInTransitID > 0){
+                    MAccount acctBankCr = MAccount.get(getCtx(), bankInTransitID);
                     fact.createLine (p_lines[i], acctBankCr, getC_Currency_ID(), null, amt);
                 }
             }
