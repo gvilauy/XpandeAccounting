@@ -33,7 +33,7 @@ public class X_Z_AcctBrowserMayor extends PO implements I_Z_AcctBrowserMayor, I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20180724L;
+	private static final long serialVersionUID = 20181008L;
 
     /** Standard Constructor */
     public X_Z_AcctBrowserMayor (Properties ctx, int Z_AcctBrowserMayor_ID, String trxName)
@@ -50,7 +50,6 @@ public class X_Z_AcctBrowserMayor extends PO implements I_Z_AcctBrowserMayor, I_
 			setDateAcct (new Timestamp( System.currentTimeMillis() ));
 			setZ_AcctBrowser_ID (0);
 			setZ_AcctBrowserMayor_ID (0);
-			setZ_AcctBrowSumMayor_ID (0);
         } */
     }
 
@@ -578,6 +577,38 @@ public class X_Z_AcctBrowserMayor extends PO implements I_Z_AcctBrowserMayor, I_
 	public String getDocumentNoRef () 
 	{
 		return (String)get_Value(COLUMNNAME_DocumentNoRef);
+	}
+
+	/** EstadoMedioPago AD_Reference_ID=1000044 */
+	public static final int ESTADOMEDIOPAGO_AD_Reference_ID=1000044;
+	/** EMITIDO = EMITIDO */
+	public static final String ESTADOMEDIOPAGO_EMITIDO = "EMITIDO";
+	/** ENTREGADO = ENTREGADO */
+	public static final String ESTADOMEDIOPAGO_ENTREGADO = "ENTREGADO";
+	/** DEPOSITADO = DEPOSITADO */
+	public static final String ESTADOMEDIOPAGO_DEPOSITADO = "DEPOSITADO";
+	/** CONCILIADO = CONCILIADO */
+	public static final String ESTADOMEDIOPAGO_CONCILIADO = "CONCILIADO";
+	/** REEMPLAZADO = REEMPLAZADO */
+	public static final String ESTADOMEDIOPAGO_REEMPLAZADO = "REEMPLAZADO";
+	/** ANULADO = ANULADO */
+	public static final String ESTADOMEDIOPAGO_ANULADO = "ANULADO";
+	/** Set EstadoMedioPago.
+		@param EstadoMedioPago 
+		Estado de un medio de pago
+	  */
+	public void setEstadoMedioPago (String EstadoMedioPago)
+	{
+
+		set_Value (COLUMNNAME_EstadoMedioPago, EstadoMedioPago);
+	}
+
+	/** Get EstadoMedioPago.
+		@return Estado de un medio de pago
+	  */
+	public String getEstadoMedioPago () 
+	{
+		return (String)get_Value(COLUMNNAME_EstadoMedioPago);
 	}
 
 	public I_M_Product getM_Product() throws RuntimeException

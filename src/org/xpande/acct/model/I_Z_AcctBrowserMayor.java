@@ -381,6 +381,19 @@ public interface I_Z_AcctBrowserMayor
 	  */
 	public String getDocumentNoRef();
 
+    /** Column name EstadoMedioPago */
+    public static final String COLUMNNAME_EstadoMedioPago = "EstadoMedioPago";
+
+	/** Set EstadoMedioPago.
+	  * Estado de un medio de pago
+	  */
+	public void setEstadoMedioPago(String EstadoMedioPago);
+
+	/** Get EstadoMedioPago.
+	  * Estado de un medio de pago
+	  */
+	public String getEstadoMedioPago();
+
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
 

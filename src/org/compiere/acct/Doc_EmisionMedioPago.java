@@ -2,8 +2,11 @@ package org.compiere.acct;
 
 import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
+import org.compiere.model.MBankAccount;
 import org.compiere.model.MDocType;
 import org.compiere.util.Env;
+import org.xpande.acct.model.MZAcctFactDet;
+import org.xpande.acct.model.X_Z_AcctFactDet;
 import org.xpande.acct.utils.AccountUtils;
 import org.xpande.financial.model.MZEmisionMedioPago;
 import org.xpande.financial.model.MZPago;
@@ -72,13 +75,51 @@ public class Doc_EmisionMedioPago extends Doc {
 
         BigDecimal grossAmt = getAmount(Doc.AMTTYPE_Gross);
 
+        // Obtengo numero de medio de pago para luego guardarlo asociado a cada pata del asiento contable.
+        String nroMedioPago = null;
+        if (this.emisionMedioPago.getZ_MedioPagoItem_ID() > 0){
+            nroMedioPago = this.emisionMedioPago.getZ_MedioPagoItem().getNroMedioPago();
+        }
+        else{
+            nroMedioPago = this.emisionMedioPago.getReferenceNo();
+        }
+
+
         // DR : Monto de la emisión - Cuenta del Socio de Negocio
         int payables_ID = getValidCombination_ID (Doc.ACCTTYPE_V_Liability, as);
-        fact.createLine(null, MAccount.get(getCtx(), payables_ID), getC_Currency_ID(), grossAmt, null);
+        FactLine fl1 = fact.createLine(null, MAccount.get(getCtx(), payables_ID), getC_Currency_ID(), grossAmt, null);
+
+        // Guardo detalles asociados a esta pata del asiento contable
+        if (fl1 != null){
+            fl1.saveEx();
+            MZAcctFactDet factDet = new MZAcctFactDet(getCtx(), 0, getTrxName());
+            factDet.setFact_Acct_ID(fl1.get_ID());
+            factDet.setZ_EmisionMedioPago_ID(this.emisionMedioPago.get_ID());
+            factDet.setZ_MedioPago_ID(this.emisionMedioPago.getZ_MedioPago_ID());
+            factDet.setC_BankAccount_ID(this.emisionMedioPago.getC_BankAccount_ID());
+            factDet.setC_Bank_ID(this.emisionMedioPago.getC_BankAccount().getC_Bank_ID());
+            factDet.setNroMedioPago(nroMedioPago);
+            factDet.setEstadoMedioPago(X_Z_AcctFactDet.ESTADOMEDIOPAGO_EMITIDO);
+            factDet.saveEx();
+        }
 
         // CR - Monto de la emisión - Cuenta del medio de pago a emitir
         int mpEmitidos_ID = getValidCombination_ID (Doc.ACCTYPE_MP_Emitidos, as);
-        fact.createLine(null, MAccount.get(getCtx(), mpEmitidos_ID), getC_Currency_ID(), null, grossAmt);
+        FactLine fl2 = fact.createLine(null, MAccount.get(getCtx(), mpEmitidos_ID), getC_Currency_ID(), null, grossAmt);
+
+        // Guardo detalles asociados a esta pata del asiento contable
+        if (fl2 != null){
+            fl2.saveEx();
+            MZAcctFactDet factDet = new MZAcctFactDet(getCtx(), 0, getTrxName());
+            factDet.setFact_Acct_ID(fl2.get_ID());
+            factDet.setZ_EmisionMedioPago_ID(this.emisionMedioPago.get_ID());
+            factDet.setZ_MedioPago_ID(this.emisionMedioPago.getZ_MedioPago_ID());
+            factDet.setC_BankAccount_ID(this.emisionMedioPago.getC_BankAccount_ID());
+            factDet.setC_Bank_ID(this.emisionMedioPago.getC_BankAccount().getC_Bank_ID());
+            factDet.setNroMedioPago(nroMedioPago);
+            factDet.setEstadoMedioPago(X_Z_AcctFactDet.ESTADOMEDIOPAGO_EMITIDO);
+            factDet.saveEx();
+        }
 
         facts.add(fact);
         return facts;
