@@ -1,7 +1,7 @@
 package org.xpande.acct.utils;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.MAcctSchema;
+import org.compiere.model.*;
 import org.compiere.util.DB;
 
 import java.sql.PreparedStatement;
@@ -75,6 +75,24 @@ public final class AccountUtils {
         }
 
         return value;
+    }
+
+
+    /***
+     * Obtiene y retorna modelo de asiento contable manual segun número de documento recibido.
+     * Xpande. Created by Gabriel Vila on 11/16/18
+     * @param ctx
+     * @param documentNo
+     * @param trxName
+     * @return
+     */
+    public static MJournal getJournalByDocumentNo(Properties ctx, String documentNo, String trxName){
+
+        String whereClause = X_GL_Journal.COLUMNNAME_DocumentNo + " ='" + documentNo + "'";
+
+        MJournal model = new Query(ctx, I_GL_Journal.Table_Name, whereClause, trxName).first();
+
+        return model;
     }
 
 }

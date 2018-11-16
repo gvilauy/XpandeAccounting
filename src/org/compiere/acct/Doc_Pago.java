@@ -131,6 +131,13 @@ public class Doc_Pago extends Doc {
         else{
             // Contabilización de un COBRO
 
+            // CR - Deudores comerciales por el total del cobro
+
+
+            // Recorro medios de pago
+
+            // Recorro resguardos recibidos.
+
         }
 
         facts.add(fact);
