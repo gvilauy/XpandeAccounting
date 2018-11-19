@@ -25,6 +25,7 @@ public class Doc_Pago extends Doc {
     private MZPago pago = null;
     private MDocType docType = null;
     private BigDecimal amtMediosPago = Env.ZERO;
+    List<MZPagoResgRecibido> resgRecibidos = null;
 
     /**
      *  Constructor
@@ -56,6 +57,11 @@ public class Doc_Pago extends Doc {
 
         //	Lineas del documento.
         p_lines = loadLines();
+
+        // Para cobros, lineas de resguardos recibidos
+        if (this.pago.isSOTrx()){
+            this.resgRecibidos = this.pago.getResguardosRecibidos();
+        }
 
         // Si es un pago
         if (!this.pago.isSOTrx()){
@@ -96,6 +102,15 @@ public class Doc_Pago extends Doc {
             retValue = retValue.subtract(p_lines[i].getAmtSource());
             sb.append("-").append(p_lines[i].getAmtSource());
         }
+
+        //  Resguardos recibidos en caso de cobros
+        if (this.pago.isSOTrx()){
+            for (MZPagoResgRecibido resgRecibido: this.resgRecibidos){
+                retValue = retValue.subtract(resgRecibido.getAmtAllocationMT());
+                sb.append("-").append(resgRecibido.getAmtAllocationMT());
+            }
+        }
+
         sb.append("]");
 
         log.fine(toString() + " Balance=" + retValue + sb.toString());
@@ -165,7 +180,6 @@ public class Doc_Pago extends Doc {
                         p_Error = "No se indica Cuenta Bancaria y tampoco se indica Medio de Pago";
                         log.log(Level.SEVERE, p_Error);
                         fact = null;
-
                     }
                 }
 
@@ -173,8 +187,28 @@ public class Doc_Pago extends Doc {
                 fact.createLine(p_lines[i], MAccount.get(getCtx(), accountID), getC_Currency_ID(), amt, null);
             }
 
-            // Recorro resguardos recibidos.
 
+            // DR - Lineas de Resguardos Recibidos - Monto de cada linea.
+            // Cuenta contable asociada a la retención de cada linea
+            if (this.resgRecibidos != null){
+                for (MZPagoResgRecibido resgRecibido: this.resgRecibidos){
+
+                    BigDecimal amt = resgRecibido.getAmtAllocationMT();
+
+                    int accountID = AccountUtils.getRetencionValidCombinationID(getCtx(), Doc.ACCTYPE_RT_RetencionRecibida, resgRecibido.getZ_RetencionSocio_ID(),
+                            resgRecibido.getC_Currency_ID(), as, null);
+
+                    if (accountID <= 0){
+                        MZRetencionSocio retencionSocio = (MZRetencionSocio) resgRecibido.getZ_RetencionSocio();
+                        p_Error = "No se indica Cuenta Bancaria para Retención : " + retencionSocio.getName();
+                        log.log(Level.SEVERE, p_Error);
+                        fact = null;
+                    }
+
+                    // DR - Lineas de Resguardos Recibidos - Monto de cada linea
+                    fact.createLine(null, MAccount.get(getCtx(), accountID), getC_Currency_ID(), amt, null);
+                }
+            }
         }
 
         facts.add(fact);
