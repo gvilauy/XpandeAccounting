@@ -7,6 +7,7 @@ import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
 import org.compiere.util.Env;
 import org.xpande.acct.utils.AccountUtils;
+import org.xpande.core.utils.CurrencyUtils;
 import org.xpande.financial.model.MZGeneraOrdenPago;
 import org.xpande.financial.model.X_Z_MedioPagoFolio;
 
@@ -76,6 +77,15 @@ public class CopiarAsiento extends SvrProcess {
                 journalLineDest.setQty(journalLineOrigen.getQty());
                 journalLineDest.setC_ValidCombination_ID(journalLineOrigen.getC_ValidCombination_ID());
                 journalLineDest.setM_Product_ID(journalLineOrigen.getM_Product_ID());
+                journalLineDest.setC_ConversionType_ID(114);
+
+                if (journalLineDest.getC_Currency_ID() != this.journalDestino.getC_Currency_ID()){
+                    BigDecimal currencyRate = CurrencyUtils.getCurrencyRateToAcctSchemaCurrency(getCtx(), this.journalDestino.getAD_Client_ID(), 0,
+                            journalLineDest.getC_Currency_ID(), this.journalDestino.getC_Currency_ID(), 114, this.journalDestino.getDateAcct(), get_TrxName());
+                    if (currencyRate == null) currencyRate = Env.ZERO;
+
+                    journalLineDest.setCurrencyRate(currencyRate);
+                }
 
                 journalLineDest.saveEx();
             }

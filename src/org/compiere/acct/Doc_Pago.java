@@ -13,6 +13,7 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 
 /**
  * Contabilización de documentos: Pagos y Cobranzas.
@@ -56,9 +57,18 @@ public class Doc_Pago extends Doc {
         //	Lineas del documento.
         p_lines = loadLines();
 
-        // Total del documento es igual al total de medios de pago, ya que para Pagos no se consideraran Resguardos en este asiento.
-        //setAmount(Doc.AMTTYPE_Gross, pago.getPayAmt());
-        setAmount(Doc.AMTTYPE_Gross, this.amtMediosPago);
+        // Si es un pago
+        if (!this.pago.isSOTrx()){
+
+            // Total del documento es igual al total de medios de pago, ya que para Pagos no se consideraran Resguardos en este asiento.
+            setAmount(Doc.AMTTYPE_Gross, this.amtMediosPago);
+        }
+        // Si es un cobro
+        else{
+
+            // Total del documento
+            setAmount(Doc.AMTTYPE_Gross, pago.getPayAmt());
+        }
 
         log.fine("Lines=" + p_lines.length);
 
@@ -132,9 +142,36 @@ public class Doc_Pago extends Doc {
             // Contabilización de un COBRO
 
             // CR - Deudores comerciales por el total del cobro
+            int receivables_ID = getValidCombination_ID(Doc.ACCTTYPE_C_Receivable, as);
+            fact.createLine(null, MAccount.get(getCtx(), receivables_ID), getC_Currency_ID(),  null, grossAmt);
 
+            // DR - Lineas de Medios de Pago - Monto de cada linea.
+            // Cuenta contable asociada a la cuenta bancaria si hay, y sino tengo cuenta bancaria, entonces cuenta del medio de pago.
+            for (int i = 0; i < p_lines.length; i++)
+            {
+                BigDecimal amt = p_lines[i].getAmtSource();
 
-            // Recorro medios de pago
+                MZPagoMedioPago pagoMedioPago = new MZPagoMedioPago(getCtx(), p_lines[i].get_ID(), this.getTrxName());
+
+                int accountID = -1;
+                if (pagoMedioPago.getC_BankAccount_ID() > 0){
+                    accountID = AccountUtils.getBankValidCombinationID(getCtx(), Doc.ACCTTYPE_BankAsset, pagoMedioPago.getC_BankAccount_ID(), as, null);
+                }
+                else{
+                    if (pagoMedioPago.getZ_MedioPago_ID() > 0){
+                        accountID = AccountUtils.getMedioPagoValidCombinationID(getCtx(), Doc.ACCTYPE_MP_Recibidos, pagoMedioPago.getZ_MedioPago_ID(), pagoMedioPago.getC_Currency_ID(), as, null);
+                    }
+                    else{
+                        p_Error = "No se indica Cuenta Bancaria y tampoco se indica Medio de Pago";
+                        log.log(Level.SEVERE, p_Error);
+                        fact = null;
+
+                    }
+                }
+
+                // DR - Lineas de Medios de Pago - Monto de cada linea
+                fact.createLine(p_lines[i], MAccount.get(getCtx(), accountID), getC_Currency_ID(), amt, null);
+            }
 
             // Recorro resguardos recibidos.
 

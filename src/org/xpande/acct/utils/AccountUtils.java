@@ -8,8 +8,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-import static org.compiere.acct.Doc.ACCTTYPE_BankAsset;
-import static org.compiere.acct.Doc.ACCTTYPE_BankInTransit;
+import static org.compiere.acct.Doc.*;
 
 /**
  * Metodos staticos para intercambio de información de cuentas contables.
@@ -72,6 +71,67 @@ public final class AccountUtils {
         finally {
             DB.close(rs, pstmt);
         	rs = null; pstmt = null;
+        }
+
+        return value;
+    }
+
+    /***
+     * Metodo que retorna id de combinación de cuenta para determinado medio de pago y AcctType.
+     * Xpande. Created by Gabriel Vila on 11/18/18.
+     * @param ctx
+     * @param AcctType
+     * @param zMedioPagoID
+     * @param cCurrencyID
+     * @param as
+     * @param trxName
+     * @return
+     */
+    public static int getMedioPagoValidCombinationID (Properties ctx, int AcctType, int zMedioPagoID, int cCurrencyID, MAcctSchema as, String trxName){
+
+        int value = -1;
+
+        String sql = "";
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try{
+
+            String fieldAccount = "";
+
+            if (AcctType == ACCTYPE_MP_Recibidos)
+            {
+                fieldAccount = "MP_Recibidos_Acct";
+            }
+            else if (AcctType == ACCTYPE_MP_Entregados)
+            {
+                fieldAccount = "MP_Entregados_Acct";
+            }
+            else{
+                return -1;
+            }
+
+            sql = "SELECT " +  fieldAccount  + " FROM Z_MedioPago_Acct WHERE Z_MedioPago_ID=? AND C_AcctSchema_ID =? " +
+                    " AND C_Currency_ID =?";
+
+            pstmt = DB.prepareStatement(sql, trxName);
+            pstmt.setInt (1, zMedioPagoID);
+            pstmt.setInt (2, as.getC_AcctSchema_ID());
+            pstmt.setInt (3, cCurrencyID);
+
+            rs = pstmt.executeQuery();
+
+            if (rs.next()){
+                value = rs.getInt(1);
+            }
+
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+        finally {
+            DB.close(rs, pstmt);
+            rs = null; pstmt = null;
         }
 
         return value;
