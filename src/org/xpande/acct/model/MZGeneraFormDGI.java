@@ -2,6 +2,7 @@ package org.xpande.acct.model;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -98,13 +99,15 @@ public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
 
         try{
             sql = " select inv.c_invoice_id, inv.c_doctypetarget_id, (coalesce(inv.documentserie,'') || inv.documentno) as documentnoref, " +
-                    "inv.dateinvoiced, inv.dateacct, inv.c_bpartner_id, inv.c_currency_id, invt.c_tax_id, invt.taxamt " +
-                    "from c_invoice inv " +
-                    "inner join c_invoicetax invt on inv.c_invoice_id = invt.c_invoice_id " +
-                    "where inv.docstatus = 'CO' " +
-                    "and inv.ad_org_id = 1000001 " +
-                    "and inv.dateacct between '2018-11-01 00:00:00' and '2018-11-30 00:00:00' " +
-                    "order by invt.c_tax_id, inv.dateacct";
+                    " inv.dateinvoiced, inv.dateacct, inv.c_bpartner_id, inv.c_currency_id, invt.c_tax_id, invt.taxamt, " +
+                    " bp.c_taxgroup_id, bp.taxid " +
+                    " from c_invoice inv " +
+                    " inner join c_invoicetax invt on inv.c_invoice_id = invt.c_invoice_id " +
+                    " inner join c_bpartner bp on inv.c_bpartner_id = bp.c_bpartner_id " +
+                    " where inv.docstatus = 'CO' " +
+                    " and inv.ad_org_id = 1000001 " +
+                    " and inv.dateacct between '2018-11-01 00:00:00' and '2018-11-30 00:00:00' " +
+                    " order by invt.c_tax_id, inv.dateacct";
 
         	pstmt = DB.prepareStatement(sql, get_TrxName());
         	rs = pstmt.executeQuery();
@@ -120,6 +123,21 @@ public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
 
                 }
                 */
+
+        	    MZGeneraFormDGILin linea = new MZGeneraFormDGILin(getCtx(), 0, get_TrxName());
+        	    linea.setZ_GeneraFormDGI_ID(this.get_ID());
+        	    linea.setAmtDocument(rs.getBigDecimal("taxamt"));
+        	    linea.setAmtDocumentMT(linea.getAmtDocument());
+        	    linea.setC_BPartner_ID(rs.getInt("c_bpartner_id"));
+        	    linea.setC_Currency_ID(rs.getInt("c_currency_id"));
+        	    linea.setC_DocType_ID(rs.getInt("c_doctypetarget_id"));
+        	    linea.setC_Invoice_ID(rs.getInt("c_invoice_id"));
+        	    linea.setC_Tax_ID(rs.getInt("c_tax_id"));
+        	    linea.setCurrencyRate(Env.ONE);
+        	    linea.setDateAcct(rs.getTimestamp("dateacct"));
+        	    linea.setDateDoc(rs.getTimestamp("dateinvoiced"));
+        	    linea.setDocumentNoRef(rs.getString("documentnoref"));
+        	    //linea.setTaxID();
 
         	}
         }
