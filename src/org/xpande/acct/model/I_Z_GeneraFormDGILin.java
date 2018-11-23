@@ -165,6 +165,17 @@ public interface I_Z_GeneraFormDGILin
 	  */
 	public int getCreatedBy();
 
+    /** Column name C_TaxGroup_ID */
+    public static final String COLUMNNAME_C_TaxGroup_ID = "C_TaxGroup_ID";
+
+	/** Set Tax Group	  */
+	public void setC_TaxGroup_ID(int C_TaxGroup_ID);
+
+	/** Get Tax Group	  */
+	public int getC_TaxGroup_ID();
+
+	public org.eevolution.model.I_C_TaxGroup getC_TaxGroup() throws RuntimeException;
+
     /** Column name C_Tax_ID */
     public static final String COLUMNNAME_C_Tax_ID = "C_Tax_ID";
 
@@ -287,6 +298,17 @@ public interface I_Z_GeneraFormDGILin
 	  */
 	public String getUUID();
 
+    /** Column name Z_AcctConfigRubroDGI_ID */
+    public static final String COLUMNNAME_Z_AcctConfigRubroDGI_ID = "Z_AcctConfigRubroDGI_ID";
+
+	/** Set Z_AcctConfigRubroDGI ID	  */
+	public void setZ_AcctConfigRubroDGI_ID(int Z_AcctConfigRubroDGI_ID);
+
+	/** Get Z_AcctConfigRubroDGI ID	  */
+	public int getZ_AcctConfigRubroDGI_ID();
+
+	public I_Z_AcctConfigRubroDGI getZ_AcctConfigRubroDGI() throws RuntimeException;
+
     /** Column name Z_GeneraFormDGI_ID */
     public static final String COLUMNNAME_Z_GeneraFormDGI_ID = "Z_GeneraFormDGI_ID";
 
@@ -296,7 +318,7 @@ public interface I_Z_GeneraFormDGILin
 	/** Get Z_GeneraFormDGI ID	  */
 	public int getZ_GeneraFormDGI_ID();
 
-	public org.xpande.acct.model.I_Z_GeneraFormDGI getZ_GeneraFormDGI() throws RuntimeException;
+	public I_Z_GeneraFormDGI getZ_GeneraFormDGI() throws RuntimeException;
 
     /** Column name Z_GeneraFormDGILin_ID */
     public static final String COLUMNNAME_Z_GeneraFormDGILin_ID = "Z_GeneraFormDGILin_ID";

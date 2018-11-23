@@ -33,7 +33,7 @@ public class X_Z_GeneraFormDGILin extends PO implements I_Z_GeneraFormDGILin, I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20181121L;
+	private static final long serialVersionUID = 20181123L;
 
     /** Standard Constructor */
     public X_Z_GeneraFormDGILin (Properties ctx, int Z_GeneraFormDGILin_ID, String trxName)
@@ -46,11 +46,13 @@ public class X_Z_GeneraFormDGILin extends PO implements I_Z_GeneraFormDGILin, I_
 			setC_BPartner_ID (0);
 			setC_Currency_ID (0);
 			setC_DocType_ID (0);
+			setC_TaxGroup_ID (0);
 			setC_Tax_ID (0);
 			setDateAcct (new Timestamp( System.currentTimeMillis() ));
 			setDateDoc (new Timestamp( System.currentTimeMillis() ));
 			setDocumentNoRef (null);
 			setTaxID (null);
+			setZ_AcctConfigRubroDGI_ID (0);
 			setZ_GeneraFormDGI_ID (0);
 			setZ_GeneraFormDGILin_ID (0);
         } */
@@ -236,6 +238,31 @@ public class X_Z_GeneraFormDGILin extends PO implements I_Z_GeneraFormDGILin, I_
 		return ii.intValue();
 	}
 
+	public org.eevolution.model.I_C_TaxGroup getC_TaxGroup() throws RuntimeException
+    {
+		return (org.eevolution.model.I_C_TaxGroup)MTable.get(getCtx(), org.eevolution.model.I_C_TaxGroup.Table_Name)
+			.getPO(getC_TaxGroup_ID(), get_TrxName());	}
+
+	/** Set Tax Group.
+		@param C_TaxGroup_ID Tax Group	  */
+	public void setC_TaxGroup_ID (int C_TaxGroup_ID)
+	{
+		if (C_TaxGroup_ID < 1) 
+			set_Value (COLUMNNAME_C_TaxGroup_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_TaxGroup_ID, Integer.valueOf(C_TaxGroup_ID));
+	}
+
+	/** Get Tax Group.
+		@return Tax Group	  */
+	public int getC_TaxGroup_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_TaxGroup_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	public I_C_Tax getC_Tax() throws RuntimeException
     {
 		return (I_C_Tax)MTable.get(getCtx(), I_C_Tax.Table_Name)
@@ -369,9 +396,34 @@ public class X_Z_GeneraFormDGILin extends PO implements I_Z_GeneraFormDGILin, I_
 		return (String)get_Value(COLUMNNAME_UUID);
 	}
 
-	public org.xpande.acct.model.I_Z_GeneraFormDGI getZ_GeneraFormDGI() throws RuntimeException
+	public I_Z_AcctConfigRubroDGI getZ_AcctConfigRubroDGI() throws RuntimeException
     {
-		return (org.xpande.acct.model.I_Z_GeneraFormDGI)MTable.get(getCtx(), org.xpande.acct.model.I_Z_GeneraFormDGI.Table_Name)
+		return (I_Z_AcctConfigRubroDGI)MTable.get(getCtx(), I_Z_AcctConfigRubroDGI.Table_Name)
+			.getPO(getZ_AcctConfigRubroDGI_ID(), get_TrxName());	}
+
+	/** Set Z_AcctConfigRubroDGI ID.
+		@param Z_AcctConfigRubroDGI_ID Z_AcctConfigRubroDGI ID	  */
+	public void setZ_AcctConfigRubroDGI_ID (int Z_AcctConfigRubroDGI_ID)
+	{
+		if (Z_AcctConfigRubroDGI_ID < 1) 
+			set_Value (COLUMNNAME_Z_AcctConfigRubroDGI_ID, null);
+		else 
+			set_Value (COLUMNNAME_Z_AcctConfigRubroDGI_ID, Integer.valueOf(Z_AcctConfigRubroDGI_ID));
+	}
+
+	/** Get Z_AcctConfigRubroDGI ID.
+		@return Z_AcctConfigRubroDGI ID	  */
+	public int getZ_AcctConfigRubroDGI_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_AcctConfigRubroDGI_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	public I_Z_GeneraFormDGI getZ_GeneraFormDGI() throws RuntimeException
+    {
+		return (I_Z_GeneraFormDGI)MTable.get(getCtx(), I_Z_GeneraFormDGI.Table_Name)
 			.getPO(getZ_GeneraFormDGI_ID(), get_TrxName());	}
 
 	/** Set Z_GeneraFormDGI ID.

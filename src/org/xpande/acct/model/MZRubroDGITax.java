@@ -17,4 +17,6 @@ public class MZRubroDGITax extends X_Z_RubroDGITax {
     public MZRubroDGITax(Properties ctx, ResultSet rs, String trxName) {
         super(ctx, rs, trxName);
     }
+
+
 }
