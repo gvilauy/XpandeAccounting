@@ -138,17 +138,30 @@ public class Doc_Pago extends Doc {
             {
                 BigDecimal amt = p_lines[i].getAmtSource();
 
-                MZPagoMedioPago medioPago = new MZPagoMedioPago(getCtx(), p_lines[i].get_ID(), this.getTrxName());
+                MZPagoMedioPago pagoMedioPago = new MZPagoMedioPago(getCtx(), p_lines[i].get_ID(), this.getTrxName());
 
                 // DR - Lineas de Medios de Pago - Monto de cada linea - Cuenta del medio de pago a emitir
                 int mpEmitidos_ID = getValidCombination_ID (Doc.ACCTYPE_MP_Emitidos, as);
                 fact.createLine(p_lines[i], MAccount.get(getCtx(), mpEmitidos_ID), getC_Currency_ID(), amt, null);
 
-                // CR - Lineas de Medios de Pago - Monto de cada linea - Cuenta contable asociada a la cuenta bancaria.
-                int bankInTransitID = AccountUtils.getBankValidCombinationID(getCtx(), Doc.ACCTTYPE_BankInTransit, medioPago.getC_BankAccount_ID(), as, null);
 
-                if (bankInTransitID > 0){
-                    MAccount acctBankCr = MAccount.get(getCtx(), bankInTransitID);
+                // CR - Lineas de Medios de Pago - Monto de cada linea - Cuenta contable asociada a la cuenta bancaria.
+                int accountID = -1;
+                if (pagoMedioPago.getC_BankAccount_ID() > 0){
+                    accountID = AccountUtils.getBankValidCombinationID(getCtx(), Doc.ACCTTYPE_BankInTransit, pagoMedioPago.getC_BankAccount_ID(), as, null);
+                }
+                else{
+                    if (pagoMedioPago.getZ_MedioPago_ID() > 0){
+                        accountID = AccountUtils.getMedioPagoValidCombinationID(getCtx(), Doc.ACCTYPE_MP_Entregados, pagoMedioPago.getZ_MedioPago_ID(), pagoMedioPago.getC_Currency_ID(), as, null);
+                    }
+                    else{
+                        p_Error = "No se indica Cuenta Bancaria y tampoco se indica Medio de Pago";
+                        log.log(Level.SEVERE, p_Error);
+                        fact = null;
+                    }
+                }
+                if (accountID > 0){
+                    MAccount acctBankCr = MAccount.get(getCtx(), accountID);
                     fact.createLine (p_lines[i], acctBankCr, getC_Currency_ID(), null, amt);
                 }
             }
