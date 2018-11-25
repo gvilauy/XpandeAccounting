@@ -5,6 +5,8 @@ import org.compiere.model.MAcctSchema;
 import org.compiere.model.MBPBankAccount;
 import org.compiere.model.MDocType;
 import org.compiere.util.Env;
+import org.xpande.acct.model.MZAcctFactDet;
+import org.xpande.acct.model.X_Z_AcctFactDet;
 import org.xpande.acct.utils.AccountUtils;
 import org.xpande.comercial.utils.AcctUtils;
 import org.xpande.financial.model.*;
@@ -142,8 +144,31 @@ public class Doc_Pago extends Doc {
 
                 // DR - Lineas de Medios de Pago - Monto de cada linea - Cuenta del medio de pago a emitir
                 int mpEmitidos_ID = getValidCombination_ID (Doc.ACCTYPE_MP_Emitidos, as);
-                fact.createLine(p_lines[i], MAccount.get(getCtx(), mpEmitidos_ID), getC_Currency_ID(), amt, null);
+                FactLine fl1 = fact.createLine(p_lines[i], MAccount.get(getCtx(), mpEmitidos_ID), getC_Currency_ID(), amt, null);
 
+                // Detalle de asiento
+                if (fl1 != null){
+                    fl1.saveEx();
+                    MZAcctFactDet factDet = new MZAcctFactDet(getCtx(), 0, getTrxName());
+                    factDet.setFact_Acct_ID(fl1.get_ID());
+                    factDet.setAD_Org_ID(this.pago.getAD_Org_ID());
+                    factDet.setZ_Pago_ID(this.pago.get_ID());
+                    factDet.setZ_MedioPago_ID(pagoMedioPago.getZ_MedioPago_ID());
+                    if (pagoMedioPago.getC_BankAccount_ID() > 0){
+                        factDet.setC_BankAccount_ID(pagoMedioPago.getC_BankAccount_ID());
+                        factDet.setC_Bank_ID(pagoMedioPago.getC_BankAccount().getC_Bank_ID());
+                    }
+                    else{
+                        if (pagoMedioPago.getC_Bank_ID() > 0){
+                            factDet.setC_Bank_ID(pagoMedioPago.getC_Bank_ID());
+                        }
+                    }
+                    factDet.setNroMedioPago(pagoMedioPago.getDocumentNoRef());
+                    factDet.setEstadoMedioPago(X_Z_AcctFactDet.ESTADOMEDIOPAGO_ENTREGADO);
+                    factDet.setCurrencyRate(pagoMedioPago.getMultiplyRate());
+                    factDet.setDueDate(pagoMedioPago.getDueDate());
+                    factDet.saveEx();
+                }
 
                 // CR - Lineas de Medios de Pago - Monto de cada linea - Cuenta contable asociada a la cuenta bancaria.
                 int accountID = -1;
@@ -162,7 +187,32 @@ public class Doc_Pago extends Doc {
                 }
                 if (accountID > 0){
                     MAccount acctBankCr = MAccount.get(getCtx(), accountID);
-                    fact.createLine (p_lines[i], acctBankCr, getC_Currency_ID(), null, amt);
+                    FactLine fl2 = fact.createLine (p_lines[i], acctBankCr, getC_Currency_ID(), null, amt);
+
+                    // Detalle de asiento
+                    if (fl2 != null){
+                        fl2.saveEx();
+                        MZAcctFactDet factDet = new MZAcctFactDet(getCtx(), 0, getTrxName());
+                        factDet.setFact_Acct_ID(fl2.get_ID());
+                        factDet.setAD_Org_ID(this.pago.getAD_Org_ID());
+                        factDet.setZ_Pago_ID(this.pago.get_ID());
+                        factDet.setZ_MedioPago_ID(pagoMedioPago.getZ_MedioPago_ID());
+                        if (pagoMedioPago.getC_BankAccount_ID() > 0){
+                            factDet.setC_BankAccount_ID(pagoMedioPago.getC_BankAccount_ID());
+                            factDet.setC_Bank_ID(pagoMedioPago.getC_BankAccount().getC_Bank_ID());
+                        }
+                        else{
+                            if (pagoMedioPago.getC_Bank_ID() > 0){
+                                factDet.setC_Bank_ID(pagoMedioPago.getC_Bank_ID());
+                            }
+                        }
+                        factDet.setNroMedioPago(pagoMedioPago.getDocumentNoRef());
+                        factDet.setEstadoMedioPago(X_Z_AcctFactDet.ESTADOMEDIOPAGO_ENTREGADO);
+                        factDet.setCurrencyRate(pagoMedioPago.getMultiplyRate());
+                        factDet.setDueDate(pagoMedioPago.getDueDate());
+                        factDet.saveEx();
+                    }
+
                 }
             }
         }
@@ -197,7 +247,31 @@ public class Doc_Pago extends Doc {
                 }
 
                 // DR - Lineas de Medios de Pago - Monto de cada linea
-                fact.createLine(p_lines[i], MAccount.get(getCtx(), accountID), getC_Currency_ID(), amt, null);
+                FactLine fl1 = fact.createLine(p_lines[i], MAccount.get(getCtx(), accountID), getC_Currency_ID(), amt, null);
+
+                // Detalle de asiento
+                if (fl1 != null){
+                    fl1.saveEx();
+                    MZAcctFactDet factDet = new MZAcctFactDet(getCtx(), 0, getTrxName());
+                    factDet.setFact_Acct_ID(fl1.get_ID());
+                    factDet.setAD_Org_ID(this.pago.getAD_Org_ID());
+                    factDet.setZ_Pago_ID(this.pago.get_ID());
+                    factDet.setZ_MedioPago_ID(pagoMedioPago.getZ_MedioPago_ID());
+                    if (pagoMedioPago.getC_BankAccount_ID() > 0){
+                        factDet.setC_BankAccount_ID(pagoMedioPago.getC_BankAccount_ID());
+                        factDet.setC_Bank_ID(pagoMedioPago.getC_BankAccount().getC_Bank_ID());
+                    }
+                    else{
+                        if (pagoMedioPago.getC_Bank_ID() > 0){
+                            factDet.setC_Bank_ID(pagoMedioPago.getC_Bank_ID());
+                        }
+                    }
+                    factDet.setNroMedioPago(pagoMedioPago.getDocumentNoRef());
+                    factDet.setEstadoMedioPago(X_Z_AcctFactDet.ESTADOMEDIOPAGO_ENTREGADO);
+                    factDet.setCurrencyRate(pagoMedioPago.getMultiplyRate());
+                    factDet.setDueDate(pagoMedioPago.getDueDate());
+                    factDet.saveEx();
+                }
             }
 
 
@@ -219,7 +293,19 @@ public class Doc_Pago extends Doc {
                     }
 
                     // DR - Lineas de Resguardos Recibidos - Monto de cada linea
-                    fact.createLine(null, MAccount.get(getCtx(), accountID), getC_Currency_ID(), amt, null);
+                    FactLine fl1 = fact.createLine(null, MAccount.get(getCtx(), accountID), getC_Currency_ID(), amt, null);
+
+                    // Detalle de asiento
+                    if (fl1 != null){
+                        fl1.saveEx();
+                        MZAcctFactDet factDet = new MZAcctFactDet(getCtx(), 0, getTrxName());
+                        factDet.setFact_Acct_ID(fl1.get_ID());
+                        factDet.setAD_Org_ID(this.pago.getAD_Org_ID());
+                        factDet.setZ_Pago_ID(this.pago.get_ID());
+                        factDet.setCurrencyRate(resgRecibido.getMultiplyRate());
+                        factDet.setZ_RetencionSocio_ID(resgRecibido.getZ_RetencionSocio_ID());
+                        factDet.saveEx();
+                    }
                 }
             }
         }

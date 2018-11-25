@@ -33,7 +33,7 @@ public class X_Z_GeneraFormDGILin extends PO implements I_Z_GeneraFormDGILin, I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20181123L;
+	private static final long serialVersionUID = 20181125L;
 
     /** Standard Constructor */
     public X_Z_GeneraFormDGILin (Properties ctx, int Z_GeneraFormDGILin_ID, String trxName)
@@ -205,6 +205,34 @@ public class X_Z_GeneraFormDGILin extends PO implements I_Z_GeneraFormDGILin, I_
 	public int getC_DocType_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_DocType_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	public I_C_ElementValue getC_ElementValue() throws RuntimeException
+    {
+		return (I_C_ElementValue)MTable.get(getCtx(), I_C_ElementValue.Table_Name)
+			.getPO(getC_ElementValue_ID(), get_TrxName());	}
+
+	/** Set Account Element.
+		@param C_ElementValue_ID 
+		Account Element
+	  */
+	public void setC_ElementValue_ID (int C_ElementValue_ID)
+	{
+		if (C_ElementValue_ID < 1) 
+			set_Value (COLUMNNAME_C_ElementValue_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_ElementValue_ID, Integer.valueOf(C_ElementValue_ID));
+	}
+
+	/** Get Account Element.
+		@return Account Element
+	  */
+	public int getC_ElementValue_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_ElementValue_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

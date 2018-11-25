@@ -17,9 +17,12 @@
 /** Generated Model - DO NOT CHANGE */
 package org.xpande.acct.model;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
+import java.sql.Timestamp;
 import java.util.Properties;
 import org.compiere.model.*;
+import org.compiere.util.Env;
 
 /** Generated Model for Z_AcctFactDet
  *  @author Adempiere (generated) 
@@ -30,7 +33,7 @@ public class X_Z_AcctFactDet extends PO implements I_Z_AcctFactDet, I_Persistent
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20181008L;
+	private static final long serialVersionUID = 20181125L;
 
     /** Standard Constructor */
     public X_Z_AcctFactDet (Properties ctx, int Z_AcctFactDet_ID, String trxName)
@@ -127,6 +130,34 @@ public class X_Z_AcctFactDet extends PO implements I_Z_AcctFactDet, I_Persistent
 		return ii.intValue();
 	}
 
+	public I_C_Invoice getC_Invoice() throws RuntimeException
+    {
+		return (I_C_Invoice)MTable.get(getCtx(), I_C_Invoice.Table_Name)
+			.getPO(getC_Invoice_ID(), get_TrxName());	}
+
+	/** Set Invoice.
+		@param C_Invoice_ID 
+		Invoice Identifier
+	  */
+	public void setC_Invoice_ID (int C_Invoice_ID)
+	{
+		if (C_Invoice_ID < 1) 
+			set_Value (COLUMNNAME_C_Invoice_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Invoice_ID, Integer.valueOf(C_Invoice_ID));
+	}
+
+	/** Get Invoice.
+		@return Invoice Identifier
+	  */
+	public int getC_Invoice_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Invoice_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	public I_C_Tax getC_Tax() throws RuntimeException
     {
 		return (I_C_Tax)MTable.get(getCtx(), I_C_Tax.Table_Name)
@@ -153,6 +184,43 @@ public class X_Z_AcctFactDet extends PO implements I_Z_AcctFactDet, I_Persistent
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Rate.
+		@param CurrencyRate 
+		Currency Conversion Rate
+	  */
+	public void setCurrencyRate (BigDecimal CurrencyRate)
+	{
+		set_Value (COLUMNNAME_CurrencyRate, CurrencyRate);
+	}
+
+	/** Get Rate.
+		@return Currency Conversion Rate
+	  */
+	public BigDecimal getCurrencyRate () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_CurrencyRate);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
+	/** Set Due Date.
+		@param DueDate 
+		Date when the payment is due
+	  */
+	public void setDueDate (Timestamp DueDate)
+	{
+		set_Value (COLUMNNAME_DueDate, DueDate);
+	}
+
+	/** Get Due Date.
+		@return Date when the payment is due
+	  */
+	public Timestamp getDueDate () 
+	{
+		return (Timestamp)get_Value(COLUMNNAME_DueDate);
 	}
 
 	/** EstadoMedioPago AD_Reference_ID=1000042 */
@@ -207,6 +275,34 @@ public class X_Z_AcctFactDet extends PO implements I_Z_AcctFactDet, I_Persistent
 	public int getFact_Acct_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Fact_Acct_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	public I_GL_Journal getGL_Journal() throws RuntimeException
+    {
+		return (I_GL_Journal)MTable.get(getCtx(), I_GL_Journal.Table_Name)
+			.getPO(getGL_Journal_ID(), get_TrxName());	}
+
+	/** Set Journal.
+		@param GL_Journal_ID 
+		General Ledger Journal
+	  */
+	public void setGL_Journal_ID (int GL_Journal_ID)
+	{
+		if (GL_Journal_ID < 1) 
+			set_Value (COLUMNNAME_GL_Journal_ID, null);
+		else 
+			set_Value (COLUMNNAME_GL_Journal_ID, Integer.valueOf(GL_Journal_ID));
+	}
+
+	/** Get Journal.
+		@return General Ledger Journal
+	  */
+	public int getGL_Journal_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_GL_Journal_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -301,6 +397,26 @@ public class X_Z_AcctFactDet extends PO implements I_Z_AcctFactDet, I_Persistent
 	public int getZ_MedioPago_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Z_MedioPago_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Z_Pago ID.
+		@param Z_Pago_ID Z_Pago ID	  */
+	public void setZ_Pago_ID (int Z_Pago_ID)
+	{
+		if (Z_Pago_ID < 1) 
+			set_Value (COLUMNNAME_Z_Pago_ID, null);
+		else 
+			set_Value (COLUMNNAME_Z_Pago_ID, Integer.valueOf(Z_Pago_ID));
+	}
+
+	/** Get Z_Pago ID.
+		@return Z_Pago ID	  */
+	public int getZ_Pago_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_Pago_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

@@ -134,6 +134,21 @@ public interface I_Z_GeneraFormDGILin
 
 	public I_C_DocType getC_DocType() throws RuntimeException;
 
+    /** Column name C_ElementValue_ID */
+    public static final String COLUMNNAME_C_ElementValue_ID = "C_ElementValue_ID";
+
+	/** Set Account Element.
+	  * Account Element
+	  */
+	public void setC_ElementValue_ID(int C_ElementValue_ID);
+
+	/** Get Account Element.
+	  * Account Element
+	  */
+	public int getC_ElementValue_ID();
+
+	public I_C_ElementValue getC_ElementValue() throws RuntimeException;
+
     /** Column name C_Invoice_ID */
     public static final String COLUMNNAME_C_Invoice_ID = "C_Invoice_ID";
 

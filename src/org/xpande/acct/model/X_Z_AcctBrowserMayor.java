@@ -33,7 +33,7 @@ public class X_Z_AcctBrowserMayor extends PO implements I_Z_AcctBrowserMayor, I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20181008L;
+	private static final long serialVersionUID = 20181125L;
 
     /** Standard Constructor */
     public X_Z_AcctBrowserMayor (Properties ctx, int Z_AcctBrowserMayor_ID, String trxName)
@@ -511,6 +511,26 @@ public class X_Z_AcctBrowserMayor extends PO implements I_Z_AcctBrowserMayor, I_
 		return ii.intValue();
 	}
 
+	/** Set Rate.
+		@param CurrencyRate 
+		Currency Conversion Rate
+	  */
+	public void setCurrencyRate (BigDecimal CurrencyRate)
+	{
+		set_Value (COLUMNNAME_CurrencyRate, CurrencyRate);
+	}
+
+	/** Get Rate.
+		@return Currency Conversion Rate
+	  */
+	public BigDecimal getCurrencyRate () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_CurrencyRate);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
 	/** Set Account Date.
 		@param DateAcct 
 		Accounting Date
@@ -579,20 +599,37 @@ public class X_Z_AcctBrowserMayor extends PO implements I_Z_AcctBrowserMayor, I_
 		return (String)get_Value(COLUMNNAME_DocumentNoRef);
 	}
 
-	/** EstadoMedioPago AD_Reference_ID=1000044 */
-	public static final int ESTADOMEDIOPAGO_AD_Reference_ID=1000044;
+	/** Set Due Date.
+		@param DueDate 
+		Date when the payment is due
+	  */
+	public void setDueDate (Timestamp DueDate)
+	{
+		set_Value (COLUMNNAME_DueDate, DueDate);
+	}
+
+	/** Get Due Date.
+		@return Date when the payment is due
+	  */
+	public Timestamp getDueDate () 
+	{
+		return (Timestamp)get_Value(COLUMNNAME_DueDate);
+	}
+
+	/** EstadoMedioPago AD_Reference_ID=1000042 */
+	public static final int ESTADOMEDIOPAGO_AD_Reference_ID=1000042;
+	/** ANULADO = ANULADO */
+	public static final String ESTADOMEDIOPAGO_ANULADO = "ANULADO";
+	/** CONCILIADO = CONCILIADO */
+	public static final String ESTADOMEDIOPAGO_CONCILIADO = "CONCILIADO";
+	/** DEPOSITADO = DEPOSITADO */
+	public static final String ESTADOMEDIOPAGO_DEPOSITADO = "DEPOSITADO";
 	/** EMITIDO = EMITIDO */
 	public static final String ESTADOMEDIOPAGO_EMITIDO = "EMITIDO";
 	/** ENTREGADO = ENTREGADO */
 	public static final String ESTADOMEDIOPAGO_ENTREGADO = "ENTREGADO";
-	/** DEPOSITADO = DEPOSITADO */
-	public static final String ESTADOMEDIOPAGO_DEPOSITADO = "DEPOSITADO";
-	/** CONCILIADO = CONCILIADO */
-	public static final String ESTADOMEDIOPAGO_CONCILIADO = "CONCILIADO";
 	/** REEMPLAZADO = REEMPLAZADO */
 	public static final String ESTADOMEDIOPAGO_REEMPLAZADO = "REEMPLAZADO";
-	/** ANULADO = ANULADO */
-	public static final String ESTADOMEDIOPAGO_ANULADO = "ANULADO";
 	/** Set EstadoMedioPago.
 		@param EstadoMedioPago 
 		Estado de un medio de pago
@@ -714,6 +751,23 @@ public class X_Z_AcctBrowserMayor extends PO implements I_Z_AcctBrowserMayor, I_
 	public String getTaxID () 
 	{
 		return (String)get_Value(COLUMNNAME_TaxID);
+	}
+
+	/** Set Immutable Universally Unique Identifier.
+		@param UUID 
+		Immutable Universally Unique Identifier
+	  */
+	public void setUUID (String UUID)
+	{
+		set_Value (COLUMNNAME_UUID, UUID);
+	}
+
+	/** Get Immutable Universally Unique Identifier.
+		@return Immutable Universally Unique Identifier
+	  */
+	public String getUUID () 
+	{
+		return (String)get_Value(COLUMNNAME_UUID);
 	}
 
 	public I_Z_AcctBrowser getZ_AcctBrowser() throws RuntimeException

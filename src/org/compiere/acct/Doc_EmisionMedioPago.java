@@ -94,12 +94,19 @@ public class Doc_EmisionMedioPago extends Doc {
             fl1.saveEx();
             MZAcctFactDet factDet = new MZAcctFactDet(getCtx(), 0, getTrxName());
             factDet.setFact_Acct_ID(fl1.get_ID());
+            factDet.setAD_Org_ID(this.emisionMedioPago.getAD_Org_ID());
             factDet.setZ_EmisionMedioPago_ID(this.emisionMedioPago.get_ID());
             factDet.setZ_MedioPago_ID(this.emisionMedioPago.getZ_MedioPago_ID());
-            factDet.setC_BankAccount_ID(this.emisionMedioPago.getC_BankAccount_ID());
-            factDet.setC_Bank_ID(this.emisionMedioPago.getC_BankAccount().getC_Bank_ID());
+
+            if (this.emisionMedioPago.getC_BankAccount_ID() > 0){
+                factDet.setC_BankAccount_ID(this.emisionMedioPago.getC_BankAccount_ID());
+                factDet.setC_Bank_ID(this.emisionMedioPago.getC_BankAccount().getC_Bank_ID());
+            }
+
             factDet.setNroMedioPago(nroMedioPago);
             factDet.setEstadoMedioPago(X_Z_AcctFactDet.ESTADOMEDIOPAGO_EMITIDO);
+            factDet.setCurrencyRate(this.emisionMedioPago.getCurrencyRate());
+            factDet.setDueDate(this.emisionMedioPago.getDueDate());
             factDet.saveEx();
         }
 
@@ -112,12 +119,19 @@ public class Doc_EmisionMedioPago extends Doc {
             fl2.saveEx();
             MZAcctFactDet factDet = new MZAcctFactDet(getCtx(), 0, getTrxName());
             factDet.setFact_Acct_ID(fl2.get_ID());
+            factDet.setAD_Org_ID(this.emisionMedioPago.getAD_Org_ID());
             factDet.setZ_EmisionMedioPago_ID(this.emisionMedioPago.get_ID());
             factDet.setZ_MedioPago_ID(this.emisionMedioPago.getZ_MedioPago_ID());
-            factDet.setC_BankAccount_ID(this.emisionMedioPago.getC_BankAccount_ID());
-            factDet.setC_Bank_ID(this.emisionMedioPago.getC_BankAccount().getC_Bank_ID());
+
+            if (this.emisionMedioPago.getC_BankAccount_ID() > 0){
+                factDet.setC_BankAccount_ID(this.emisionMedioPago.getC_BankAccount_ID());
+                factDet.setC_Bank_ID(this.emisionMedioPago.getC_BankAccount().getC_Bank_ID());
+            }
+
             factDet.setNroMedioPago(nroMedioPago);
             factDet.setEstadoMedioPago(X_Z_AcctFactDet.ESTADOMEDIOPAGO_EMITIDO);
+            factDet.setCurrencyRate(this.emisionMedioPago.getCurrencyRate());
+            factDet.setDueDate(this.emisionMedioPago.getDueDate());
             factDet.saveEx();
         }
 

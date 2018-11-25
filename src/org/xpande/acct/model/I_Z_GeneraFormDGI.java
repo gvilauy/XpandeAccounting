@@ -78,6 +78,21 @@ public interface I_Z_GeneraFormDGI
 
 	public I_C_AcctSchema getC_AcctSchema() throws RuntimeException;
 
+    /** Column name C_Period_ID */
+    public static final String COLUMNNAME_C_Period_ID = "C_Period_ID";
+
+	/** Set Period.
+	  * Period of the Calendar
+	  */
+	public void setC_Period_ID(int C_Period_ID);
+
+	/** Get Period.
+	  * Period of the Calendar
+	  */
+	public int getC_Period_ID();
+
+	public I_C_Period getC_Period() throws RuntimeException;
+
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
 
@@ -106,6 +121,19 @@ public interface I_Z_GeneraFormDGI
 	  * Last effective date (inclusive)
 	  */
 	public Timestamp getEndDate();
+
+    /** Column name FilePathOrName */
+    public static final String COLUMNNAME_FilePathOrName = "FilePathOrName";
+
+	/** Set File Path or Name.
+	  * Path of directory or name of the local file or URL
+	  */
+	public void setFilePathOrName(String FilePathOrName);
+
+	/** Get File Path or Name.
+	  * Path of directory or name of the local file or URL
+	  */
+	public String getFilePathOrName();
 
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";

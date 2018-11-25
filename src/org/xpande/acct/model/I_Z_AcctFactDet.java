@@ -93,6 +93,21 @@ public interface I_Z_AcctFactDet
 
 	public I_C_Bank getC_Bank() throws RuntimeException;
 
+    /** Column name C_Invoice_ID */
+    public static final String COLUMNNAME_C_Invoice_ID = "C_Invoice_ID";
+
+	/** Set Invoice.
+	  * Invoice Identifier
+	  */
+	public void setC_Invoice_ID(int C_Invoice_ID);
+
+	/** Get Invoice.
+	  * Invoice Identifier
+	  */
+	public int getC_Invoice_ID();
+
+	public I_C_Invoice getC_Invoice() throws RuntimeException;
+
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
 
@@ -124,6 +139,32 @@ public interface I_Z_AcctFactDet
 
 	public I_C_Tax getC_Tax() throws RuntimeException;
 
+    /** Column name CurrencyRate */
+    public static final String COLUMNNAME_CurrencyRate = "CurrencyRate";
+
+	/** Set Rate.
+	  * Currency Conversion Rate
+	  */
+	public void setCurrencyRate(BigDecimal CurrencyRate);
+
+	/** Get Rate.
+	  * Currency Conversion Rate
+	  */
+	public BigDecimal getCurrencyRate();
+
+    /** Column name DueDate */
+    public static final String COLUMNNAME_DueDate = "DueDate";
+
+	/** Set Due Date.
+	  * Date when the payment is due
+	  */
+	public void setDueDate(Timestamp DueDate);
+
+	/** Get Due Date.
+	  * Date when the payment is due
+	  */
+	public Timestamp getDueDate();
+
     /** Column name EstadoMedioPago */
     public static final String COLUMNNAME_EstadoMedioPago = "EstadoMedioPago";
 
@@ -147,6 +188,21 @@ public interface I_Z_AcctFactDet
 	public int getFact_Acct_ID();
 
 	public I_Fact_Acct getFact_Acct() throws RuntimeException;
+
+    /** Column name GL_Journal_ID */
+    public static final String COLUMNNAME_GL_Journal_ID = "GL_Journal_ID";
+
+	/** Set Journal.
+	  * General Ledger Journal
+	  */
+	public void setGL_Journal_ID(int GL_Journal_ID);
+
+	/** Get Journal.
+	  * General Ledger Journal
+	  */
+	public int getGL_Journal_ID();
+
+	public I_GL_Journal getGL_Journal() throws RuntimeException;
 
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
@@ -229,6 +285,15 @@ public interface I_Z_AcctFactDet
 
 	/** Get Z_MedioPago ID	  */
 	public int getZ_MedioPago_ID();
+
+    /** Column name Z_Pago_ID */
+    public static final String COLUMNNAME_Z_Pago_ID = "Z_Pago_ID";
+
+	/** Set Z_Pago ID	  */
+	public void setZ_Pago_ID(int Z_Pago_ID);
+
+	/** Get Z_Pago ID	  */
+	public int getZ_Pago_ID();
 
     /** Column name Z_ResguardoSocio_ID */
     public static final String COLUMNNAME_Z_ResguardoSocio_ID = "Z_ResguardoSocio_ID";

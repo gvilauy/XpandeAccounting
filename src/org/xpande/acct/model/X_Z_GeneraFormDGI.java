@@ -31,7 +31,7 @@ public class X_Z_GeneraFormDGI extends PO implements I_Z_GeneraFormDGI, I_Persis
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20181121L;
+	private static final long serialVersionUID = 20181125L;
 
     /** Standard Constructor */
     public X_Z_GeneraFormDGI (Properties ctx, int Z_GeneraFormDGI_ID, String trxName)
@@ -104,6 +104,34 @@ public class X_Z_GeneraFormDGI extends PO implements I_Z_GeneraFormDGI, I_Persis
 		return ii.intValue();
 	}
 
+	public I_C_Period getC_Period() throws RuntimeException
+    {
+		return (I_C_Period)MTable.get(getCtx(), I_C_Period.Table_Name)
+			.getPO(getC_Period_ID(), get_TrxName());	}
+
+	/** Set Period.
+		@param C_Period_ID 
+		Period of the Calendar
+	  */
+	public void setC_Period_ID (int C_Period_ID)
+	{
+		if (C_Period_ID < 1) 
+			set_Value (COLUMNNAME_C_Period_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Period_ID, Integer.valueOf(C_Period_ID));
+	}
+
+	/** Get Period.
+		@return Period of the Calendar
+	  */
+	public int getC_Period_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Period_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** Set End Date.
 		@param EndDate 
 		Last effective date (inclusive)
@@ -119,6 +147,23 @@ public class X_Z_GeneraFormDGI extends PO implements I_Z_GeneraFormDGI, I_Persis
 	public Timestamp getEndDate () 
 	{
 		return (Timestamp)get_Value(COLUMNNAME_EndDate);
+	}
+
+	/** Set File Path or Name.
+		@param FilePathOrName 
+		Path of directory or name of the local file or URL
+	  */
+	public void setFilePathOrName (String FilePathOrName)
+	{
+		set_Value (COLUMNNAME_FilePathOrName, FilePathOrName);
+	}
+
+	/** Get File Path or Name.
+		@return Path of directory or name of the local file or URL
+	  */
+	public String getFilePathOrName () 
+	{
+		return (String)get_Value(COLUMNNAME_FilePathOrName);
 	}
 
 	/** Set ProcessButton.

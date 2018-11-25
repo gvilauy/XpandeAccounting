@@ -31,7 +31,7 @@ public interface I_Z_AcctBrowserMayor
     /** TableName=Z_AcctBrowserMayor */
     public static final String Table_Name = "Z_AcctBrowserMayor";
 
-    /** AD_Table_ID=1000221 */
+    /** AD_Table_ID=1000225 */
     public static final int Table_ID = MTable.getTable_ID(Table_Name);
 
     KeyNamePair Model = new KeyNamePair(Table_ID, Table_Name);
@@ -329,6 +329,19 @@ public interface I_Z_AcctBrowserMayor
 
 	public I_C_Tax getC_Tax() throws RuntimeException;
 
+    /** Column name CurrencyRate */
+    public static final String COLUMNNAME_CurrencyRate = "CurrencyRate";
+
+	/** Set Rate.
+	  * Currency Conversion Rate
+	  */
+	public void setCurrencyRate(BigDecimal CurrencyRate);
+
+	/** Get Rate.
+	  * Currency Conversion Rate
+	  */
+	public BigDecimal getCurrencyRate();
+
     /** Column name DateAcct */
     public static final String COLUMNNAME_DateAcct = "DateAcct";
 
@@ -380,6 +393,19 @@ public interface I_Z_AcctBrowserMayor
 	  * Numero de documento referenciado
 	  */
 	public String getDocumentNoRef();
+
+    /** Column name DueDate */
+    public static final String COLUMNNAME_DueDate = "DueDate";
+
+	/** Set Due Date.
+	  * Date when the payment is due
+	  */
+	public void setDueDate(Timestamp DueDate);
+
+	/** Get Due Date.
+	  * Date when the payment is due
+	  */
+	public Timestamp getDueDate();
 
     /** Column name EstadoMedioPago */
     public static final String COLUMNNAME_EstadoMedioPago = "EstadoMedioPago";
@@ -489,6 +515,19 @@ public interface I_Z_AcctBrowserMayor
 	  * User who updated this records
 	  */
 	public int getUpdatedBy();
+
+    /** Column name UUID */
+    public static final String COLUMNNAME_UUID = "UUID";
+
+	/** Set Immutable Universally Unique Identifier.
+	  * Immutable Universally Unique Identifier
+	  */
+	public void setUUID(String UUID);
+
+	/** Get Immutable Universally Unique Identifier.
+	  * Immutable Universally Unique Identifier
+	  */
+	public String getUUID();
 
     /** Column name Z_AcctBrowser_ID */
     public static final String COLUMNNAME_Z_AcctBrowser_ID = "Z_AcctBrowser_ID";

@@ -1,16 +1,22 @@
 package org.xpande.acct.model;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.MAcctSchema;
-import org.compiere.model.MTax;
+import org.compiere.model.*;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.xpande.core.utils.CurrencyUtils;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -19,6 +25,9 @@ import java.util.Properties;
  * Xpande. Created by Gabriel Vila on 11/21/18.
  */
 public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
+
+    private BufferedWriter bufferedWriterTXT = null;
+
 
     public MZGeneraFormDGI(Properties ctx, int Z_GeneraFormDGI_ID, String trxName) {
         super(ctx, Z_GeneraFormDGI_ID, trxName);
@@ -57,6 +66,186 @@ public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
         }
 
         return message;
+    }
+
+
+    /***
+     * Genera archivo de para DGI según formulario seleccionado.
+     * @return
+     */
+    public String generateFile(){
+
+        String message = null;
+
+        try{
+
+            // Obtengo lineas
+            List<MZGeneraFormDGILin> dgiLinList = this.getLines();
+
+            // Si no tengo lineas, no hago nada
+            if (dgiLinList.size() <= 0){
+                return "No hay lineas para procesar";
+            }
+
+            // Obtengo RUT de la Organización
+            MOrgInfo orgInfo = MOrgInfo.get(getCtx(), this.getAD_Org_ID(), null);
+            if (orgInfo == null){
+                return "No se pudo obtener información de la organización seleccionada";
+            }
+            String taxID = orgInfo.getTaxID();
+            if ((taxID == null) || (taxID.trim().equalsIgnoreCase(""))){
+                return "Falta parametrizar Número de Identificación para la Organización seleccionada";
+            }
+
+            // Obtengo literal del período según formato requerido por DGI
+            MPeriod period = (MPeriod)this.getC_Period();
+            MYear year = (MYear)period.getC_Year();
+            String month = org.apache.commons.lang.StringUtils.leftPad(String.valueOf(period.getPeriodNo()), 2, "0");
+            String literalPeriodo = String.valueOf(year.getYearAsInt()) + month;
+
+            // Creo archivo para la generación del Formulario de DGI
+            this.createFile();
+
+            // Cargo información en archivo según tipo de formulario de DGI a procesar
+            if (this.getTipoFormularioDGI().equalsIgnoreCase(X_Z_GeneraFormDGI.TIPOFORMULARIODGI_FORMULARIO2181)){
+
+                // Genero archivo para Formulario 2/181
+                message = this.generateFile2181(dgiLinList, taxID, literalPeriodo);
+
+            }
+
+            if (this.bufferedWriterTXT != null){
+                this.bufferedWriterTXT.flush();
+                this.bufferedWriterTXT.close();
+                this.bufferedWriterTXT = null;
+            }
+
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+        finally{
+
+            if (this.bufferedWriterTXT != null){
+                try {
+                    this.bufferedWriterTXT.flush();
+                    this.bufferedWriterTXT.close();
+                }
+                catch (Exception e2) {
+                }
+            }
+        }
+
+        return message;
+    }
+
+
+    /***
+     * Obtiene y retorna lineas de este modelo.
+     * Xpande. Created by Gabriel Vila on 11/25/18.
+     * @return
+     */
+    public List<MZGeneraFormDGILin> getLines() {
+
+        String whereClause = X_Z_GeneraFormDGILin.COLUMNNAME_Z_GeneraFormDGI_ID + " =" + this.get_ID();
+
+        List<MZGeneraFormDGILin> lines = new Query(getCtx(), I_Z_GeneraFormDGILin.Table_Name, whereClause, get_TrxName()).list();
+
+        return lines;
+    }
+
+
+    /***
+     * Genera archivo para el formato 2181.
+     * @param dgiLinList
+     * @param taxID
+     * @param literalPeriodo
+     * @return
+     */
+    private String generateFile2181(List<MZGeneraFormDGILin> dgiLinList, String taxID, String literalPeriodo) {
+
+        String message = null;
+
+        try{
+
+            for (MZGeneraFormDGILin dgiLin: dgiLinList){
+
+                String cadena = "";
+                cadena += taxID + ";02181;" + literalPeriodo + ";";
+
+                // Rut del Socio de Negocio
+                String rutPartner = org.apache.commons.lang.StringUtils.leftPad(dgiLin.getTaxID(), 12, "0");
+                cadena += rutPartner + ";";
+
+                // Periodo del comprobante
+                MPeriod periodInv = MPeriod.get(getCtx(), dgiLin.getDateAcct(), 0);
+                MYear yearInv = (MYear)periodInv.getC_Year();
+                String monthInv = org.apache.commons.lang.StringUtils.leftPad(String.valueOf(periodInv.getPeriodNo()), 2, "0");
+                String literalPeriodInv = String.valueOf(yearInv.getYearAsInt()) + monthInv;
+                cadena += literalPeriodInv + ";";
+
+                // Rubro DGI
+                MZAcctConfigRubroDGI rubroDGI = (MZAcctConfigRubroDGI) dgiLin.getZ_AcctConfigRubroDGI();
+                cadena += rubroDGI.getValue() + ";";
+
+                // Importe. Doce Digitos, completo con CEROS a la izquierda, sin decimales, y si es negativo el
+                // simbolo de menos (-) se pone siempre primero. (Ej: -00000000359)
+                BigDecimal monto = dgiLin.getAmtDocumentMT().setScale(2, RoundingMode.HALF_UP);
+                String montoStr ="";
+                if (monto.compareTo(Env.ZERO) >= 0){
+                    montoStr = String.valueOf(monto);
+                    montoStr = org.apache.commons.lang.StringUtils.leftPad(montoStr, 12, "0");
+                }
+                else{
+                    // Monto negativo, tengo que hacer trampita para poner el signo de menos delante de los ceros
+                    montoStr = String.valueOf(monto.negate());
+                    montoStr = "-" + org.apache.commons.lang.StringUtils.leftPad(montoStr, 11, "0");
+                }
+
+                cadena += montoStr + ";";
+
+                // Guardo linea en TXT
+                if (cadena != null){
+                    this.bufferedWriterTXT.append(cadena + System.lineSeparator());
+                }
+            }
+
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+
+        return message;
+    }
+
+
+    /***
+     * Crea el archivo de generación de Formulario de DGI.
+     * Xpande. Created by Gabriel Vila on 11/25/18.
+     */
+    private void createFile(){
+
+        String encoding = "8859_1";
+
+        try{
+            String fileName = null;
+            String filePath = this.getFilePathOrName();
+
+            SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd_HHmmss");
+
+            if (filePath.contains("/")){
+                fileName = filePath + "/" + "DGI_" + this.getTipoFormularioDGI() + "_" + df.format(new Timestamp(System.currentTimeMillis())) + ".txt";
+            }
+            else{
+                fileName = filePath + "\\" + "DGI_" + this.getTipoFormularioDGI() + "_" + df.format(new Timestamp(System.currentTimeMillis())) + ".txt";
+            }
+
+            this.bufferedWriterTXT = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(fileName), encoding));
+
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
     }
 
 
@@ -108,10 +297,13 @@ public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
 
             sql = " select inv.c_invoice_id, inv.c_doctypetarget_id, (coalesce(inv.documentserie,'') || inv.documentno) as documentnoref, " +
                     " inv.dateinvoiced, inv.dateacct, inv.c_bpartner_id, inv.c_currency_id, invt.c_tax_id, invt.taxamt, inv.issotrx, " +
-                    " bp.c_taxgroup_id, bp.taxid, bp.value, bp.name " +
+                    " bp.c_taxgroup_id, bp.taxid, bp.value, bp.name, vc.account_id " +
                     " from c_invoice inv " +
                     " inner join c_invoicetax invt on inv.c_invoice_id = invt.c_invoice_id " +
                     " inner join c_bpartner bp on inv.c_bpartner_id = bp.c_bpartner_id " +
+                    " inner join c_tax tax on invt.c_tax_id = tax.c_tax_id " +
+                    " left outer join c_tax_acct tacct on tax.c_tax_id = tacct.c_tax_id " +
+                    " left outer join c_validcombination vc on tacct.t_credit_acct = vc.c_validcombination_id " +
                     " where inv.docstatus = 'CO' " +
                     " and inv.ad_org_id =" + this.getAD_Org_ID() +
                     " and inv.dateacct between ? and ? " +
@@ -157,6 +349,9 @@ public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
                     linea.setDocumentNoRef(rs.getString("documentnoref"));
                     linea.setTaxID(nroIdentificacion);
                     linea.setC_TaxGroup_ID(rs.getInt("c_taxgroup_id"));
+                    if (rs.getInt("account_id") > 0){
+                        linea.setC_ElementValue_ID(rs.getInt("account_id"));
+                    }
 
                     if (linea.getC_Currency_ID() != as.getC_Currency_ID()){
                         BigDecimal rate = CurrencyUtils.getCurrencyRateToAcctSchemaCurrency(getCtx(), this.getAD_Client_ID(), 0, linea.getC_Currency_ID(),
