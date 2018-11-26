@@ -2,6 +2,7 @@ package org.compiere.acct;
 
 import org.compiere.model.*;
 import org.compiere.util.Env;
+import org.xpande.acct.model.MZAcctFactDet;
 import org.xpande.financial.model.MZResguardoSocio;
 import org.xpande.financial.model.MZResguardoSocioRet;
 import org.xpande.financial.model.MZRetencionSocio;
@@ -125,11 +126,24 @@ public class Doc_ResguardoSocio extends Doc {
 
             BigDecimal amt = p_lines[i].getAmtSource();
 
+            FactLine fl1 = null;
+
             if (this.getDocumentType().equalsIgnoreCase("RGU")){
-                fact.createLine (p_lines[i], acctRetCr, getC_Currency_ID(), null, amt);
+                fl1 = fact.createLine (p_lines[i], acctRetCr, getC_Currency_ID(), null, amt);
             }
             else{
-                fact.createLine (p_lines[i], acctRetCr, getC_Currency_ID(), amt, null);
+                fl1 = fact.createLine (p_lines[i], acctRetCr, getC_Currency_ID(), amt, null);
+            }
+
+            // Detalle de asiento
+            if (fl1 != null){
+                fl1.saveEx();
+                MZAcctFactDet factDet = new MZAcctFactDet(getCtx(), 0, getTrxName());
+                factDet.setFact_Acct_ID(fl1.get_ID());
+                factDet.setAD_Org_ID(this.resguardoSocio.getAD_Org_ID());
+                factDet.setZ_ResguardoSocio_ID(this.resguardoSocio.get_ID());
+                factDet.setZ_RetencionSocio_ID(retencionSocio.get_ID());
+                factDet.saveEx();
             }
         }
 

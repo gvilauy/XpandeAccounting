@@ -297,13 +297,14 @@ public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
 
             sql = " select inv.c_invoice_id, inv.c_doctypetarget_id, (coalesce(inv.documentserie,'') || inv.documentno) as documentnoref, " +
                     " inv.dateinvoiced, inv.dateacct, inv.c_bpartner_id, inv.c_currency_id, invt.c_tax_id, invt.taxamt, inv.issotrx, " +
-                    " bp.c_taxgroup_id, bp.taxid, bp.value, bp.name, vc.account_id " +
+                    " bp.c_taxgroup_id, bp.taxid, bp.value, bp.name, vc.account_id, vcVta.account_id as account_vta_id " +
                     " from c_invoice inv " +
                     " inner join c_invoicetax invt on inv.c_invoice_id = invt.c_invoice_id " +
                     " inner join c_bpartner bp on inv.c_bpartner_id = bp.c_bpartner_id " +
                     " inner join c_tax tax on invt.c_tax_id = tax.c_tax_id " +
                     " left outer join c_tax_acct tacct on tax.c_tax_id = tacct.c_tax_id " +
                     " left outer join c_validcombination vc on tacct.t_credit_acct = vc.c_validcombination_id " +
+                    " left outer join c_validcombination vcVta on tacct.t_due_acct = vcVta.c_validcombination_id " +
                     " where inv.docstatus = 'CO' " +
                     " and inv.ad_org_id =" + this.getAD_Org_ID() +
                     " and inv.dateacct between ? and ? " +
@@ -319,6 +320,8 @@ public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
         	while(rs.next()){
 
         	    boolean hayError = false;
+
+        	    boolean isSOTrx = (rs.getString("issotrx").equalsIgnoreCase("Y")) ? true : false;
 
         	    String nroIdentificacion = rs.getString("taxid");
 
@@ -349,8 +352,14 @@ public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
                     linea.setDocumentNoRef(rs.getString("documentnoref"));
                     linea.setTaxID(nroIdentificacion);
                     linea.setC_TaxGroup_ID(rs.getInt("c_taxgroup_id"));
-                    if (rs.getInt("account_id") > 0){
-                        linea.setC_ElementValue_ID(rs.getInt("account_id"));
+
+                    int accountID = rs.getInt("account_id");
+                    if (isSOTrx){
+                        accountID = rs.getInt("account_vta_id");
+                    }
+
+                    if (accountID > 0){
+                        linea.setC_ElementValue_ID(accountID);
                     }
 
                     if (linea.getC_Currency_ID() != as.getC_Currency_ID()){
@@ -372,7 +381,6 @@ public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
                     }
 
                     if (!hayError){
-                        boolean isSOTrx = (rs.getString("issotrx").equalsIgnoreCase("Y")) ? true : false;
 
                         MZAcctConfigRubroDGI configRubroDGI = MZAcctConfigRubroDGI.getByTax(getCtx(), linea.getC_Tax_ID(), isSOTrx, null);
                         if ((configRubroDGI != null) && (configRubroDGI.get_ID() > 0)){
