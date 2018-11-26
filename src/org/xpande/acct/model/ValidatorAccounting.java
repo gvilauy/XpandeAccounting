@@ -1,10 +1,12 @@
 package org.xpande.acct.model;
 
+import org.compiere.acct.Doc;
 import org.compiere.acct.Fact;
 import org.compiere.acct.FactLine;
 import org.compiere.model.*;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.xpande.comercial.model.MZComercialConfig;
 
 import java.math.BigDecimal;
 
@@ -27,6 +29,7 @@ public class ValidatorAccounting implements ModelValidator {
 
         // DB Validations
         engine.addModelChange(X_Fact_Acct.Table_Name, this);
+        engine.addModelChange(I_C_Invoice.Table_Name, this);
 
     }
 
@@ -45,6 +48,9 @@ public class ValidatorAccounting implements ModelValidator {
 
         if (po.get_TableName().equalsIgnoreCase(I_Fact_Acct.Table_Name)){
             return modelChange((FactLine) po, type);
+        }
+        else if (po.get_TableName().equalsIgnoreCase(I_C_Invoice.Table_Name)){
+            return modelChange((MInvoice) po, type);
         }
 
         return null;
@@ -108,4 +114,58 @@ public class ValidatorAccounting implements ModelValidator {
 
         return message;
     }
+
+
+    /***
+     * Validaciones para el modelo de Invoices en contabilidad.
+     * Xpande. Created by Gabriel Vila on 11/26/18.
+     * @param model
+     * @param type
+     * @return
+     * @throws Exception
+     */
+    public String modelChange(MInvoice model, int type) throws Exception {
+
+        String mensaje = null, action = "";
+
+        if ((type == ModelValidator.TYPE_AFTER_NEW) || (type == ModelValidator.TYPE_AFTER_CHANGE)){
+
+
+            // Para comprobantes de compra, si el socio de negocio esta marcado para permitir asiento contable manual en comprobantes de compra,
+            // dejo esta marca en este comprobante.
+            if (!model.isSOTrx()){
+                if (model.getC_BPartner_ID() > 0){
+
+                    boolean canUpdateFlagAsiento = true;
+
+                    // Si entro por modificación, pero no se modificó el socio de negocio, no hago nada.
+                    if ((type == ModelValidator.TYPE_AFTER_CHANGE)){
+                        if (!model.is_ValueChanged(X_C_Invoice.COLUMNNAME_C_BPartner_ID)){
+                            canUpdateFlagAsiento = false;
+                        }
+                    }
+
+                    if (canUpdateFlagAsiento){
+                        MBPartner partner = (MBPartner) model.getC_BPartner();
+                        if (partner.get_ValueAsBoolean("AsientoManualInvoice")){
+                            action = " update c_invoice set AsientoManualInvoice ='Y' " +
+                                    " where c_invoice_id =" + model.get_ID();
+                            DB.executeUpdateEx(action, model.get_TrxName());
+                        }
+                        else {
+                            if (model.get_ValueAsBoolean("AsientoManualInvoice")){
+                                action = " update c_invoice set AsientoManualInvoice ='N' " +
+                                        " where c_invoice_id =" + model.get_ID();
+                                DB.executeUpdateEx(action, model.get_TrxName());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+
+        return mensaje;
+    }
+
 }
