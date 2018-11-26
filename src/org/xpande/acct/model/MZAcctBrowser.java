@@ -152,7 +152,7 @@ public class MZAcctBrowser extends X_Z_AcctBrowser {
                     this.get_ID() + ", f.ad_table_id, f.record_id, f.account_id, f.c_currency_id, f.amtsourcedr, f.amtsourcecr, f.amtacctdr, f.amtacctcr, " +
                     " f.c_period_id, f.dateacct, f.datetrx, f.description, f.c_bpartner_id, f.m_product_id, f.c_tax_id, f.qty, bp.taxid, f.createdby, " +
                     " f.c_doctype_id, f.documentnoref, " +
-                    " f.currencyrate, det.duedate, det.estadomediopago, det.nromediopago, det.z_mediopago_id, det.z_retencionsocio_id " +
+                    " f.currencyrate, f.duedate, det.estadomediopago, det.nromediopago, det.z_mediopago_id, det.z_retencionsocio_id " +
                     " from fact_acct f " +
                     " left outer join c_bpartner bp on f.c_bpartner_id = bp.c_bpartner_id " +
                     " left outer join z_acctfactdet det on f.fact_acct_id = det.fact_acct_id " +
