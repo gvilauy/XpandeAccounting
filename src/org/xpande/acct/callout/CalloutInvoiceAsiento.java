@@ -38,7 +38,7 @@ public class CalloutInvoiceAsiento extends CalloutEngine {
             return "";
         }
 
-        int cInvoiceID = ((Integer) mTab.getValue("C_InvoiceID")).intValue();
+        int cInvoiceID = ((Integer) mTab.getValue("C_Invoice_ID")).intValue();
 
         MInvoice invoice = new MInvoice(ctx, cInvoiceID, null);
 
@@ -77,7 +77,7 @@ public class CalloutInvoiceAsiento extends CalloutEngine {
         if (value == null || isCalloutActive())
             return "";
 
-        int cInvoiceID = ((Integer) mTab.getValue("C_InvoiceID")).intValue();
+        int cInvoiceID = ((Integer) mTab.getValue("C_Invoice_ID")).intValue();
 
         MInvoice invoice = new MInvoice(ctx, cInvoiceID, null);
 
