@@ -30,6 +30,7 @@ public class ValidatorAccounting implements ModelValidator {
         // DB Validations
         engine.addModelChange(X_Fact_Acct.Table_Name, this);
         engine.addModelChange(I_C_Invoice.Table_Name, this);
+        engine.addModelChange(X_GL_JournalLine.Table_Name, this);
 
     }
 
@@ -51,6 +52,9 @@ public class ValidatorAccounting implements ModelValidator {
         }
         else if (po.get_TableName().equalsIgnoreCase(I_C_Invoice.Table_Name)){
             return modelChange((MInvoice) po, type);
+        }
+        else if (po.get_TableName().equalsIgnoreCase(I_GL_JournalLine.Table_Name)){
+            return modelChange((MJournalLine) po, type);
         }
 
         return null;
@@ -109,6 +113,35 @@ public class ValidatorAccounting implements ModelValidator {
                 DB.executeUpdateEx(action, model.get_TrxName());
             }
 
+
+        }
+
+        return message;
+    }
+
+
+    /***
+     * Validaciones para el modelo de lineas de asientos contables manuales.
+     * Xpande. Created by Gabriel Vila on 11/25/18.
+     * @param model
+     * @param type
+     * @return
+     * @throws Exception
+     */
+    public String modelChange(MJournalLine model, int type) throws Exception {
+
+        String message = null, action = "";
+
+
+        if (type == ModelValidator.TYPE_BEFORE_NEW){
+
+            // Seteo organización de la linea = organizacion del cabezal del asiento
+            MJournal journal = (MJournal) model.getGL_Journal();
+            if (journal != null){
+                if (journal.get_ID() > 0){
+                    model.setAD_Org_ID(journal.getAD_Org_ID());
+                }
+            }
 
         }
 
