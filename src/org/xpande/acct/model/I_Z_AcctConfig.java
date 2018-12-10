@@ -31,7 +31,7 @@ public interface I_Z_AcctConfig
     /** TableName=Z_AcctConfig */
     public static final String Table_Name = "Z_AcctConfig";
 
-    /** AD_Table_ID=1000219 */
+    /** AD_Table_ID=1000217 */
     public static final int Table_ID = MTable.getTable_ID(Table_Name);
 
     KeyNamePair Model = new KeyNamePair(Table_ID, Table_Name);
@@ -63,6 +63,21 @@ public interface I_Z_AcctConfig
 	  */
 	public int getAD_Org_ID();
 
+    /** Column name C_AcctSchema_ID */
+    public static final String COLUMNNAME_C_AcctSchema_ID = "C_AcctSchema_ID";
+
+	/** Set Accounting Schema.
+	  * Rules for accounting
+	  */
+	public void setC_AcctSchema_ID(int C_AcctSchema_ID);
+
+	/** Get Accounting Schema.
+	  * Rules for accounting
+	  */
+	public int getC_AcctSchema_ID();
+
+	public I_C_AcctSchema getC_AcctSchema() throws RuntimeException;
+
     /** Column name Charge_Rounding_ID */
     public static final String COLUMNNAME_Charge_Rounding_ID = "Charge_Rounding_ID";
 
@@ -92,6 +107,19 @@ public interface I_Z_AcctConfig
 	  */
 	public int getCreatedBy();
 
+    /** Column name IncluirRetailDGI */
+    public static final String COLUMNNAME_IncluirRetailDGI = "IncluirRetailDGI";
+
+	/** Set IncluirRetailDGI.
+	  * Si se incluye o no los datos de venta del POS para generar Formulario de DGI
+	  */
+	public void setIncluirRetailDGI(boolean IncluirRetailDGI);
+
+	/** Get IncluirRetailDGI.
+	  * Si se incluye o no los datos de venta del POS para generar Formulario de DGI
+	  */
+	public boolean isIncluirRetailDGI();
+
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
 
@@ -120,6 +148,19 @@ public interface I_Z_AcctConfig
 	  * User who updated this records
 	  */
 	public int getUpdatedBy();
+
+    /** Column name UUID */
+    public static final String COLUMNNAME_UUID = "UUID";
+
+	/** Set Immutable Universally Unique Identifier.
+	  * Immutable Universally Unique Identifier
+	  */
+	public void setUUID(String UUID);
+
+	/** Get Immutable Universally Unique Identifier.
+	  * Immutable Universally Unique Identifier
+	  */
+	public String getUUID();
 
     /** Column name Value */
     public static final String COLUMNNAME_Value = "Value";

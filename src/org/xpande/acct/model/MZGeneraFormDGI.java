@@ -27,6 +27,7 @@ import java.util.Properties;
 public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
 
     private BufferedWriter bufferedWriterTXT = null;
+    private MZAcctConfig acctConfig = null;
 
 
     public MZGeneraFormDGI(Properties ctx, int Z_GeneraFormDGI_ID, String trxName) {
@@ -48,6 +49,8 @@ public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
         String message = null;
 
         try{
+
+            this.acctConfig = MZAcctConfig.getDefault(getCtx(), null);
 
             // Elimino información anterior
             this.deleteDocuments();
@@ -399,6 +402,48 @@ public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
                     }
 
                 }
+        	}
+
+        	// Si tengo parametrizada la contabilidad para que se incluyan ventas originadas en el POS (módulo Retail) en la generación
+            // de formularios para DGI
+        	if (this.acctConfig.isIncluirRetailDGI()){
+        	    // Cargo datos de ventas del POS
+                message = this.getPOSDocuments2181();
+            }
+
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+        finally {
+            DB.close(rs, pstmt);
+        	rs = null; pstmt = null;
+        }
+
+        return message;
+    }
+
+    /***
+     * Obtiene y carga información de ventas originadas por el POS (módulo de Retail) para la generación del formatio 2/181 de DGI.
+     * Xpande. Created by Gabriel Vila on 12/10/18.
+     * @return
+     */
+    private String getPOSDocuments2181() {
+
+        String message = null;
+
+        String sql = "";
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try{
+            sql = "";
+
+        	pstmt = DB.prepareStatement(sql, get_TrxName());
+        	rs = pstmt.executeQuery();
+
+        	while(rs.next()){
+
         	}
         }
         catch (Exception e){

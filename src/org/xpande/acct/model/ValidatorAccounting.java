@@ -30,6 +30,7 @@ public class ValidatorAccounting implements ModelValidator {
         // DB Validations
         engine.addModelChange(X_Fact_Acct.Table_Name, this);
         engine.addModelChange(I_C_Invoice.Table_Name, this);
+        engine.addModelChange(X_GL_Journal.Table_Name, this);
         engine.addModelChange(X_GL_JournalLine.Table_Name, this);
 
     }
@@ -55,6 +56,9 @@ public class ValidatorAccounting implements ModelValidator {
         }
         else if (po.get_TableName().equalsIgnoreCase(I_GL_JournalLine.Table_Name)){
             return modelChange((MJournalLine) po, type);
+        }
+        else if (po.get_TableName().equalsIgnoreCase(I_GL_Journal.Table_Name)){
+            return modelChange((MJournal) po, type);
         }
 
         return null;
@@ -132,7 +136,6 @@ public class ValidatorAccounting implements ModelValidator {
 
         String message = null, action = "";
 
-
         if (type == ModelValidator.TYPE_AFTER_NEW){
 
             // Seteo organización de la linea = organizacion del cabezal del asiento
@@ -152,6 +155,32 @@ public class ValidatorAccounting implements ModelValidator {
         return message;
     }
 
+
+    /***
+     * Validaciones para el modelo de cabezales de asientos contables manuales.
+     * Xpande. Created by Gabriel Vila on 11/25/18.
+     * @param model
+     * @param type
+     * @return
+     * @throws Exception
+     */
+    public String modelChange(MJournal model, int type) throws Exception {
+
+        String message = null, action = "";
+
+        if (type == ModelValidator.TYPE_BEFORE_NEW){
+
+            // Seteo moneda del cabezal según moneda del esquema contable seleccionado.
+            MAcctSchema as = (MAcctSchema) model.getC_AcctSchema();
+            if (as != null){
+                if (as.get_ID() > 0){
+                    model.setC_Currency_ID(as.getC_Currency_ID());
+                }
+            }
+        }
+
+        return message;
+    }
 
     /***
      * Validaciones para el modelo de Invoices en contabilidad.
