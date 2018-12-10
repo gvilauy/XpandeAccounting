@@ -197,6 +197,21 @@ public interface I_Z_AcctBrowserMayor
 	  */
 	public BigDecimal getAmtSourceDr();
 
+    /** Column name C_Activity_ID */
+    public static final String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
+
+	/** Set Activity.
+	  * Business Activity
+	  */
+	public void setC_Activity_ID(int C_Activity_ID);
+
+	/** Get Activity.
+	  * Business Activity
+	  */
+	public int getC_Activity_ID();
+
+	public I_C_Activity getC_Activity() throws RuntimeException;
+
     /** Column name C_BPartner_ID */
     public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 

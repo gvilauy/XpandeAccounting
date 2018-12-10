@@ -33,7 +33,7 @@ public class X_Z_AcctBrowserMayor extends PO implements I_Z_AcctBrowserMayor, I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20181125L;
+	private static final long serialVersionUID = 20181207L;
 
     /** Standard Constructor */
     public X_Z_AcctBrowserMayor (Properties ctx, int Z_AcctBrowserMayor_ID, String trxName)
@@ -295,6 +295,34 @@ public class X_Z_AcctBrowserMayor extends PO implements I_Z_AcctBrowserMayor, I_
 		if (bd == null)
 			 return Env.ZERO;
 		return bd;
+	}
+
+	public I_C_Activity getC_Activity() throws RuntimeException
+    {
+		return (I_C_Activity)MTable.get(getCtx(), I_C_Activity.Table_Name)
+			.getPO(getC_Activity_ID(), get_TrxName());	}
+
+	/** Set Activity.
+		@param C_Activity_ID 
+		Business Activity
+	  */
+	public void setC_Activity_ID (int C_Activity_ID)
+	{
+		if (C_Activity_ID < 1) 
+			set_Value (COLUMNNAME_C_Activity_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Activity_ID, Integer.valueOf(C_Activity_ID));
+	}
+
+	/** Get Activity.
+		@return Business Activity
+	  */
+	public int getC_Activity_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Activity_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	public I_C_BPartner getC_BPartner() throws RuntimeException
