@@ -143,7 +143,7 @@ public class ValidatorAccounting implements ModelValidator {
             if (journal != null){
                 if (journal.get_ID() > 0){
                     if (journal.getAD_Org_ID() != model.getAD_Org_ID()){
-                        action = " update gl_journalline set ad_org_id =" + journal.get_ID() +
+                        action = " update gl_journalline set ad_org_id =" + journal.getAD_Org_ID() +
                                 " where gl_journalline_id =" + model.get_ID();
                         DB.executeUpdateEx(action, model.get_TrxName());
                     }
