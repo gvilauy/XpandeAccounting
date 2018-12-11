@@ -27,6 +27,9 @@ public class ValidatorAccounting implements ModelValidator {
             this.adClientID = client.get_ID();
         }
 
+        // Document Validations
+        engine.addDocValidate(I_GL_Journal.Table_Name, this);
+
         // DB Validations
         engine.addModelChange(X_Fact_Acct.Table_Name, this);
         engine.addModelChange(I_C_Invoice.Table_Name, this);
@@ -66,6 +69,11 @@ public class ValidatorAccounting implements ModelValidator {
 
     @Override
     public String docValidate(PO po, int timing) {
+
+        if (po.get_TableName().equalsIgnoreCase(I_GL_Journal.Table_Name)){
+            return docValidate((MJournal) po, timing);
+        }
+
         return null;
     }
 
@@ -136,7 +144,7 @@ public class ValidatorAccounting implements ModelValidator {
 
         String message = null, action = "";
 
-        if (type == ModelValidator.TYPE_AFTER_NEW){
+        if ((type == ModelValidator.TYPE_AFTER_NEW) || (type == ModelValidator.TYPE_AFTER_CHANGE)){
 
             // Seteo organización de la linea = organizacion del cabezal del asiento
             MJournal journal = (MJournal) model.getGL_Journal();
@@ -233,5 +241,31 @@ public class ValidatorAccounting implements ModelValidator {
 
         return mensaje;
     }
+
+
+    /***
+     * Acciones al momento de ejecutar acciones sobre el documento de Asiento Manual Contable.
+     * Xpande. Created by Gabriel Vila on 12/11/18.
+     * @param model
+     * @param timing
+     * @return
+     */
+    private String docValidate(MJournal model, int timing) {
+
+        String message = null;
+        String action = "";
+
+        if (timing == TIMING_BEFORE_COMPLETE){
+
+            // Me aseguro que las lineas del asiento tengan la organización del cabezal
+            action = " update gl_journalline set ad_org_id =" + model.getAD_Org_ID() +
+                    " where gl_journal_id =" + model.get_ID();
+
+            DB.executeUpdateEx(action, model.get_TrxName());
+        }
+
+        return message;
+    }
+
 
 }
