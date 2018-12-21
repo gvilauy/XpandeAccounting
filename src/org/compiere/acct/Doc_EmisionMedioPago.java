@@ -9,6 +9,7 @@ import org.xpande.acct.model.MZAcctFactDet;
 import org.xpande.acct.model.X_Z_AcctFactDet;
 import org.xpande.acct.utils.AccountUtils;
 import org.xpande.financial.model.MZEmisionMedioPago;
+import org.xpande.financial.model.MZMedioPagoItem;
 import org.xpande.financial.model.MZPago;
 import org.xpande.financial.model.MZPagoMedioPago;
 
@@ -78,7 +79,12 @@ public class Doc_EmisionMedioPago extends Doc {
         // Obtengo numero de medio de pago para luego guardarlo asociado a cada pata del asiento contable.
         String nroMedioPago = null;
         if (this.emisionMedioPago.getZ_MedioPagoItem_ID() > 0){
-            nroMedioPago = this.emisionMedioPago.getZ_MedioPagoItem().getNroMedioPago();
+
+            MZMedioPagoItem pagoItem = (MZMedioPagoItem) this.emisionMedioPago.getZ_MedioPagoItem();
+            nroMedioPago = pagoItem.getNroMedioPago();
+            if (pagoItem.getDocumentSerie() != null){
+                nroMedioPago = pagoItem.getDocumentSerie().trim() + nroMedioPago;
+            }
         }
         else{
             nroMedioPago = this.emisionMedioPago.getReferenceNo();
@@ -101,6 +107,10 @@ public class Doc_EmisionMedioPago extends Doc {
             if (this.emisionMedioPago.getC_BankAccount_ID() > 0){
                 factDet.setC_BankAccount_ID(this.emisionMedioPago.getC_BankAccount_ID());
                 factDet.setC_Bank_ID(this.emisionMedioPago.getC_BankAccount().getC_Bank_ID());
+            }
+
+            if (this.emisionMedioPago.getZ_MedioPagoItem_ID() > 0){
+                factDet.setZ_MedioPagoItem_ID(this.emisionMedioPago.getZ_MedioPagoItem_ID());
             }
 
             factDet.setNroMedioPago(nroMedioPago);
@@ -126,6 +136,10 @@ public class Doc_EmisionMedioPago extends Doc {
             if (this.emisionMedioPago.getC_BankAccount_ID() > 0){
                 factDet.setC_BankAccount_ID(this.emisionMedioPago.getC_BankAccount_ID());
                 factDet.setC_Bank_ID(this.emisionMedioPago.getC_BankAccount().getC_Bank_ID());
+            }
+
+            if (this.emisionMedioPago.getZ_MedioPagoItem_ID() > 0){
+                factDet.setZ_MedioPagoItem_ID(this.emisionMedioPago.getZ_MedioPagoItem_ID());
             }
 
             factDet.setNroMedioPago(nroMedioPago);

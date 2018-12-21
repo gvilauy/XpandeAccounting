@@ -163,6 +163,11 @@ public class Doc_Pago extends Doc {
                             factDet.setC_Bank_ID(pagoMedioPago.getC_Bank_ID());
                         }
                     }
+
+                    if (pagoMedioPago.getZ_MedioPagoItem_ID() > 0){
+                        factDet.setZ_MedioPagoItem_ID(pagoMedioPago.getZ_MedioPagoItem_ID());
+                    }
+
                     factDet.setNroMedioPago(pagoMedioPago.getDocumentNoRef());
                     factDet.setEstadoMedioPago(X_Z_AcctFactDet.ESTADOMEDIOPAGO_ENTREGADO);
                     factDet.setCurrencyRate(pagoMedioPago.getMultiplyRate());
@@ -206,6 +211,11 @@ public class Doc_Pago extends Doc {
                                 factDet.setC_Bank_ID(pagoMedioPago.getC_Bank_ID());
                             }
                         }
+
+                        if (pagoMedioPago.getZ_MedioPagoItem_ID() > 0){
+                            factDet.setZ_MedioPagoItem_ID(pagoMedioPago.getZ_MedioPagoItem_ID());
+                        }
+
                         factDet.setNroMedioPago(pagoMedioPago.getDocumentNoRef());
                         factDet.setEstadoMedioPago(X_Z_AcctFactDet.ESTADOMEDIOPAGO_ENTREGADO);
                         factDet.setCurrencyRate(pagoMedioPago.getMultiplyRate());
@@ -266,6 +276,11 @@ public class Doc_Pago extends Doc {
                             factDet.setC_Bank_ID(pagoMedioPago.getC_Bank_ID());
                         }
                     }
+
+                    if (pagoMedioPago.getZ_MedioPagoItem_ID() > 0){
+                        factDet.setZ_MedioPagoItem_ID(pagoMedioPago.getZ_MedioPagoItem_ID());
+                    }
+
                     factDet.setNroMedioPago(pagoMedioPago.getDocumentNoRef());
                     factDet.setEstadoMedioPago(X_Z_AcctFactDet.ESTADOMEDIOPAGO_ENTREGADO);
                     factDet.setCurrencyRate(pagoMedioPago.getMultiplyRate());

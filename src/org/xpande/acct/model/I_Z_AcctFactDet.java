@@ -286,6 +286,15 @@ public interface I_Z_AcctFactDet
 	/** Get Z_MedioPago ID	  */
 	public int getZ_MedioPago_ID();
 
+    /** Column name Z_MedioPagoItem_ID */
+    public static final String COLUMNNAME_Z_MedioPagoItem_ID = "Z_MedioPagoItem_ID";
+
+	/** Set Z_MedioPagoItem ID	  */
+	public void setZ_MedioPagoItem_ID(int Z_MedioPagoItem_ID);
+
+	/** Get Z_MedioPagoItem ID	  */
+	public int getZ_MedioPagoItem_ID();
+
     /** Column name Z_Pago_ID */
     public static final String COLUMNNAME_Z_Pago_ID = "Z_Pago_ID";
 

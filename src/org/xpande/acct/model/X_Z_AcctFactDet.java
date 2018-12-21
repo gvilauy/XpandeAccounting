@@ -33,7 +33,7 @@ public class X_Z_AcctFactDet extends PO implements I_Z_AcctFactDet, I_Persistent
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20181125L;
+	private static final long serialVersionUID = 20181218L;
 
     /** Standard Constructor */
     public X_Z_AcctFactDet (Properties ctx, int Z_AcctFactDet_ID, String trxName)
@@ -397,6 +397,26 @@ public class X_Z_AcctFactDet extends PO implements I_Z_AcctFactDet, I_Persistent
 	public int getZ_MedioPago_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Z_MedioPago_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Z_MedioPagoItem ID.
+		@param Z_MedioPagoItem_ID Z_MedioPagoItem ID	  */
+	public void setZ_MedioPagoItem_ID (int Z_MedioPagoItem_ID)
+	{
+		if (Z_MedioPagoItem_ID < 1) 
+			set_Value (COLUMNNAME_Z_MedioPagoItem_ID, null);
+		else 
+			set_Value (COLUMNNAME_Z_MedioPagoItem_ID, Integer.valueOf(Z_MedioPagoItem_ID));
+	}
+
+	/** Get Z_MedioPagoItem ID.
+		@return Z_MedioPagoItem ID	  */
+	public int getZ_MedioPagoItem_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_MedioPagoItem_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
