@@ -78,6 +78,7 @@ public class CopiarAsiento extends SvrProcess {
                 journalLineDest.setC_ValidCombination_ID(journalLineOrigen.getC_ValidCombination_ID());
                 journalLineDest.setM_Product_ID(journalLineOrigen.getM_Product_ID());
                 journalLineDest.setC_ConversionType_ID(114);
+                journalLineDest.setLine(journalLineOrigen.getLine());
 
                 if (journalLineDest.getC_Currency_ID() != this.journalDestino.getC_Currency_ID()){
                     BigDecimal currencyRate = CurrencyUtils.getCurrencyRateToAcctSchemaCurrency(getCtx(), this.journalDestino.getAD_Client_ID(), 0,
