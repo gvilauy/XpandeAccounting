@@ -181,7 +181,7 @@ public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
                 cadena += rutPartner + ";";
 
                 // Periodo del comprobante
-                MPeriod periodInv = MPeriod.get(getCtx(), dgiLin.getDateAcct(), 0);
+                MPeriod periodInv = MPeriod.get(getCtx(), dgiLin.getDateAcct(), this.getAD_Org_ID());
                 MYear yearInv = (MYear)periodInv.getC_Year();
                 String monthInv = org.apache.commons.lang.StringUtils.leftPad(String.valueOf(periodInv.getPeriodNo()), 2, "0");
                 String literalPeriodInv = String.valueOf(yearInv.getYearAsInt()) + monthInv;

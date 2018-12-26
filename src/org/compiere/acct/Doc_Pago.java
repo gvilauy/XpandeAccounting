@@ -305,6 +305,8 @@ public class Doc_Pago extends Doc {
                         p_Error = "No se indica Cuenta Bancaria para Retención : " + retencionSocio.getName();
                         log.log(Level.SEVERE, p_Error);
                         fact = null;
+                        facts.add(fact);
+                        return facts;
                     }
 
                     // DR - Lineas de Resguardos Recibidos - Monto de cada linea
