@@ -4,6 +4,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.*;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.xpande.comercial.model.MZComercialConfig;
 import org.xpande.core.utils.CurrencyUtils;
 
 import java.io.BufferedWriter;
@@ -113,7 +114,7 @@ public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
             if (this.getTipoFormularioDGI().equalsIgnoreCase(X_Z_GeneraFormDGI.TIPOFORMULARIODGI_FORMULARIO2181)){
 
                 // Genero archivo para Formulario 2/181
-                message = this.generateFile2181(dgiLinList, taxID, literalPeriodo);
+                message = this.generateFile2181(taxID, literalPeriodo);
 
             }
 
@@ -165,35 +166,48 @@ public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
      * @param literalPeriodo
      * @return
      */
-    private String generateFile2181(List<MZGeneraFormDGILin> dgiLinList, String taxID, String literalPeriodo) {
+    private String generateFile2181(String taxID, String literalPeriodo) {
 
         String message = null;
 
+        String sql = "";
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
         try{
 
-            for (MZGeneraFormDGILin dgiLin: dgiLinList){
+            sql = " select taxid, c_period_id, z_acctconfigrubrodgi_id, sum(amtdocumentmt) as amttotal " +
+                    "from z_generaformdgilin " +
+                    "where z_generaformdgi_id =" + this.get_ID() +
+                    "group by taxid, c_period_id, z_acctconfigrubrodgi_id " +
+                    "order by 1,2,3 ";
+
+            pstmt = DB.prepareStatement(sql, get_TrxName());
+            rs = pstmt.executeQuery();
+
+            while(rs.next()){
 
                 String cadena = "";
                 cadena += taxID + ";02181;" + literalPeriodo + ";";
 
                 // Rut del Socio de Negocio
-                String rutPartner = org.apache.commons.lang.StringUtils.leftPad(dgiLin.getTaxID(), 12, "0");
+                String rutPartner = org.apache.commons.lang.StringUtils.leftPad(rs.getString("taxid"), 12, "0");
                 cadena += rutPartner + ";";
 
                 // Periodo del comprobante
-                MPeriod periodInv = MPeriod.get(getCtx(), dgiLin.getDateAcct(), this.getAD_Org_ID());
+                MPeriod periodInv = MPeriod.get(getCtx(), rs.getInt("c_period_id"));
                 MYear yearInv = (MYear)periodInv.getC_Year();
                 String monthInv = org.apache.commons.lang.StringUtils.leftPad(String.valueOf(periodInv.getPeriodNo()), 2, "0");
                 String literalPeriodInv = String.valueOf(yearInv.getYearAsInt()) + monthInv;
                 cadena += literalPeriodInv + ";";
 
                 // Rubro DGI
-                MZAcctConfigRubroDGI rubroDGI = (MZAcctConfigRubroDGI) dgiLin.getZ_AcctConfigRubroDGI();
+                MZAcctConfigRubroDGI rubroDGI = new MZAcctConfigRubroDGI(getCtx(), rs.getInt("z_acctconfigrubrodgi_id"), null);
                 cadena += rubroDGI.getValue() + ";";
 
                 // Importe. Doce Digitos, completo con CEROS a la izquierda, sin decimales, y si es negativo el
                 // simbolo de menos (-) se pone siempre primero. (Ej: -00000000359)
-                BigDecimal monto = dgiLin.getAmtDocumentMT().setScale(2, RoundingMode.HALF_UP);
+                BigDecimal monto = rs.getBigDecimal("amttotal").setScale(2, RoundingMode.HALF_UP);
                 String montoStr ="";
                 if (monto.compareTo(Env.ZERO) >= 0){
                     montoStr = String.valueOf(monto);
@@ -211,16 +225,20 @@ public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
                 if (cadena != null){
                     this.bufferedWriterTXT.append(cadena + System.lineSeparator());
                 }
+
             }
 
         }
         catch (Exception e){
             throw new AdempiereException(e);
         }
+        finally {
+            DB.close(rs, pstmt);
+            rs = null; pstmt = null;
+        }
 
         return message;
     }
-
 
     /***
      * Crea el archivo de generación de Formulario de DGI.
@@ -296,12 +314,20 @@ public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
 
         try{
 
+            int docInternoID = 0;
+            MZComercialConfig comercialConfig = MZComercialConfig.getDefault(getCtx(), null);
+            if ((comercialConfig != null) && (comercialConfig.get_ID() > 0)){
+                docInternoID = comercialConfig.getDefaultDocInterno_ID();
+            }
+
             MAcctSchema as = (MAcctSchema) this.getC_AcctSchema();
 
             sql = " select inv.c_invoice_id, inv.c_doctypetarget_id, (coalesce(inv.documentserie,'') || inv.documentno) as documentnoref, " +
-                    " inv.dateinvoiced, inv.dateacct, inv.c_bpartner_id, inv.c_currency_id, invt.c_tax_id, invt.taxamt, inv.issotrx, " +
+                    " inv.dateinvoiced, inv.dateacct, inv.c_bpartner_id, inv.c_currency_id, doc.docbasetype, inv.issotrx, " +
+                    " invt.c_tax_id, case when invt.taxamt > 0 then invt.taxamt else invt.taxbaseamt end as taxamt , " +
                     " bp.c_taxgroup_id, bp.taxid, bp.value, bp.name, vc.account_id, vcVta.account_id as account_vta_id " +
                     " from c_invoice inv " +
+                    " inner join c_doctype doc on inv.c_doctypetarget_id = doc.c_doctype_id " +
                     " inner join c_invoicetax invt on inv.c_invoice_id = invt.c_invoice_id " +
                     " inner join c_bpartner bp on inv.c_bpartner_id = bp.c_bpartner_id " +
                     " inner join c_tax tax on invt.c_tax_id = tax.c_tax_id " +
@@ -310,8 +336,8 @@ public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
                     " left outer join c_validcombination vcVta on tacct.t_due_acct = vcVta.c_validcombination_id " +
                     " where inv.docstatus = 'CO' " +
                     " and inv.ad_org_id =" + this.getAD_Org_ID() +
+                    " and inv.c_doctypetarget_id != " + docInternoID +
                     " and inv.dateacct between ? and ? " +
-                    " and invt.taxamt != 0 " +
                     " order by invt.c_tax_id, inv.dateacct";
 
         	pstmt = DB.prepareStatement(sql, get_TrxName());
@@ -340,9 +366,16 @@ public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
                 }
                 else{
 
+                    BigDecimal taxAmt = rs.getBigDecimal("taxamt");
+                    if (rs.getString("DocBaseType").equalsIgnoreCase("APC")){
+                        taxAmt = taxAmt.negate();
+                    }
+
+
+
                     MZGeneraFormDGILin linea = new MZGeneraFormDGILin(getCtx(), 0, get_TrxName());
                     linea.setZ_GeneraFormDGI_ID(this.get_ID());
-                    linea.setAmtDocument(rs.getBigDecimal("taxamt"));
+                    linea.setAmtDocument(taxAmt);
                     linea.setAmtDocumentMT(linea.getAmtDocument());
                     linea.setC_BPartner_ID(rs.getInt("c_bpartner_id"));
                     linea.setC_Currency_ID(rs.getInt("c_currency_id"));
@@ -355,6 +388,17 @@ public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
                     linea.setDocumentNoRef(rs.getString("documentnoref"));
                     linea.setTaxID(nroIdentificacion);
                     linea.setC_TaxGroup_ID(rs.getInt("c_taxgroup_id"));
+
+                    // Periodo del comprobante
+                    MPeriod periodInv = MPeriod.get(getCtx(), linea.getDateAcct(), this.getAD_Org_ID());
+                    if ((periodInv == null) || (periodInv.get_ID() <= 0)){
+                        MZGeneraFormDGIError dgiError = new MZGeneraFormDGIError(getCtx(), 0, get_TrxName());
+                        dgiError.setZ_GeneraFormDGI_ID(this.get_ID());
+                        dgiError.setErrorMsg("Falta Período Contable para fecha : " + linea.getDateAcct().toString());
+                        dgiError.saveEx();
+                        hayError = true;
+                    }
+                    linea.setC_Period_ID(periodInv.get_ID());
 
                     int accountID = rs.getInt("account_id");
                     if (isSOTrx){
@@ -456,7 +500,6 @@ public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
                     " left outer join c_validcombination vcVta on tacct.t_due_acct = vcVta.c_validcombination_id " +
                     " where a.ad_org_id =" + this.getAD_Org_ID() +
                     " and a.datetrx between ? and ? " +
-                    " and a.taxamt != 0 " +
                     " order by a.c_taxcategory_id, a.datetrx ";
 
         	pstmt = DB.prepareStatement(sql, get_TrxName());
@@ -505,46 +548,60 @@ public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
                         linea.setTaxID(nroIdentificacion);
                         linea.setC_TaxGroup_ID(rs.getInt("c_taxgroup_id"));
 
-                        int accountID = rs.getInt("account_id");
-                        if (isSOTrx){
-                            accountID = rs.getInt("account_vta_id");
+                        // Periodo del comprobante
+                        MPeriod periodInv = MPeriod.get(getCtx(), linea.getDateAcct(), this.getAD_Org_ID());
+                        if ((periodInv == null) || (periodInv.get_ID() <= 0)){
+                            MZGeneraFormDGIError dgiError = new MZGeneraFormDGIError(getCtx(), 0, get_TrxName());
+                            dgiError.setZ_GeneraFormDGI_ID(this.get_ID());
+                            dgiError.setErrorMsg("Falta Período Contable para fecha : " + linea.getDateAcct().toString());
+                            dgiError.saveEx();
                         }
+                        else{
+                            linea.setC_Period_ID(periodInv.get_ID());
 
-                        if (accountID > 0){
-                            linea.setC_ElementValue_ID(accountID);
-                        }
+                            int accountID = rs.getInt("account_id");
+                            if (isSOTrx){
+                                accountID = rs.getInt("account_vta_id");
+                            }
 
-                        if (linea.getC_Currency_ID() != as.getC_Currency_ID()){
-                            BigDecimal rate = CurrencyUtils.getCurrencyRateToAcctSchemaCurrency(getCtx(), this.getAD_Client_ID(), 0, linea.getC_Currency_ID(),
-                                    as.getC_Currency_ID(), 114, rs.getTimestamp("dateacct"), null);
+                            if (accountID > 0){
+                                linea.setC_ElementValue_ID(accountID);
+                            }
 
-                            if (rate == null){
+                            if (linea.getC_Currency_ID() != as.getC_Currency_ID()){
+                                BigDecimal rate = CurrencyUtils.getCurrencyRateToAcctSchemaCurrency(getCtx(), this.getAD_Client_ID(), 0, linea.getC_Currency_ID(),
+                                        as.getC_Currency_ID(), 114, rs.getTimestamp("dateacct"), null);
+
+                                if (rate == null){
+
+                                    MZGeneraFormDGIError dgiError = new MZGeneraFormDGIError(getCtx(), 0, get_TrxName());
+                                    dgiError.setZ_GeneraFormDGI_ID(this.get_ID());
+                                    dgiError.setErrorMsg("Falta tasa de Cambio para moneda : " + linea.getC_Currency_ID() + ", fecha : " + linea.getDateAcct().toString());
+                                    dgiError.saveEx();
+                                }
+                                else{
+                                    linea.setCurrencyRate(rate);
+                                    linea.setAmtDocumentMT(linea.getAmtDocument().multiply(linea.getCurrencyRate()).setScale(2, RoundingMode.HALF_UP));
+                                }
+                            }
+
+                            MZAcctConfigRubroDGI configRubroDGI = MZAcctConfigRubroDGI.getByTax(getCtx(), linea.getC_Tax_ID(), isSOTrx, null);
+                            if ((configRubroDGI != null) && (configRubroDGI.get_ID() > 0)){
+                                linea.setZ_AcctConfigRubroDGI_ID(configRubroDGI.get_ID());
+                                linea.saveEx();
+                            }
+                            else{
+
+                                MTax tax = new MTax(getCtx(), rs.getInt("c_tax_id"), null);
 
                                 MZGeneraFormDGIError dgiError = new MZGeneraFormDGIError(getCtx(), 0, get_TrxName());
                                 dgiError.setZ_GeneraFormDGI_ID(this.get_ID());
-                                dgiError.setErrorMsg("Falta tasa de Cambio para moneda : " + linea.getC_Currency_ID() + ", fecha : " + linea.getDateAcct().toString());
+                                dgiError.setErrorMsg("Impuesto NO TIENE Rubro de DGI Asociado : " + tax.getName() + " - Documento : " + rs.getString("documentnoref"));
                                 dgiError.saveEx();
                             }
-                            else{
-                                linea.setCurrencyRate(rate);
-                                linea.setAmtDocumentMT(linea.getAmtDocument().multiply(linea.getCurrencyRate()).setScale(2, RoundingMode.HALF_UP));
-                            }
+
                         }
 
-                        MZAcctConfigRubroDGI configRubroDGI = MZAcctConfigRubroDGI.getByTax(getCtx(), linea.getC_Tax_ID(), isSOTrx, null);
-                        if ((configRubroDGI != null) && (configRubroDGI.get_ID() > 0)){
-                            linea.setZ_AcctConfigRubroDGI_ID(configRubroDGI.get_ID());
-                            linea.saveEx();
-                        }
-                        else{
-
-                            MTax tax = new MTax(getCtx(), rs.getInt("c_tax_id"), null);
-
-                            MZGeneraFormDGIError dgiError = new MZGeneraFormDGIError(getCtx(), 0, get_TrxName());
-                            dgiError.setZ_GeneraFormDGI_ID(this.get_ID());
-                            dgiError.setErrorMsg("Impuesto NO TIENE Rubro de DGI Asociado : " + tax.getName() + " - Documento : " + rs.getString("documentnoref"));
-                            dgiError.saveEx();
-                        }
                     }
                 }
 

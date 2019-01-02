@@ -33,7 +33,7 @@ public class X_Z_GeneraFormDGILin extends PO implements I_Z_GeneraFormDGILin, I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20181125L;
+	private static final long serialVersionUID = 20190102L;
 
     /** Standard Constructor */
     public X_Z_GeneraFormDGILin (Properties ctx, int Z_GeneraFormDGILin_ID, String trxName)
@@ -261,6 +261,34 @@ public class X_Z_GeneraFormDGILin extends PO implements I_Z_GeneraFormDGILin, I_
 	public int getC_Invoice_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Invoice_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	public I_C_Period getC_Period() throws RuntimeException
+    {
+		return (I_C_Period)MTable.get(getCtx(), I_C_Period.Table_Name)
+			.getPO(getC_Period_ID(), get_TrxName());	}
+
+	/** Set Period.
+		@param C_Period_ID 
+		Period of the Calendar
+	  */
+	public void setC_Period_ID (int C_Period_ID)
+	{
+		if (C_Period_ID < 1) 
+			set_Value (COLUMNNAME_C_Period_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Period_ID, Integer.valueOf(C_Period_ID));
+	}
+
+	/** Get Period.
+		@return Period of the Calendar
+	  */
+	public int getC_Period_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Period_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
