@@ -234,6 +234,21 @@ public interface I_Z_GeneraFormDGILin
 	  */
 	public BigDecimal getCurrencyRate();
 
+    /** Column name C_ValidCombination_ID */
+    public static final String COLUMNNAME_C_ValidCombination_ID = "C_ValidCombination_ID";
+
+	/** Set Combination.
+	  * Valid Account Combination
+	  */
+	public void setC_ValidCombination_ID(int C_ValidCombination_ID);
+
+	/** Get Combination.
+	  * Valid Account Combination
+	  */
+	public int getC_ValidCombination_ID();
+
+	public I_C_ValidCombination getC_ValidCombination() throws RuntimeException;
+
     /** Column name DateAcct */
     public static final String COLUMNNAME_DateAcct = "DateAcct";
 

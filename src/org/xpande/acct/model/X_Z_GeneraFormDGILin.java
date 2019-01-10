@@ -33,7 +33,7 @@ public class X_Z_GeneraFormDGILin extends PO implements I_Z_GeneraFormDGILin, I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20190102L;
+	private static final long serialVersionUID = 20190110L;
 
     /** Standard Constructor */
     public X_Z_GeneraFormDGILin (Properties ctx, int Z_GeneraFormDGILin_ID, String trxName)
@@ -47,7 +47,6 @@ public class X_Z_GeneraFormDGILin extends PO implements I_Z_GeneraFormDGILin, I_
 			setC_Currency_ID (0);
 			setC_DocType_ID (0);
 			setC_TaxGroup_ID (0);
-			setC_Tax_ID (0);
 			setDateAcct (new Timestamp( System.currentTimeMillis() ));
 			setDateDoc (new Timestamp( System.currentTimeMillis() ));
 			setDocumentNoRef (null);
@@ -365,6 +364,34 @@ public class X_Z_GeneraFormDGILin extends PO implements I_Z_GeneraFormDGILin, I_
 		if (bd == null)
 			 return Env.ZERO;
 		return bd;
+	}
+
+	public I_C_ValidCombination getC_ValidCombination() throws RuntimeException
+    {
+		return (I_C_ValidCombination)MTable.get(getCtx(), I_C_ValidCombination.Table_Name)
+			.getPO(getC_ValidCombination_ID(), get_TrxName());	}
+
+	/** Set Combination.
+		@param C_ValidCombination_ID 
+		Valid Account Combination
+	  */
+	public void setC_ValidCombination_ID (int C_ValidCombination_ID)
+	{
+		if (C_ValidCombination_ID < 1) 
+			set_Value (COLUMNNAME_C_ValidCombination_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_ValidCombination_ID, Integer.valueOf(C_ValidCombination_ID));
+	}
+
+	/** Get Combination.
+		@return Valid Account Combination
+	  */
+	public int getC_ValidCombination_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_ValidCombination_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Account Date.

@@ -455,6 +455,9 @@ public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
                 message = this.getPOSDocuments2181();
             }
 
+        	// Incluyo información desde asientos contables manuales
+            this.getAcctDocuments2181();
+
         }
         catch (Exception e){
             throw new AdempiereException(e);
@@ -637,9 +640,9 @@ public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
 
             MAcctSchema as = (MAcctSchema) this.getC_AcctSchema();
 
-            sql = " select g.gl_journal_id, g.c_doctype_id, g.documentno, " +
-                    " g.datedoc, gl.dateacct, gl.c_bpartner_id, gl.c_currency_id, doc.docbasetype, doc.issotrx, " +
-                    " gl.account_id, gl.amtsourcedr, gl.amtsourcecr, " +
+            sql = " select gl.account_id, g.dateacct, g.gl_journal_id, g.c_doctype_id, g.documentno, " +
+                    " g.datedoc, gl.c_bpartner_id, gl.c_currency_id, doc.docbasetype, doc.issotrx, " +
+                    " gl.c_validcombination_id, gl.amtsourcedr, gl.amtsourcecr, " +
                     " bp.c_taxgroup_id, bp.taxid, bp.value, bp.name " +
                     " from gl_journal g " +
                     " inner join gl_journalline gl on g.gl_journal_id = gl.gl_journal_id " +
@@ -647,10 +650,10 @@ public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
                     " inner join c_bpartner bp on gl.c_bpartner_id = bp.c_bpartner_id " +
                     " where g.docstatus = 'CO' " +
                     " and g.ad_org_id =" + this.getAD_Org_ID() +
-                    " and gl.dateacct between ? and ? " +
+                    " and g.dateacct between ? and ? " +
                     " and gl.account_id in (select account_id from c_validcombination where c_validcombination_id in (" +
                     " select distinct c_validcombination_id from z_rubrodgiacct)) " +
-                    " order by gl.account_id, gl.dateacct ";
+                    " order by 1,2";
 
             pstmt = DB.prepareStatement(sql, get_TrxName());
             pstmt.setTimestamp(1, this.getStartDate());
@@ -701,6 +704,7 @@ public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
                     linea.setDocumentNoRef(rs.getString("documentno"));
                     linea.setTaxID(nroIdentificacion);
                     linea.setC_TaxGroup_ID(rs.getInt("c_taxgroup_id"));
+                    linea.setC_ValidCombination_ID(rs.getInt("c_validcombination_id"));
 
                     // Periodo del comprobante
                     MPeriod periodInv = MPeriod.get(getCtx(), linea.getDateAcct(), this.getAD_Org_ID());
@@ -738,24 +742,21 @@ public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
 
                     if (!hayError){
 
-                        MZAcctConfigRubroDGI configRubroDGI = MZAcctConfigRubroDGI.getByTax(getCtx(), linea.getC_Tax_ID(), isSOTrx, null);
+                        MZAcctConfigRubroDGI configRubroDGI = MZAcctConfigRubroDGI.getByAcct(getCtx(), linea.getC_ElementValue_ID(), false, null);
                         if ((configRubroDGI != null) && (configRubroDGI.get_ID() > 0)){
                             linea.setZ_AcctConfigRubroDGI_ID(configRubroDGI.get_ID());
                             linea.saveEx();
                         }
                         else{
 
-                            /*
-                            MTax tax = new MTax(getCtx(), rs.getInt("c_tax_id"), null);
+                            MElementValue ev = new MElementValue(getCtx(), linea.getC_ElementValue_ID(), null);
 
                             MZGeneraFormDGIError dgiError = new MZGeneraFormDGIError(getCtx(), 0, get_TrxName());
                             dgiError.setZ_GeneraFormDGI_ID(this.get_ID());
-                            dgiError.setErrorMsg("Impuesto NO TIENE Rubro de DGI Asociado : " + tax.getName() + " - Documento : " + rs.getString("documentnoref"));
+                            dgiError.setErrorMsg("Cuenta Contable NO TIENE Rubro de DGI Asociado : " + ev.getName() + " - Documento : " + rs.getString("documentno"));
                             dgiError.saveEx();
-                            */
                         }
                     }
-
                 }
             }
 

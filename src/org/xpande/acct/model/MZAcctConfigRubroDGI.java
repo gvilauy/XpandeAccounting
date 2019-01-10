@@ -68,4 +68,51 @@ public class MZAcctConfigRubroDGI extends X_Z_AcctConfigRubroDGI {
         return model;
     }
 
+
+    /***
+     * Obtnego y retorno modelo segun cuenta contable y flag de venta recibidos.
+     * Xpande. Created by Gabriel Vila on 11/23/18.
+     * @param ctx
+     * @param cTaxID
+     * @param isSOTrx
+     * @param trxName
+     * @return
+     */
+    public static MZAcctConfigRubroDGI getByAcct(Properties ctx, int accountID, boolean isSOTrx, String trxName){
+
+        MZAcctConfigRubroDGI model = null;
+
+        String sql = "";
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try{
+            sql = " select a.z_acctconfigrubrodgi_id " +
+                    " from z_rubrodgiacct a " +
+                    " inner join z_acctconfigrubrodgi b on a.z_acctconfigrubrodgi_id = b.z_acctconfigrubrodgi_id " +
+                    " inner join c_validcombination vc on a.c_validcombination_id = vc.c_validcombination_id " +
+                    " where vc.account_id =" + accountID +
+                    " and a.isactive ='Y' " +
+                    " and b.isactive ='Y' " +
+                    " and b.issotrx =" + ((isSOTrx) ? "'Y'" : "'N'") +
+                    " order by a.created desc ";
+
+            pstmt = DB.prepareStatement(sql, trxName);
+            rs = pstmt.executeQuery();
+
+            if (rs.next()){
+                model = new MZAcctConfigRubroDGI(ctx, rs.getInt("z_acctconfigrubrodgi_id"), trxName);
+            }
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+        finally {
+            DB.close(rs, pstmt);
+            rs = null; pstmt = null;
+        }
+
+        return model;
+    }
+
 }
