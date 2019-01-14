@@ -458,6 +458,9 @@ public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
         	// Incluyo información desde asientos contables manuales
             this.getAcctDocuments2181();
 
+            // Incluyo información desde asientos contables manuales hechos en Invoice
+            this.getInvAcctDocuments2181();
+
         }
         catch (Exception e){
             throw new AdempiereException(e);
@@ -702,6 +705,157 @@ public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
                     linea.setDateAcct(rs.getTimestamp("dateacct"));
                     linea.setDateDoc(rs.getTimestamp("datedoc"));
                     linea.setDocumentNoRef(rs.getString("documentno"));
+                    linea.setTaxID(nroIdentificacion);
+                    linea.setC_TaxGroup_ID(rs.getInt("c_taxgroup_id"));
+                    linea.setC_ValidCombination_ID(rs.getInt("c_validcombination_id"));
+
+                    // Periodo del comprobante
+                    MPeriod periodInv = MPeriod.get(getCtx(), linea.getDateAcct(), this.getAD_Org_ID());
+                    if ((periodInv == null) || (periodInv.get_ID() <= 0)){
+                        MZGeneraFormDGIError dgiError = new MZGeneraFormDGIError(getCtx(), 0, get_TrxName());
+                        dgiError.setZ_GeneraFormDGI_ID(this.get_ID());
+                        dgiError.setErrorMsg("Falta Período Contable para fecha : " + linea.getDateAcct().toString());
+                        dgiError.saveEx();
+                        hayError = true;
+                    }
+                    linea.setC_Period_ID(periodInv.get_ID());
+
+                    int accountID = rs.getInt("account_id");
+                    if (accountID > 0){
+                        linea.setC_ElementValue_ID(accountID);
+                    }
+
+                    if (linea.getC_Currency_ID() != as.getC_Currency_ID()){
+                        BigDecimal rate = CurrencyUtils.getCurrencyRateToAcctSchemaCurrency(getCtx(), this.getAD_Client_ID(), 0, linea.getC_Currency_ID(),
+                                as.getC_Currency_ID(), 114, rs.getTimestamp("dateacct"), null);
+
+                        if (rate == null){
+
+                            MZGeneraFormDGIError dgiError = new MZGeneraFormDGIError(getCtx(), 0, get_TrxName());
+                            dgiError.setZ_GeneraFormDGI_ID(this.get_ID());
+                            dgiError.setErrorMsg("Falta tasa de Cambio para moneda : " + linea.getC_Currency_ID() + ", fecha : " + linea.getDateAcct().toString());
+                            dgiError.saveEx();
+                            hayError = true;
+                        }
+                        else{
+                            linea.setCurrencyRate(rate);
+                            linea.setAmtDocumentMT(linea.getAmtDocument().multiply(linea.getCurrencyRate()).setScale(2, RoundingMode.HALF_UP));
+                        }
+                    }
+
+                    if (!hayError){
+
+                        MZAcctConfigRubroDGI configRubroDGI = MZAcctConfigRubroDGI.getByAcct(getCtx(), linea.getC_ElementValue_ID(), false, null);
+                        if ((configRubroDGI != null) && (configRubroDGI.get_ID() > 0)){
+                            linea.setZ_AcctConfigRubroDGI_ID(configRubroDGI.get_ID());
+                            linea.saveEx();
+                        }
+                        else{
+
+                            MElementValue ev = new MElementValue(getCtx(), linea.getC_ElementValue_ID(), null);
+
+                            MZGeneraFormDGIError dgiError = new MZGeneraFormDGIError(getCtx(), 0, get_TrxName());
+                            dgiError.setZ_GeneraFormDGI_ID(this.get_ID());
+                            dgiError.setErrorMsg("Cuenta Contable NO TIENE Rubro de DGI Asociado : " + ev.getName() + " - Documento : " + rs.getString("documentno"));
+                            dgiError.saveEx();
+                        }
+                    }
+                }
+            }
+
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+        finally {
+            DB.close(rs, pstmt);
+            rs = null; pstmt = null;
+        }
+
+        return message;
+    }
+
+
+    /***
+     * Obtiene y carga documentos de asientos manuales en Invoice para la generación del Formuario de DGI 2/181.
+     * Xpande. Created by Gabriel Vila on 11/22/18.
+     * @return
+     */
+    private String getInvAcctDocuments2181(){
+
+        String message = null;
+
+        String sql = "";
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try{
+
+            MAcctSchema as = (MAcctSchema) this.getC_AcctSchema();
+
+            sql = " select b.account_id, a.dateacct, a.c_invoice_id, a.c_doctypetarget_id, " +
+                    " (coalesce(a.documentserie, '') || a.documentno) as documentnoref, " +
+                    " a.dateinvoiced, a.c_bpartner_id, a.c_currency_id, doc.docbasetype, a.issotrx, " +
+                    " b.c_validcombination_id, b.amtsourcedr, b.amtsourcecr, " +
+                    " bp.c_taxgroup_id, bp.taxid, bp.value, bp.name " +
+                    " from c_invoice a " +
+                    " inner join Z_InvoiceAstoManual b on a.c_invoice_id = b.c_invoice_id " +
+                    " inner join c_doctype doc on a.c_doctypetarget_id = doc.c_doctype_id " +
+                    " inner join c_bpartner bp on a.c_bpartner_id = bp.c_bpartner_id " +
+                    " where a.docstatus = 'CO' " +
+                    " and a.ad_org_id =" + this.getAD_Org_ID() +
+                    " and a.dateacct between ? and ? " +
+                    " and b.account_id in (select account_id from c_validcombination where c_validcombination_id in (" +
+                    " select distinct c_validcombination_id from z_rubrodgiacct)) " +
+                    " order by 1,2";
+
+            pstmt = DB.prepareStatement(sql, get_TrxName());
+            pstmt.setTimestamp(1, this.getStartDate());
+            pstmt.setTimestamp(2, this.getEndDate());
+
+            rs = pstmt.executeQuery();
+
+            while(rs.next()){
+
+                boolean hayError = false;
+
+                boolean isSOTrx = (rs.getString("issotrx").equalsIgnoreCase("Y")) ? true : false;
+
+                String nroIdentificacion = rs.getString("taxid");
+
+                if ((nroIdentificacion == null) || (nroIdentificacion.trim().equalsIgnoreCase(""))){
+
+                    MZGeneraFormDGIError dgiError = new MZGeneraFormDGIError(getCtx(), 0, get_TrxName());
+                    dgiError.setZ_GeneraFormDGI_ID(this.get_ID());
+                    dgiError.setErrorMsg("Socio de Negocio NO tiene NUMERO DE IDENTIFICACIÓN : " + rs.getString("value") +
+                            " - " + rs.getString("name"));
+                    dgiError.saveEx();
+
+                    hayError = true;
+                }
+                else{
+
+                    BigDecimal taxAmt = rs.getBigDecimal("amtsourcedr");
+                    if ((taxAmt == null) || (taxAmt.compareTo(Env.ZERO) == 0)){
+                        taxAmt = rs.getBigDecimal("amtsourcecr");
+                    }
+                    if (taxAmt == null) taxAmt = Env.ZERO;
+
+                    if (taxAmt.compareTo(Env.ZERO) == 0) continue;
+
+                    MZGeneraFormDGILin linea = new MZGeneraFormDGILin(getCtx(), 0, get_TrxName());
+                    linea.setZ_GeneraFormDGI_ID(this.get_ID());
+                    linea.setAmtDocument(taxAmt);
+                    linea.setAmtDocumentMT(linea.getAmtDocument());
+                    linea.setC_BPartner_ID(rs.getInt("c_bpartner_id"));
+                    linea.setC_Currency_ID(rs.getInt("c_currency_id"));
+                    linea.setC_DocType_ID(rs.getInt("c_doctypetarget_id"));
+                    linea.setC_Invoice_ID(rs.getInt("c_invoice_id"));
+                    //linea.setC_Tax_ID(rs.getInt("c_tax_id"));
+                    linea.setCurrencyRate(Env.ONE);
+                    linea.setDateAcct(rs.getTimestamp("dateacct"));
+                    linea.setDateDoc(rs.getTimestamp("dateinvoiced"));
+                    linea.setDocumentNoRef(rs.getString("documentnoref"));
                     linea.setTaxID(nroIdentificacion);
                     linea.setC_TaxGroup_ID(rs.getInt("c_taxgroup_id"));
                     linea.setC_ValidCombination_ID(rs.getInt("c_validcombination_id"));
