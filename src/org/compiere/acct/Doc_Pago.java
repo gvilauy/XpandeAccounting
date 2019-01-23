@@ -180,6 +180,10 @@ public class Doc_Pago extends Doc {
                 if (pagoMedioPago.getC_BankAccount_ID() > 0){
                     accountID = AccountUtils.getBankValidCombinationID(getCtx(), Doc.ACCTTYPE_BankInTransit, pagoMedioPago.getC_BankAccount_ID(), as, null);
                 }
+                else if (pagoMedioPago.getC_CashBook_ID() > 0){
+                    this.setC_CashBook_ID(pagoMedioPago.getC_CashBook_ID());
+                    accountID = getValidCombination_ID(Doc.ACCTTYPE_CashExpense, as);
+                }
                 else{
                     if (pagoMedioPago.getZ_MedioPago_ID() > 0){
                         accountID = AccountUtils.getMedioPagoValidCombinationID(getCtx(), Doc.ACCTYPE_MP_Entregados, pagoMedioPago.getZ_MedioPago_ID(), pagoMedioPago.getC_Currency_ID(), as, null);
