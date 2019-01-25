@@ -141,6 +141,7 @@ public class Doc_Pago extends Doc {
                 BigDecimal amt = p_lines[i].getAmtSource();
 
                 MZPagoMedioPago pagoMedioPago = new MZPagoMedioPago(getCtx(), p_lines[i].get_ID(), this.getTrxName());
+                MZMedioPagoItem medioPagoItem = (MZMedioPagoItem) pagoMedioPago.getZ_MedioPagoItem();
 
                 // DR - Lineas de Medios de Pago - Monto de cada linea - Cuenta del medio de pago a emitir
                 int mpEmitidos_ID = getValidCombination_ID (Doc.ACCTYPE_MP_Emitidos, as);
@@ -164,11 +165,17 @@ public class Doc_Pago extends Doc {
                         }
                     }
 
+                    factDet.setNroMedioPago(pagoMedioPago.getDocumentNoRef());
+
                     if (pagoMedioPago.getZ_MedioPagoItem_ID() > 0){
                         factDet.setZ_MedioPagoItem_ID(pagoMedioPago.getZ_MedioPagoItem_ID());
+                        if (medioPagoItem != null){
+                            if (medioPagoItem.getNroMedioPago() != null){
+                                factDet.setNroMedioPago(medioPagoItem.getNroMedioPago());
+                            }
+                        }
                     }
 
-                    factDet.setNroMedioPago(pagoMedioPago.getDocumentNoRef());
                     factDet.setEstadoMedioPago(X_Z_AcctFactDet.ESTADOMEDIOPAGO_ENTREGADO);
                     factDet.setCurrencyRate(pagoMedioPago.getMultiplyRate());
                     factDet.setDueDate(pagoMedioPago.getDueDate());
@@ -216,11 +223,17 @@ public class Doc_Pago extends Doc {
                             }
                         }
 
+                        factDet.setNroMedioPago(pagoMedioPago.getDocumentNoRef());
+
                         if (pagoMedioPago.getZ_MedioPagoItem_ID() > 0){
                             factDet.setZ_MedioPagoItem_ID(pagoMedioPago.getZ_MedioPagoItem_ID());
+                            if (medioPagoItem != null){
+                                if (medioPagoItem.getNroMedioPago() != null){
+                                    factDet.setNroMedioPago(medioPagoItem.getNroMedioPago());
+                                }
+                            }
                         }
 
-                        factDet.setNroMedioPago(pagoMedioPago.getDocumentNoRef());
                         factDet.setEstadoMedioPago(X_Z_AcctFactDet.ESTADOMEDIOPAGO_ENTREGADO);
                         factDet.setCurrencyRate(pagoMedioPago.getMultiplyRate());
                         factDet.setDueDate(pagoMedioPago.getDueDate());
@@ -244,6 +257,7 @@ public class Doc_Pago extends Doc {
                 BigDecimal amt = p_lines[i].getAmtSource();
 
                 MZPagoMedioPago pagoMedioPago = new MZPagoMedioPago(getCtx(), p_lines[i].get_ID(), this.getTrxName());
+                MZMedioPagoItem medioPagoItem = (MZMedioPagoItem) pagoMedioPago.getZ_MedioPagoItem();
 
                 int accountID = -1;
                 if (pagoMedioPago.getC_BankAccount_ID() > 0){
@@ -281,11 +295,17 @@ public class Doc_Pago extends Doc {
                         }
                     }
 
+                    factDet.setNroMedioPago(pagoMedioPago.getDocumentNoRef());
+
                     if (pagoMedioPago.getZ_MedioPagoItem_ID() > 0){
                         factDet.setZ_MedioPagoItem_ID(pagoMedioPago.getZ_MedioPagoItem_ID());
+                        if (medioPagoItem != null){
+                            if (medioPagoItem.getNroMedioPago() != null){
+                                factDet.setNroMedioPago(medioPagoItem.getNroMedioPago());
+                            }
+                        }
                     }
 
-                    factDet.setNroMedioPago(pagoMedioPago.getDocumentNoRef());
                     factDet.setEstadoMedioPago(X_Z_AcctFactDet.ESTADOMEDIOPAGO_ENTREGADO);
                     factDet.setCurrencyRate(pagoMedioPago.getMultiplyRate());
                     factDet.setDueDate(pagoMedioPago.getDueDate());
