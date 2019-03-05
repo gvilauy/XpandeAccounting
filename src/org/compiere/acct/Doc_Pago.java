@@ -171,7 +171,12 @@ public class Doc_Pago extends Doc {
                         factDet.setZ_MedioPagoItem_ID(pagoMedioPago.getZ_MedioPagoItem_ID());
                         if (medioPagoItem != null){
                             if (medioPagoItem.getNroMedioPago() != null){
-                                factDet.setNroMedioPago(medioPagoItem.getNroMedioPago());
+                                if (medioPagoItem.getDocumentSerie() != null){
+                                    factDet.setNroMedioPago(medioPagoItem.getDocumentSerie().trim() + medioPagoItem.getNroMedioPago());
+                                }
+                                else{
+                                    factDet.setNroMedioPago(medioPagoItem.getNroMedioPago());
+                                }
                             }
                         }
                     }
