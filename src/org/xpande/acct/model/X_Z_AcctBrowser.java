@@ -31,7 +31,7 @@ public class X_Z_AcctBrowser extends PO implements I_Z_AcctBrowser, I_Persistent
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20180720L;
+	private static final long serialVersionUID = 20190312L;
 
     /** Standard Constructor */
     public X_Z_AcctBrowser (Properties ctx, int Z_AcctBrowser_ID, String trxName)
@@ -65,6 +65,8 @@ public class X_Z_AcctBrowser extends PO implements I_Z_AcctBrowser, I_Persistent
 // N
 			setTipoAcctBrowser (null);
 // MAYOR
+			setTipoBalanceAcct (null);
+// COMPLETO
 			setTipoFiltroMonAcct (null);
 // UNA_MONEDA
 			setZ_AcctBrowser_ID (0);
@@ -490,6 +492,40 @@ public class X_Z_AcctBrowser extends PO implements I_Z_AcctBrowser, I_Persistent
 		return (String)get_Value(COLUMNNAME_ProcessButton);
 	}
 
+	/** Set ProcessButton2.
+		@param ProcessButton2 
+		Botón de Proceso
+	  */
+	public void setProcessButton2 (String ProcessButton2)
+	{
+		set_Value (COLUMNNAME_ProcessButton2, ProcessButton2);
+	}
+
+	/** Get ProcessButton2.
+		@return Botón de Proceso
+	  */
+	public String getProcessButton2 () 
+	{
+		return (String)get_Value(COLUMNNAME_ProcessButton2);
+	}
+
+	/** Set ProcessButton3.
+		@param ProcessButton3 
+		Botón para proceso
+	  */
+	public void setProcessButton3 (String ProcessButton3)
+	{
+		set_Value (COLUMNNAME_ProcessButton3, ProcessButton3);
+	}
+
+	/** Get ProcessButton3.
+		@return Botón para proceso
+	  */
+	public String getProcessButton3 () 
+	{
+		return (String)get_Value(COLUMNNAME_ProcessButton3);
+	}
+
 	/** Set Start Date.
 		@param StartDate 
 		First effective day (inclusive)
@@ -541,10 +577,12 @@ public class X_Z_AcctBrowser extends PO implements I_Z_AcctBrowser, I_Persistent
 		return (String)get_Value(COLUMNNAME_TextoFiltro2);
 	}
 
-	/** TipoAcctBrowser AD_Reference_ID=1000036 */
-	public static final int TIPOACCTBROWSER_AD_Reference_ID=1000036;
+	/** TipoAcctBrowser AD_Reference_ID=1000039 */
+	public static final int TIPOACCTBROWSER_AD_Reference_ID=1000039;
 	/** MAYOR CONTABLE = MAYOR */
 	public static final String TIPOACCTBROWSER_MAYORCONTABLE = "MAYOR";
+	/** BALANCE CONTABLE = BALANCE */
+	public static final String TIPOACCTBROWSER_BALANCECONTABLE = "BALANCE";
 	/** Set TipoAcctBrowser.
 		@param TipoAcctBrowser 
 		Tipo de consulta en el Navegador Contable
@@ -563,12 +601,34 @@ public class X_Z_AcctBrowser extends PO implements I_Z_AcctBrowser, I_Persistent
 		return (String)get_Value(COLUMNNAME_TipoAcctBrowser);
 	}
 
-	/** TipoFiltroMonAcct AD_Reference_ID=1000038 */
-	public static final int TIPOFILTROMONACCT_AD_Reference_ID=1000038;
-	/** UNA MONEDA = UNA_MONEDA */
-	public static final String TIPOFILTROMONACCT_UNAMONEDA = "UNA_MONEDA";
+	/** TipoBalanceAcct AD_Reference_ID=1000050 */
+	public static final int TIPOBALANCEACCT_AD_Reference_ID=1000050;
+	/** BALANCE COMPLETO = COMPLETO */
+	public static final String TIPOBALANCEACCT_BALANCECOMPLETO = "COMPLETO";
+	/** Set TipoBalanceAcct.
+		@param TipoBalanceAcct 
+		Tipo de Balance Contable
+	  */
+	public void setTipoBalanceAcct (String TipoBalanceAcct)
+	{
+
+		set_Value (COLUMNNAME_TipoBalanceAcct, TipoBalanceAcct);
+	}
+
+	/** Get TipoBalanceAcct.
+		@return Tipo de Balance Contable
+	  */
+	public String getTipoBalanceAcct () 
+	{
+		return (String)get_Value(COLUMNNAME_TipoBalanceAcct);
+	}
+
+	/** TipoFiltroMonAcct AD_Reference_ID=1000040 */
+	public static final int TIPOFILTROMONACCT_AD_Reference_ID=1000040;
 	/** DOS MONEDAS = DOS_MONEDAS */
 	public static final String TIPOFILTROMONACCT_DOSMONEDAS = "DOS_MONEDAS";
+	/** UNA MONEDA = UNA_MONEDA */
+	public static final String TIPOFILTROMONACCT_UNAMONEDA = "UNA_MONEDA";
 	/** Set TipoFiltroMonAcct.
 		@param TipoFiltroMonAcct 
 		Tipo filtro de moneda para reportes contables
@@ -587,8 +647,8 @@ public class X_Z_AcctBrowser extends PO implements I_Z_AcctBrowser, I_Persistent
 		return (String)get_Value(COLUMNNAME_TipoFiltroMonAcct);
 	}
 
-	/** TipoMayorAcct AD_Reference_ID=1000037 */
-	public static final int TIPOMAYORACCT_AD_Reference_ID=1000037;
+	/** TipoMayorAcct AD_Reference_ID=1000041 */
+	public static final int TIPOMAYORACCT_AD_Reference_ID=1000041;
 	/** MAYOR ANALITICO = ANALITICO */
 	public static final String TIPOMAYORACCT_MAYORANALITICO = "ANALITICO";
 	/** Set TipoMayorAcct.
@@ -607,6 +667,23 @@ public class X_Z_AcctBrowser extends PO implements I_Z_AcctBrowser, I_Persistent
 	public String getTipoMayorAcct () 
 	{
 		return (String)get_Value(COLUMNNAME_TipoMayorAcct);
+	}
+
+	/** Set Immutable Universally Unique Identifier.
+		@param UUID 
+		Immutable Universally Unique Identifier
+	  */
+	public void setUUID (String UUID)
+	{
+		set_Value (COLUMNNAME_UUID, UUID);
+	}
+
+	/** Get Immutable Universally Unique Identifier.
+		@return Immutable Universally Unique Identifier
+	  */
+	public String getUUID () 
+	{
+		return (String)get_Value(COLUMNNAME_UUID);
 	}
 
 	/** Set Z_AcctBrowser ID.

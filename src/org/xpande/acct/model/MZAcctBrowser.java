@@ -4,6 +4,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MClient;
 import org.compiere.model.MSequence;
+import org.compiere.model.SalesMgmtValidator;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.xpande.core.utils.CurrencyUtils;
@@ -42,6 +43,9 @@ public class MZAcctBrowser extends X_Z_AcctBrowser {
 
             if (this.getTipoAcctBrowser().equalsIgnoreCase(X_Z_AcctBrowser.TIPOACCTBROWSER_MAYORCONTABLE)){
                 message = this.executeMayor();
+            }
+            else if (this.getTipoAcctBrowser().equalsIgnoreCase(X_Z_AcctBrowser.TIPOACCTBROWSER_BALANCECONTABLE)){
+                message = this.executeBalance();
             }
 
         }
@@ -84,6 +88,37 @@ public class MZAcctBrowser extends X_Z_AcctBrowser {
 
 
     /***
+     * Ejecuta consulta de Balance Contable.
+     * Xpande. Created by Gabriel Vila on 3/12/19.
+     * @return
+     */
+    private String executeBalance(){
+
+        String message = null;
+
+        try{
+
+            this.deleteDataBalance();
+
+            this.setCuentasFiltro();
+
+            this.getDataBalance();
+
+            this.updateDataBalance();
+
+            //this.getDataSumBalance();
+            //this.updateDataSumBalance();
+
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+
+        return message;
+    }
+
+
+    /***
      * Elimina datos anteriores de la tabla para consulta de Mayor Contable.
      * Xpande. Created by Gabriel Vila on 7/20/18.
      */
@@ -94,6 +129,26 @@ public class MZAcctBrowser extends X_Z_AcctBrowser {
             DB.executeUpdateEx(action, get_TrxName());
 
             action = " delete from Z_AcctBrowSumMayor where z_acctbrowser_id =" + this.get_ID();
+            DB.executeUpdateEx(action, get_TrxName());
+
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+    }
+
+
+    /***
+     * Elimina datos anteriores de la tabla para consulta de Balance.
+     * Xpande. Created by Gabriel Vila on 3/12/19.
+     */
+    private void deleteDataBalance() {
+
+        try{
+            String action = " delete from Z_AcctBrowserBal where z_acctbrowser_id =" + this.get_ID();
+            DB.executeUpdateEx(action, get_TrxName());
+
+            action = " delete from Z_AcctBrowSumBal where z_acctbrowser_id =" + this.get_ID();
             DB.executeUpdateEx(action, get_TrxName());
 
         }
@@ -176,6 +231,42 @@ public class MZAcctBrowser extends X_Z_AcctBrowser {
 
 
     /***
+     * Obtiene y carga información para la consulta de Balance.
+     * Xpande. Created by Gabriel Vila on 3/12/19.
+     */
+    private void getDataBalance() {
+
+        String action = "", sql = "";
+
+        try{
+
+
+            // Secuencia de tabla de detalle de consulta de balance contable
+            MSequence sequence = MSequence.get(getCtx(), I_Z_AcctBrowserBal.Table_Name, get_TrxName());
+
+            // Inserto en table de detalle de consulta de balance directamente leyendo desde Fact_acct
+            action = " insert into z_acctbrowserbal (z_acctbrowserbal_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, " +
+                    " z_acctbrowser_id, c_elementvalue_id, c_currency_id, codigocuenta, nombrecuenta, issummary, parent_id, node_id, seqno, nrofila, " +
+                    " amttotal1, amttotal2) ";
+
+            // Falta : currencyrate, duedate, estadomediopago, nromediopago, z_mediopago_id, z_retencionsocio_id
+            sql = " select nextid(" + sequence.get_ID() + ",'N'), f.ad_client_id, " + this.getAD_Org_ID() + ", 'Y' as isactive, now() as created, " +
+                    this.getCreatedBy() + ", now() as updated, " + this.getUpdatedBy() + "," +
+                    this.get_ID() + ", f.c_elementvalue_id, " + this.getC_Currency_ID() + ", f.value, f.name, f.issummary, " +
+                    " f.parent_id, f.node_id, f.seqno, f.nrofila, 0, 0 " +
+                    " from ZV_ElementValueTree f " +
+                    " where f.ad_client_id =" + this.getAD_Client_ID() +
+                    " and f.c_acctschema_id =" + this.getC_AcctSchema_ID() + //whereClause +
+                    " order by f.nrofila ";
+            DB.executeUpdateEx(action + sql, get_TrxName());
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+    }
+
+
+    /***
      * Actualiza información en tablas de consulta del Mayor Contable
      * Xpande. Created by Gabriel Vila on 7/20/18.
      */
@@ -249,6 +340,223 @@ public class MZAcctBrowser extends X_Z_AcctBrowser {
         }
         catch (Exception e){
             throw new AdempiereException(e);
+        }
+    }
+
+    /***
+     * Actualiza información en tablas de consulta de Balance Contable
+     * Xpande. Created by Gabriel Vila on 3/12/19.
+     */
+    private void updateDataBalance(){
+
+        try{
+
+            // Actualizo saldos de cuentas no totalizadoras
+            this.updateDataBalanceNotSummary();
+
+            // Actualizo saldos de cuentas totalizadoras
+            this.updateDataBalanceSummary();
+
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+    }
+
+
+    /***
+     * Actualiza saldos de cuentas no totalizadoras en consulta de Balance Contable.
+     * Xpande. Created by Gabriel Vila on 3/12/19.
+     */
+    private void updateDataBalanceNotSummary() {
+
+        String sql = "", action = "";
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try{
+
+            // Armo condiciones según filtros
+            String whereClause = " and f.ad_client_id =" + this.getAD_Client_ID() +
+                                 " and f.ad_org_id =" + this.getAD_Org_ID();
+
+            if (this.getStartDate() != null){
+                whereClause += " and f.dateacct >='" + this.getStartDate() + "'" ;
+            }
+            if (this.getEndDate() != null){
+                whereClause += " and f.dateacct <='" + this.getEndDate() + "'" ;
+            }
+
+            // Si tengo cuentas contables para filtrar, agrego condición
+            sql = " select count(*) from Z_AcctBrowFiltroCta where Z_AcctBrowser_ID =" + this.get_ID();
+            int contadorCta = DB.getSQLValueEx(get_TrxName(), sql);
+            if (contadorCta > 0) {
+                whereClause += " and f.account_id in (select distinct(c_elementvalue_id) " +
+                        " from Z_AcctBrowFiltroCta where Z_AcctBrowser_ID =" + this.get_ID() + ") ";
+            }
+
+            // Si tengo socios de negocio para filtrar, agrego condición
+            sql = " select count(*) from Z_AcctBrowFiltroBP where Z_AcctBrowser_ID =" + this.get_ID();
+            int contadorBP = DB.getSQLValueEx(get_TrxName(), sql);
+            if (contadorBP > 0) {
+                whereClause += " and f.c_bpartner_id in (select distinct(c_bpartner_id) " +
+                        " from Z_AcctBrowFiltroBP where Z_AcctBrowser_ID =" + this.get_ID() + ") ";
+            }
+
+            sql = " select f.account_id, sum(amtacctdr - amtacctcr) as saldo " +
+                    " from fact_acct f " +
+                    " inner join z_acctbrowserbal b on f.account_id = b.c_elementvalue_id " +
+                    " where b.z_acctbrowser_id =" + this.get_ID() + whereClause +
+                    " and b.issummary ='N' " +
+                    " group by f.account_id ";
+
+        	pstmt = DB.prepareStatement(sql, get_TrxName());
+        	rs = pstmt.executeQuery();
+
+        	while(rs.next()){
+
+                BigDecimal saldo = rs.getBigDecimal("saldo");
+                if (saldo == null){
+                    saldo = Env.ZERO;
+                }
+
+                // Actualizo saldo de cuenta
+                action  = " update z_acctbrowserbal set amttotal1 =" + saldo +
+                        " where z_acctbrowser_id =" + this.get_ID() +
+                        " and c_elementvalue_id =" + rs.getInt("account_id");
+                DB.executeUpdateEx(action, get_TrxName());
+        	}
+
+        	// Finalmente elimino cuentas sin saldo si asi lo desea el usuario
+            if (!this.isIncCtaSaldoSinMov()){
+                action = " delete from z_acctbrowserbal " +
+                        " where amttotal1 = 0 " +
+                        " and z_acctbrowser_id =" + this.get_ID() +
+                        " and issummary ='N' ";
+                DB.executeUpdateEx(action, get_TrxName());
+            }
+
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+        finally {
+            DB.close(rs, pstmt);
+        	rs = null; pstmt = null;
+        }
+    }
+
+
+    /***
+     * Actualiza saldos de cuentas totalizadoras en consulta de Balance Contable.
+     * Xpande. Created by Gabriel Vila on 3/12/19.
+     */
+    private void updateDataBalanceSummary() {
+
+        String sql = "", action = "";
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try{
+
+            sql = " select c_elementvalue_id " +
+                    " from z_acctbrowserbal " +
+                    " where z_acctbrowser_id =" + this.get_ID() +
+                    " and parent_id = 0" +
+                    " order by nrofila ";
+
+            pstmt = DB.prepareStatement(sql, get_TrxName());
+            rs = pstmt.executeQuery();
+
+            while(rs.next()){
+
+                this.updateDataBalRecursive(rs.getInt("c_elementvalue_id"), 1);
+            }
+
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+        finally {
+            DB.close(rs, pstmt);
+            rs = null; pstmt = null;
+        }
+    }
+
+    /***
+     * Actualiza cuentas totalizadoras de manera recursiva.
+     * Xpande. Created by Gabriel Vila on 3/12/19.
+     * @param cElementValueID
+     * @param nivel
+     */
+    private void updateDataBalRecursive(int cElementValueID, int nivel){
+
+        String sql = "", action = "";
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try{
+
+            // Actualizo primero nivel de la cuenta totalizadora recibida
+            action = " update z_acctbrowserbal " +
+                    " set nivelcuenta =" + nivel +
+                    " where z_acctbrowser_id =" + this.get_ID() +
+                    " and c_elementvalue_id =" + cElementValueID;
+            DB.executeUpdateEx(action, get_TrxName());
+
+            // Subo nivel
+            nivel++;
+
+            // Obtengo cuentas hijas de la cuenta totalizadora recibida.
+            // Dentro de sus hijas pueden haber cuentas a su vez totalizadoras, por eso la recursividad.
+            sql = " select c_elementvalue_id, IsSummary " +
+                    " from z_acctbrowserbal " +
+                    " where z_acctbrowser_id =" + this.get_ID() +
+                    " and parent_id =" + cElementValueID +
+                    " order by nrofila ";
+
+        	pstmt = DB.prepareStatement(sql, get_TrxName());
+        	rs = pstmt.executeQuery();
+
+        	while(rs.next()){
+
+        	    // Si la cuenta es totalizadora, sigo la recursividad
+                if (rs.getString("IsSummary").equalsIgnoreCase("Y")){
+
+                    this.updateDataBalRecursive(rs.getInt("c_elementvalue_id"), nivel);
+                }
+                else{
+                    // Cuenta no totalizadora, le actualizo simplemente el nivel
+                    // Actualizo primero nivel de la cuenta totalizadora recibida
+                    action = " update z_acctbrowserbal " +
+                            " set nivelcuenta =" + nivel +
+                            " where z_acctbrowser_id =" + this.get_ID() +
+                            " and c_elementvalue_id =" + rs.getInt("c_elementvalue_id");
+                    DB.executeUpdateEx(action, get_TrxName());
+                }
+        	}
+
+        	// Actualizo saldos de cuenta totalizadora recibida
+            sql = " select sum(amttotal1) as saldo " +
+                    " from z_acctbrowserbal " +
+                    " where z_acctbrowser_id =" + this.get_ID() +
+                    " and parent_id =" + cElementValueID;
+            BigDecimal saldo1 = DB.getSQLValueBDEx(get_TrxName(), sql);
+            if (saldo1 == null) saldo1 = Env.ZERO;
+
+            action = " update z_acctbrowserbal " +
+                    " set amttotal1 =" + saldo1 +
+                    " where z_acctbrowser_id =" + this.get_ID() +
+                    " and c_elementvalue_id =" + cElementValueID;
+            DB.executeUpdateEx(action, get_TrxName());
+
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+        finally {
+            DB.close(rs, pstmt);
+        	rs = null; pstmt = null;
         }
     }
 

@@ -31,7 +31,7 @@ public interface I_Z_AcctBrowser
     /** TableName=Z_AcctBrowser */
     public static final String Table_Name = "Z_AcctBrowser";
 
-    /** AD_Table_ID=1000220 */
+    /** AD_Table_ID=1000221 */
     public static final int Table_ID = MTable.getTable_ID(Table_Name);
 
     KeyNamePair Model = new KeyNamePair(Table_ID, Table_Name);
@@ -313,6 +313,32 @@ public interface I_Z_AcctBrowser
 	/** Get ProcessButton	  */
 	public String getProcessButton();
 
+    /** Column name ProcessButton2 */
+    public static final String COLUMNNAME_ProcessButton2 = "ProcessButton2";
+
+	/** Set ProcessButton2.
+	  * Botón de Proceso
+	  */
+	public void setProcessButton2(String ProcessButton2);
+
+	/** Get ProcessButton2.
+	  * Botón de Proceso
+	  */
+	public String getProcessButton2();
+
+    /** Column name ProcessButton3 */
+    public static final String COLUMNNAME_ProcessButton3 = "ProcessButton3";
+
+	/** Set ProcessButton3.
+	  * Botón para proceso
+	  */
+	public void setProcessButton3(String ProcessButton3);
+
+	/** Get ProcessButton3.
+	  * Botón para proceso
+	  */
+	public String getProcessButton3();
+
     /** Column name StartDate */
     public static final String COLUMNNAME_StartDate = "StartDate";
 
@@ -365,6 +391,19 @@ public interface I_Z_AcctBrowser
 	  */
 	public String getTipoAcctBrowser();
 
+    /** Column name TipoBalanceAcct */
+    public static final String COLUMNNAME_TipoBalanceAcct = "TipoBalanceAcct";
+
+	/** Set TipoBalanceAcct.
+	  * Tipo de Balance Contable
+	  */
+	public void setTipoBalanceAcct(String TipoBalanceAcct);
+
+	/** Get TipoBalanceAcct.
+	  * Tipo de Balance Contable
+	  */
+	public String getTipoBalanceAcct();
+
     /** Column name TipoFiltroMonAcct */
     public static final String COLUMNNAME_TipoFiltroMonAcct = "TipoFiltroMonAcct";
 
@@ -406,6 +445,19 @@ public interface I_Z_AcctBrowser
 	  * User who updated this records
 	  */
 	public int getUpdatedBy();
+
+    /** Column name UUID */
+    public static final String COLUMNNAME_UUID = "UUID";
+
+	/** Set Immutable Universally Unique Identifier.
+	  * Immutable Universally Unique Identifier
+	  */
+	public void setUUID(String UUID);
+
+	/** Get Immutable Universally Unique Identifier.
+	  * Immutable Universally Unique Identifier
+	  */
+	public String getUUID();
 
     /** Column name Z_AcctBrowser_ID */
     public static final String COLUMNNAME_Z_AcctBrowser_ID = "Z_AcctBrowser_ID";
