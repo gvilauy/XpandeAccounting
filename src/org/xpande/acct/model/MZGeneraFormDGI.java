@@ -337,6 +337,7 @@ public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
                     " where inv.docstatus = 'CO' " +
                     " and inv.ad_org_id =" + this.getAD_Org_ID() +
                     " and inv.c_doctypetarget_id != " + docInternoID +
+                    " and inv.AsientoManualInvoice ='N' " +
                     " and inv.dateacct between ? and ? " +
                     " order by invt.c_tax_id, inv.dateacct";
 
