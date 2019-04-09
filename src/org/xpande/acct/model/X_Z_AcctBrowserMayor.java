@@ -33,7 +33,7 @@ public class X_Z_AcctBrowserMayor extends PO implements I_Z_AcctBrowserMayor, I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20181207L;
+	private static final long serialVersionUID = 20190409L;
 
     /** Standard Constructor */
     public X_Z_AcctBrowserMayor (Properties ctx, int Z_AcctBrowserMayor_ID, String trxName)
@@ -172,6 +172,46 @@ public class X_Z_AcctBrowserMayor extends PO implements I_Z_AcctBrowserMayor, I_
 	public BigDecimal getAmtAcctDr () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AmtAcctDr);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
+	/** Set AmtAcumulado1.
+		@param AmtAcumulado1 
+		Monto acumulado 1
+	  */
+	public void setAmtAcumulado1 (BigDecimal AmtAcumulado1)
+	{
+		set_Value (COLUMNNAME_AmtAcumulado1, AmtAcumulado1);
+	}
+
+	/** Get AmtAcumulado1.
+		@return Monto acumulado 1
+	  */
+	public BigDecimal getAmtAcumulado1 () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AmtAcumulado1);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
+	/** Set AmtAcumulado2.
+		@param AmtAcumulado2 
+		Monto Acumulado 2
+	  */
+	public void setAmtAcumulado2 (BigDecimal AmtAcumulado2)
+	{
+		set_Value (COLUMNNAME_AmtAcumulado2, AmtAcumulado2);
+	}
+
+	/** Get AmtAcumulado2.
+		@return Monto Acumulado 2
+	  */
+	public BigDecimal getAmtAcumulado2 () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AmtAcumulado2);
 		if (bd == null)
 			 return Env.ZERO;
 		return bd;
@@ -796,6 +836,31 @@ public class X_Z_AcctBrowserMayor extends PO implements I_Z_AcctBrowserMayor, I_
 	public String getUUID () 
 	{
 		return (String)get_Value(COLUMNNAME_UUID);
+	}
+
+	public I_Z_AcctBrowserBal getZ_AcctBrowserBal() throws RuntimeException
+    {
+		return (I_Z_AcctBrowserBal)MTable.get(getCtx(), I_Z_AcctBrowserBal.Table_Name)
+			.getPO(getZ_AcctBrowserBal_ID(), get_TrxName());	}
+
+	/** Set Z_AcctBrowserBal ID.
+		@param Z_AcctBrowserBal_ID Z_AcctBrowserBal ID	  */
+	public void setZ_AcctBrowserBal_ID (int Z_AcctBrowserBal_ID)
+	{
+		if (Z_AcctBrowserBal_ID < 1) 
+			set_Value (COLUMNNAME_Z_AcctBrowserBal_ID, null);
+		else 
+			set_Value (COLUMNNAME_Z_AcctBrowserBal_ID, Integer.valueOf(Z_AcctBrowserBal_ID));
+	}
+
+	/** Get Z_AcctBrowserBal ID.
+		@return Z_AcctBrowserBal ID	  */
+	public int getZ_AcctBrowserBal_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_AcctBrowserBal_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	public I_Z_AcctBrowser getZ_AcctBrowser() throws RuntimeException

@@ -2,12 +2,9 @@ package org.xpande.acct.model;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.MAcctSchema;
-import org.compiere.model.MClient;
 import org.compiere.model.MSequence;
-import org.compiere.model.SalesMgmtValidator;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.xpande.core.utils.CurrencyUtils;
 
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
@@ -72,8 +69,9 @@ public class MZAcctBrowser extends X_Z_AcctBrowser {
 
             this.setCuentasFiltro();
 
-            this.getDataMayor();
+            this.getDataMayor(null);
             this.updateDataMayor();
+            this.updateAcumuladoMayor();
 
             this.getDataSumMayor();
             this.updateDataSumMayor();
@@ -161,12 +159,19 @@ public class MZAcctBrowser extends X_Z_AcctBrowser {
     /***
      * Obtiene y carga información para la consulta de Mayor Contable.
      * Xpande. Created by Gabriel Vila on 7/20/18.
+     * @param acctBrowserBal : si es recibida, obtiene datos solamente para esta cuenta de balance.
      */
-    private void getDataMayor() {
+    private void getDataMayor(MZAcctBrowserBal acctBrowserBal) {
 
         String action = "", sql = "";
 
         try{
+
+            // Guardo ID de cuenta de balance si es recibida, para luego insertar en la tabla de mayor.
+            int zAcctBrowserBalID = 0;
+            if (acctBrowserBal != null){
+                zAcctBrowserBalID = acctBrowserBal.get_ID();
+            }
 
             // Armo condiciones según filtros
             String whereClause = "";
@@ -177,12 +182,19 @@ public class MZAcctBrowser extends X_Z_AcctBrowser {
                 whereClause += " and f.dateacct <='" + this.getEndDate() + "'" ;
             }
 
-            // Si tengo cuentas contables para filtrar, agrego condición
-            sql = " select count(*) from Z_AcctBrowFiltroCta where Z_AcctBrowser_ID =" + this.get_ID();
-            int contadorCta = DB.getSQLValueEx(get_TrxName(), sql);
-            if (contadorCta > 0) {
-                whereClause += " and f.account_id in (select distinct(c_elementvalue_id) " +
-                        " from Z_AcctBrowFiltroCta where Z_AcctBrowser_ID =" + this.get_ID() + ") ";
+            // Filtro cuentas siempre y cuando no reciba cuenta de balance
+            if (acctBrowserBal == null){
+                // Si tengo cuentas contables para filtrar, agrego condición
+                sql = " select count(*) from Z_AcctBrowFiltroCta where Z_AcctBrowser_ID =" + this.get_ID();
+                int contadorCta = DB.getSQLValueEx(get_TrxName(), sql);
+                if (contadorCta > 0) {
+                    whereClause += " and f.account_id in (select distinct(c_elementvalue_id) " +
+                            " from Z_AcctBrowFiltroCta where Z_AcctBrowser_ID =" + this.get_ID() + ") ";
+                }
+            }
+            else{
+                // Solo considero cuenta contable recibida en cuenta de balance
+                whereClause += " and f.account_id =" + acctBrowserBal.getC_ElementValue_ID();
             }
 
             // Si tengo socios de negocio para filtrar, agrego condición
@@ -200,14 +212,18 @@ public class MZAcctBrowser extends X_Z_AcctBrowser {
             action = " insert into z_acctbrowsermayor (z_acctbrowsermayor_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, " +
                     " z_acctbrowser_id, ad_table_id, record_id, c_elementvalue_id, c_currency_id, amtsourcedr, amtsourcecr, amtacctdr, amtacctcr, " +
                     " c_period_id, dateacct, datedoc, description, c_bpartner_id, m_product_id, c_tax_id, qty, taxid, ad_user_id, " +
-                    " c_doctype_id, documentnoref, currencyrate, duedate, estadomediopago, nromediopago, z_mediopago_id, z_retencionsocio_id, c_activity_id) ";
+                    " c_doctype_id, documentnoref, currencyrate, duedate, estadomediopago, nromediopago, z_mediopago_id, z_retencionsocio_id, " +
+                    " c_activity_id, Z_AcctBrowserBal_ID) ";
+
+
 
             // Falta : currencyrate, duedate, estadomediopago, nromediopago, z_mediopago_id, z_retencionsocio_id
             sql = " select nextid(" + sequence.get_ID() + ",'N'), f.ad_client_id, f.ad_org_id, f.isactive, f.created, f.createdby, f.updated, f.updatedby," +
                     this.get_ID() + ", f.ad_table_id, f.record_id, f.account_id, f.c_currency_id, f.amtsourcedr, f.amtsourcecr, f.amtacctdr, f.amtacctcr, " +
                     " f.c_period_id, f.dateacct, f.datetrx, f.description, f.c_bpartner_id, f.m_product_id, f.c_tax_id, f.qty, bp.taxid, f.createdby, " +
                     " f.c_doctype_id, f.documentnoref, " +
-                    " f.currencyrate, f.duedate, det.estadomediopago, det.nromediopago, det.z_mediopago_id, det.z_retencionsocio_id, f.c_activity_id " +
+                    " f.currencyrate, f.duedate, det.estadomediopago, det.nromediopago, det.z_mediopago_id, det.z_retencionsocio_id, f.c_activity_id, " +
+                    ((zAcctBrowserBalID > 0) ? Integer.toString(zAcctBrowserBalID) : "null") +
                     " from fact_acct f " +
                     " left outer join c_bpartner bp on f.c_bpartner_id = bp.c_bpartner_id " +
                     " left outer join z_acctfactdet det on f.fact_acct_id = det.fact_acct_id " +
@@ -841,6 +857,96 @@ public class MZAcctBrowser extends X_Z_AcctBrowser {
         	rs = null; pstmt = null;
         }
 
+    }
+
+
+    /***
+     * Actualiza montos acumulados para detalle de mayor contable.
+     * Xpande. Created by Gabriel Vila on 4/9/19.
+     */
+    private void updateAcumuladoMayor(){
+
+        String sql = "";
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        String action = "";
+
+        try{
+            sql = " select Z_AcctBrowserMayor_ID, ad_org_id, c_elementvalue_id, coalesce(amtdr1,0) as amtdr1, " +
+                    " coalesce(amtcr1,0) as amtcr1, coalesce(amtdr2,0) as amtdr2, coalesce(amtcr2,0) as amtcr2 " +
+                    " from Z_AcctBrowserMayor " +
+                    " where z_acctbrowser_id =" + this.get_ID() +
+                    " order by c_elementvalue_id, dateacct ";
+
+        	pstmt = DB.prepareStatement(sql, get_TrxName());
+        	rs = pstmt.executeQuery();
+
+        	int adOrgIDAux = 0, cElementValueIDAux = 0;
+        	BigDecimal amtAcumulado1 = Env.ZERO, amtAcumulado2 = Env.ZERO;
+
+        	while(rs.next()){
+
+        	    // Corte por organizacion y cuenta contable
+        	    if ((rs.getInt("c_elementvalue_id") != cElementValueIDAux)
+                        || (rs.getInt("ad_org_id") != adOrgIDAux)){
+
+        	        cElementValueIDAux = rs.getInt("c_elementvalue_id");
+        	        adOrgIDAux = rs.getInt("ad_org_id");
+
+        	        amtAcumulado1 = Env.ZERO;
+        	        amtAcumulado2 = Env.ZERO;
+                }
+
+        	    amtAcumulado1 = amtAcumulado1.add(rs.getBigDecimal("amtdr1")).subtract(rs.getBigDecimal("amtcr1"));
+                amtAcumulado2 = amtAcumulado2.add(rs.getBigDecimal("amtdr2")).subtract(rs.getBigDecimal("amtcr2"));
+
+                action = " update Z_AcctBrowserMayor " +
+                         " set amtacumulado1 =" + amtAcumulado1 + ", amtacumulado2 =" + amtAcumulado2 +
+                         " where Z_AcctBrowserMayor_ID =" + rs.getInt("Z_AcctBrowserMayor_ID");
+                DB.executeUpdateEx(action, get_TrxName());
+        	}
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+        finally {
+            DB.close(rs, pstmt);
+        	rs = null; pstmt = null;
+        }
+    }
+
+
+    /***
+     * Obtiene y carga detalle de mayor para una determinada cuenta en una consulta de Balance.
+     * Xpande. Created by Gabriel Vila on 4/9/19.
+     * @param acctBrowserBal
+     * @return
+     */
+    public String getDetalleBalance(MZAcctBrowserBal acctBrowserBal) {
+
+        String message = null;
+        String action = "";
+
+        try{
+
+            // Elimino detalle anterior para esta cuenta de balance
+            action = " delete from " + X_Z_AcctBrowserMayor.Table_Name +
+                     " where " + X_Z_AcctBrowserMayor.COLUMNNAME_Z_AcctBrowserBal_ID + " =" + acctBrowserBal.get_ID();
+            DB.executeUpdateEx(action, get_TrxName());
+
+            // Obtengo datos del mayor para la cuenta de balance recibida
+            this.getDataMayor(acctBrowserBal);
+
+            this.updateDataMayor();
+            this.updateAcumuladoMayor();
+
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+
+        return message;
     }
 
 }

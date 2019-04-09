@@ -119,6 +119,32 @@ public interface I_Z_AcctBrowserMayor
 	  */
 	public BigDecimal getAmtAcctDr();
 
+    /** Column name AmtAcumulado1 */
+    public static final String COLUMNNAME_AmtAcumulado1 = "AmtAcumulado1";
+
+	/** Set AmtAcumulado1.
+	  * Monto acumulado 1
+	  */
+	public void setAmtAcumulado1(BigDecimal AmtAcumulado1);
+
+	/** Get AmtAcumulado1.
+	  * Monto acumulado 1
+	  */
+	public BigDecimal getAmtAcumulado1();
+
+    /** Column name AmtAcumulado2 */
+    public static final String COLUMNNAME_AmtAcumulado2 = "AmtAcumulado2";
+
+	/** Set AmtAcumulado2.
+	  * Monto Acumulado 2
+	  */
+	public void setAmtAcumulado2(BigDecimal AmtAcumulado2);
+
+	/** Get AmtAcumulado2.
+	  * Monto Acumulado 2
+	  */
+	public BigDecimal getAmtAcumulado2();
+
     /** Column name AmtCr1 */
     public static final String COLUMNNAME_AmtCr1 = "AmtCr1";
 
@@ -543,6 +569,17 @@ public interface I_Z_AcctBrowserMayor
 	  * Immutable Universally Unique Identifier
 	  */
 	public String getUUID();
+
+    /** Column name Z_AcctBrowserBal_ID */
+    public static final String COLUMNNAME_Z_AcctBrowserBal_ID = "Z_AcctBrowserBal_ID";
+
+	/** Set Z_AcctBrowserBal ID	  */
+	public void setZ_AcctBrowserBal_ID(int Z_AcctBrowserBal_ID);
+
+	/** Get Z_AcctBrowserBal ID	  */
+	public int getZ_AcctBrowserBal_ID();
+
+	public I_Z_AcctBrowserBal getZ_AcctBrowserBal() throws RuntimeException;
 
     /** Column name Z_AcctBrowser_ID */
     public static final String COLUMNNAME_Z_AcctBrowser_ID = "Z_AcctBrowser_ID";
