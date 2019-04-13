@@ -218,4 +218,41 @@ public final class AccountUtils {
         return model;
     }
 
+
+    /***
+     * Obtiene y retorna modelo de cuenta contable según codigo de cuenta recibido.
+     * Xpande. Created by Gabriel Vila on 4/13/19.
+     * @param ctx
+     * @param value
+     * @param trxName
+     * @return
+     */
+    public static MElementValue getElementValueByValue(Properties ctx, String value, String trxName){
+
+        String whereClause = X_C_ElementValue.COLUMNNAME_Value + " ='" + value + "'";
+
+        MElementValue model = new Query(ctx, I_C_ElementValue.Table_Name, whereClause, trxName).first();
+
+        return model;
+    }
+
+
+    /***
+     * Obtiene y retorna modelo de centro de costos según codigo de cuenta recibido.
+     * Xpande. Created by Gabriel Vila on 4/13/19.
+     * @param ctx
+     * @param value
+     * @param trxName
+     * @return
+     */
+    public static MActivity getActivityByValue(Properties ctx, String value, String trxName){
+
+        String whereClause = X_C_Activity.COLUMNNAME_Value + " ='" + value + "'";
+
+        MActivity model = new Query(ctx, I_C_Activity.Table_Name, whereClause, trxName).first();
+
+        return model;
+    }
+
+
 }
