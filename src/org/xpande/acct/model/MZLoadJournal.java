@@ -40,10 +40,7 @@ import org.xpande.acct.utils.AccountUtils;
 import org.xpande.comercial.utils.ComercialUtils;
 import org.xpande.core.utils.CurrencyUtils;
 import org.xpande.core.utils.DateUtils;
-import org.xpande.financial.model.I_Z_LoadMedioPagoFile;
-import org.xpande.financial.model.MZLoadMedioPagoFile;
-import org.xpande.financial.model.MZLoadMedioPagoMan;
-import org.xpande.financial.model.X_Z_LoadMedioPagoFile;
+import org.xpande.financial.model.*;
 
 /** Generated Model for Z_LoadJournal
  *  @author Adempiere (generated) 
@@ -83,7 +80,7 @@ public class MZLoadJournal extends X_Z_LoadJournal implements DocAction, DocOpti
 
 			options[newIndex++] = DocumentEngine.ACTION_None;
 			//options[newIndex++] = DocumentEngine.ACTION_ReActivate;
-			//options[newIndex++] = DocumentEngine.ACTION_Void;
+			options[newIndex++] = DocumentEngine.ACTION_Void;
 		}
 
 		return newIndex;
@@ -264,24 +261,26 @@ public class MZLoadJournal extends X_Z_LoadJournal implements DocAction, DocOpti
 		Timestamp dateAcctAux = null;
 
 		MJournal journal = null;
-		BigDecimal totalDR = Env.ZERO, totalCR = Env.ZERO;
 
 		// Recorro lineas
 		for (MZLoadJournalFile loadJournalFile: loadJournalFileList){
 
 			// Corte por organización - documento - fecha contable
 			if ((loadJournalFile.getAD_OrgTrx_ID() != adOrgIDAux) || (loadJournalFile.getC_DocTypeTarget_ID() != cDocTypeIDAux)
-				|| (dateAcctAux == null) || (loadJournalFile.getDateAcct().after(dateAcctAux))){
+				|| (dateAcctAux == null) || (loadJournalFile.getDateAcct().getTime() != dateAcctAux.getTime())){
 
 				// Si tengo cabezal de asiento seteado anteriormente
 				if (journal != null){
 
 					// Completo asiento anterior
-					journal.setTotalDr(totalDR);
-					journal.setTotalCr(totalCR);
 					if (!journal.processIt(DocAction.ACTION_Complete)){
-						m_processMsg = journal.getProcessMsg();
+						/*
+						m_processMsg = "No se pudo Completar Asiento : Organización = " + journal.getAD_Org_ID() + ", Documento = " + journal.getC_DocType_ID() +
+							 ", Fecha = " + journal.getDateAcct().toString() +  ", Total Debitos = " + journal.getTotalDr() + ", Total Credito = " + journal.getTotalCr() +
+								" - " + journal.getProcessMsg();
 						return DocAction.STATUS_Invalid;
+
+						 */
 					}
 					journal.saveEx();
 				}
@@ -301,17 +300,17 @@ public class MZLoadJournal extends X_Z_LoadJournal implements DocAction, DocOpti
 							"Fecha : " + loadJournalFile.getDateAcct().toString();
 					return DocAction.STATUS_Invalid;
 				}
+				journal.setGL_Category_ID(1000000);
 				journal.setC_Period_ID(period.get_ID());
 				journal.setC_Currency_ID(schema.getC_Currency_ID());
 				journal.setCurrencyRate(Env.ONE);
 				journal.setC_ConversionType_ID(114);
+				journal.set_ValueOfColumn("Z_LoadJournal_ID", this.get_ID());
 				journal.saveEx();
 
 				adOrgIDAux = loadJournalFile.getAD_OrgTrx_ID();
 				cDocTypeIDAux = loadJournalFile.getC_DocTypeTarget_ID();
 				dateAcctAux = loadJournalFile.getDateAcct();
-				totalDR = Env.ZERO;
-				totalCR = Env.ZERO;
 			}
 
 			// Linea de asiento manual
@@ -324,8 +323,8 @@ public class MZLoadJournal extends X_Z_LoadJournal implements DocAction, DocOpti
 			journalLine.setC_Currency_ID(loadJournalFile.getC_Currency_ID());
 			journalLine.setC_ConversionType_ID(114);
 			journalLine.setCurrencyRate(loadJournalFile.getMultiplyRate());
-			journalLine.setAmtAcctDr(loadJournalFile.getAmtAcctDr());
-			journalLine.setAmtAcctCr(loadJournalFile.getAmtAcctCr());
+			//journalLine.setAmtAcctDr(loadJournalFile.getAmtAcctDr());
+			//journalLine.setAmtAcctCr(loadJournalFile.getAmtAcctCr());
 			journalLine.setDateAcct(journal.getDateAcct());
 			journalLine.setC_UOM_ID(100);
 			if (loadJournalFile.getQtyEntered() != null){
@@ -346,20 +345,20 @@ public class MZLoadJournal extends X_Z_LoadJournal implements DocAction, DocOpti
 			}
 
 			journalLine.saveEx();
-
-			totalDR = totalDR.add(journalLine.getAmtAcctDr());
-			totalCR = totalCR.add(journalLine.getAmtAcctCr());
 		}
 
 		// Si tengo cabezal de asiento seteado anteriormente
 		if (journal != null){
 
 			// Completo asiento anterior
-			journal.setTotalDr(totalDR);
-			journal.setTotalCr(totalCR);
 			if (!journal.processIt(DocAction.ACTION_Complete)){
-				m_processMsg = journal.getProcessMsg();
+				/*
+				m_processMsg = "No se pudo Completar Asiento : Organización = " + journal.getAD_Org_ID() + ", Documento = " + journal.getC_DocType_ID() +
+						", Fecha = " + journal.getDateAcct().toString() +  ", Total Debitos = " + journal.getTotalDr() + ", Total Credito = " + journal.getTotalCr() +
+						" - " + journal.getProcessMsg();
 				return DocAction.STATUS_Invalid;
+
+				 */
 			}
 			journal.saveEx();
 		}
@@ -408,9 +407,55 @@ public class MZLoadJournal extends X_Z_LoadJournal implements DocAction, DocOpti
 	public boolean voidIt()
 	{
 		log.info("voidIt - " + toString());
-		return closeIt();
+
+		// Before Void
+		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_BEFORE_VOID);
+		if (m_processMsg != null)
+			return false;
+
+		// Reactivo asientos completados asociados a esta carga
+		List<MJournal> journalCompletosList = this.getJournalsCompleted();
+		for (MJournal journal: journalCompletosList){
+			if (!journal.processIt(DocAction.ACTION_ReActivate)){
+				m_processMsg = "No se pudo reactivar el asiento contable numero : " + journal.getDocumentNo();
+				return false;
+			}
+		}
+
+		// Elimino todos los asientos asociados a esta carga
+		String action = " delete from gl_journal where z_loadjournal_id =" + this.get_ID();
+		DB.executeUpdateEx(action, get_TrxName());
+
+		// After Void
+		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_VOID);
+		if (m_processMsg != null)
+			return false;
+
+		this.setProcessed(true);
+		this.setDocStatus(DOCSTATUS_Voided);
+		this.setDocAction(DOCACTION_None);
+
+		return true;
+
 	}	//	voidIt
-	
+
+
+	/***
+	 * Obtiene y retorna modelos de asientos contables completos y generados por esta carga.
+	 * Xpande. Created by Gabriel Vila on 4/13/19.
+	 * @return
+	 */
+	private List<MJournal> getJournalsCompleted() {
+
+		String whereClause = "z_loadjournal_id =" + this.get_ID() +
+				" AND " + X_GL_Journal.COLUMNNAME_DocStatus + " ='CO'";
+
+		List<MJournal> lines = new Query(getCtx(), I_GL_Journal.Table_Name, whereClause, get_TrxName()).list();
+
+		return lines;
+	}
+
+
 	/**
 	 * 	Close Document.
 	 * 	Cancel not delivered Qunatities
@@ -891,7 +936,7 @@ public class MZLoadJournal extends X_Z_LoadJournal implements DocAction, DocOpti
 				" AND " + X_Z_LoadJournalFile.COLUMNNAME_IsConfirmed + " ='Y' ";
 
 		List<MZLoadJournalFile> lines = new Query(getCtx(), I_Z_LoadJournalFile.Table_Name, whereClause, get_TrxName())
-				.setOrderBy(" AD_Org_ID, C_DocTypeTarget_ID, DateAcct ").list();
+				.setOrderBy(" AD_OrgTrx_ID, C_DocTypeTarget_ID, DateAcct ").list();
 
 		return lines;
 	}
