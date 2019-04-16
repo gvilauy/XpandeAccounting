@@ -147,6 +147,10 @@ public class Doc_Pago extends Doc {
                 int mpEmitidos_ID = getValidCombination_ID (Doc.ACCTYPE_MP_Emitidos, as);
                 FactLine fl1 = fact.createLine(p_lines[i], MAccount.get(getCtx(), mpEmitidos_ID), getC_Currency_ID(), amt, null);
 
+                if (fl1 != null){
+                    fl1.setAD_Org_ID(this.pago.getAD_Org_ID());
+                }
+
                 // Detalle de asiento
                 if (fl1 != null){
                     fl1.saveEx();
@@ -210,6 +214,10 @@ public class Doc_Pago extends Doc {
                     MAccount acctBankCr = MAccount.get(getCtx(), accountID);
                     FactLine fl2 = fact.createLine (p_lines[i], acctBankCr, getC_Currency_ID(), null, amt);
 
+                    if (fl2 != null){
+                        fl2.setAD_Org_ID(this.pago.getAD_Org_ID());
+                    }
+
                     // Detalle de asiento
                     if (fl2 != null){
                         fl2.saveEx();
@@ -253,7 +261,13 @@ public class Doc_Pago extends Doc {
 
             // CR - Deudores comerciales por el total del cobro
             int receivables_ID = getValidCombination_ID(Doc.ACCTTYPE_C_Receivable, as);
-            fact.createLine(null, MAccount.get(getCtx(), receivables_ID), getC_Currency_ID(),  null, grossAmt);
+
+            FactLine fl3 = fact.createLine(null, MAccount.get(getCtx(), receivables_ID), getC_Currency_ID(),  null, grossAmt);
+
+            if (fl3 != null){
+                fl3.setAD_Org_ID(this.pago.getAD_Org_ID());
+                fl3.saveEx();
+            }
 
             // DR - Lineas de Medios de Pago - Monto de cada linea.
             // Cuenta contable asociada a la cuenta bancaria si hay, y sino tengo cuenta bancaria, entonces cuenta del medio de pago.
@@ -281,6 +295,9 @@ public class Doc_Pago extends Doc {
 
                 // DR - Lineas de Medios de Pago - Monto de cada linea
                 FactLine fl1 = fact.createLine(p_lines[i], MAccount.get(getCtx(), accountID), getC_Currency_ID(), amt, null);
+                if (fl1 != null){
+                    fl1.setAD_Org_ID(this.pago.getAD_Org_ID());
+                }
 
                 // Detalle de asiento
                 if (fl1 != null){
@@ -340,6 +357,9 @@ public class Doc_Pago extends Doc {
 
                     // DR - Lineas de Resguardos Recibidos - Monto de cada linea
                     FactLine fl1 = fact.createLine(null, MAccount.get(getCtx(), accountID), getC_Currency_ID(), amt, null);
+                    if (fl1 != null){
+                        fl1.setAD_Org_ID(this.pago.getAD_Org_ID());
+                    }
 
                     // Detalle de asiento
                     if (fl1 != null){
