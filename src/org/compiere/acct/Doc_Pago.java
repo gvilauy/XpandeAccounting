@@ -429,6 +429,23 @@ public class Doc_Pago extends Doc {
             this.amtMediosPago = this.amtMediosPago.add(medioPago.getTotalAmtMT());
         }
 
+        // Medios de pago de anticipos cuando no tengo importe de medios de pago en este documento
+        if ((this.pago.getTotalMediosPago() == null) || (this.pago.getTotalMediosPago().compareTo(Env.ZERO) == 0)){
+
+            List<MZPagoMedioPago> medioPagoAnticipoList = this.pago.getMediosPagoAnticipos();
+
+            this.amtMediosPago = Env.ZERO;
+
+            for (MZPagoMedioPago medioPagoAnticipo: medioPagoAnticipoList){
+
+                DocLine docLine = new DocLine(medioPagoAnticipo, this);
+                docLine.setAmount(medioPagoAnticipo.getTotalAmtMT());
+                list.add(docLine);
+
+                this.amtMediosPago = this.amtMediosPago.add(medioPagoAnticipo.getTotalAmtMT());
+            }
+        }
+
         //	Convert to Array
         DocLine[] dls = new DocLine[list.size()];
         list.toArray(dls);
