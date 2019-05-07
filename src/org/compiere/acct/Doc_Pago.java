@@ -280,6 +280,33 @@ public class Doc_Pago extends Doc {
 
                     }
                 }
+                // Si tengo importe de anticipos afectados en este recibo, hago el asiento correspondiente
+                if ((this.pago.getAmtAnticipo() != null) && (this.pago.getAmtAnticipo().compareTo(Env.ZERO) != 0)){
+                    // Doy vuelta el asiento que se hizo originalmente por los anticipos afectados ahora en este recibo
+                    // CR : Monto total anticipos - Cuenta Anticipo del Socio de Negocio
+                    int acctAnticipoID = getValidCombination_ID (Doc.ACCTTYPE_V_Prepayment, as);
+                    if (acctAnticipoID <= 0){
+                        p_Error = "Falta parametrizar Cuenta Contable para Anticipo a Proveedor en moneda de este Documento.";
+                        log.log(Level.SEVERE, p_Error);
+                        fact = null;
+                    }
+                    FactLine fl1 = fact.createLine(null, MAccount.get(getCtx(), acctAnticipoID), getC_Currency_ID(), null, this.pago.getAmtAnticipo());
+                    if (fl1 != null){
+                        fl1.setAD_Org_ID(this.pago.getAD_Org_ID());
+                    }
+
+                    // DR : Monto total anticipos - Cuenta Acreedores del Socio de Negocio
+                    int acctAcreedID = getValidCombination_ID (Doc.ACCTTYPE_V_Liability, as);
+                    if (acctAcreedID <= 0){
+                        p_Error = "Falta parametrizar Cuenta Contable para CxP del Proveedor en moneda de este Documento.";
+                        log.log(Level.SEVERE, p_Error);
+                        fact = null;
+                    }
+                    FactLine fl2 = fact.createLine(null, MAccount.get(getCtx(), acctAcreedID), getC_Currency_ID(), this.pago.getAmtAnticipo(), null);
+                    if (fl2 != null){
+                        fl2.setAD_Org_ID(this.pago.getAD_Org_ID());
+                    }
+                }
             }
         }
         else{
