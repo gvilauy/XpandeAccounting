@@ -33,7 +33,7 @@ public class X_Z_InvoiceAstoManual extends PO implements I_Z_InvoiceAstoManual, 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20181126L;
+	private static final long serialVersionUID = 20190510L;
 
     /** Standard Constructor */
     public X_Z_InvoiceAstoManual (Properties ctx, int Z_InvoiceAstoManual_ID, String trxName)
@@ -326,6 +326,34 @@ public class X_Z_InvoiceAstoManual extends PO implements I_Z_InvoiceAstoManual, 
 	public int getC_Invoice_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Invoice_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	public I_C_Tax getC_Tax() throws RuntimeException
+    {
+		return (I_C_Tax)MTable.get(getCtx(), I_C_Tax.Table_Name)
+			.getPO(getC_Tax_ID(), get_TrxName());	}
+
+	/** Set Tax.
+		@param C_Tax_ID 
+		Tax identifier
+	  */
+	public void setC_Tax_ID (int C_Tax_ID)
+	{
+		if (C_Tax_ID < 1) 
+			set_Value (COLUMNNAME_C_Tax_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Tax_ID, Integer.valueOf(C_Tax_ID));
+	}
+
+	/** Get Tax.
+		@return Tax identifier
+	  */
+	public int getC_Tax_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Tax_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
