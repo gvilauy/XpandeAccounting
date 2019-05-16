@@ -187,6 +187,18 @@ public class ValidatorAccounting implements ModelValidator {
             }
         }
 
+        if ((type == ModelValidator.TYPE_BEFORE_NEW) || (type == ModelValidator.TYPE_BEFORE_CHANGE)){
+
+            // Seteo periodo contable según fecha y organización
+            MPeriod period = MPeriod.get(model.getCtx(), model.getDateAcct(), model.getAD_Org_ID());
+            if ((period != null) && (period.get_ID() > 0)){
+                model.setC_Period_ID(period.get_ID());
+            }
+            else {
+                return "No se pudo obtener Período Contable para Fecha Contable y Organización de este Documento";
+            }
+        }
+
         return message;
     }
 
