@@ -137,6 +137,7 @@ public class Doc_ResguardoSocio extends Doc {
 
             // Detalle de asiento
             if (fl1 != null){
+                fl1.setAD_Org_ID(this.resguardoSocio.getAD_Org_ID());
                 fl1.saveEx();
                 MZAcctFactDet factDet = new MZAcctFactDet(getCtx(), 0, getTrxName());
                 factDet.setFact_Acct_ID(fl1.get_ID());
