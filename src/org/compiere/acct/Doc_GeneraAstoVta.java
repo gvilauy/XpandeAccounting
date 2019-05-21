@@ -1,10 +1,7 @@
 package org.compiere.acct;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.MAccount;
-import org.compiere.model.MAcctSchema;
-import org.compiere.model.MDocType;
-import org.compiere.model.MTaxCategory;
+import org.compiere.model.*;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.xpande.acct.model.MZAcctConfig;
@@ -15,6 +12,7 @@ import org.xpande.retail.model.MZGeneraAstoVtaSumTax;
 import org.xpande.retail.model.MZRetailConfig;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
@@ -78,6 +76,19 @@ public class Doc_GeneraAstoVta extends Doc {
 
         try{
 
+            MTax taxCreditos = null;
+            BigDecimal totalTaxAmtCreditos = Env.ZERO, totalTaxBaseAmtCreditos = Env.ZERO;
+            int creditosAccountID = 0, creditosBaseAccountID = 0;
+
+            MZRetailConfig retailConfig = MZRetailConfig.getDefault(getCtx(), null);
+            if ((retailConfig == null) || (retailConfig.get_ID() <= 0)){
+                p_Error = "Falta parametrización en Configuracion de Retail";
+                log.log(Level.SEVERE, p_Error);
+                fact = null;
+                facts.add(fact);
+                return facts;
+            }
+
             // DR - Cuentas de Medios de Pago
             List<MZGeneraAstoVtaSumMP> sumMPList = this.generaAstoVta.getLineasMediosPago();
             for (MZGeneraAstoVtaSumMP sumMP: sumMPList){
@@ -86,7 +97,8 @@ public class Doc_GeneraAstoVta extends Doc {
                 BigDecimal amtMP = sumMP.getAmtTotal1();
                 if ((sumMP.getAmtTotal2() != null) && (sumMP.getAmtTotal2().compareTo(Env.ZERO) > 0)){
                     cCurrencyID = sumMP.getC_Currency_2_ID();
-                    amtMP = sumMP.getAmtTotal();
+                    amtMP = sumMP.getAmtTotal2();
+                    this.setIsMultiCurrency(true);
                 }
 
                 // Obtengo info de este tipo de linea
@@ -118,10 +130,49 @@ public class Doc_GeneraAstoVta extends Doc {
                         }
                     }
                     else{
+
                         FactLine fl1 = fact.createLine(null, MAccount.get(getCtx(), accountID), cCurrencyID, null, amtMP);
                         if (fl1 != null){
                             fl1.setAD_Org_ID(this.generaAstoVta.getAD_Org_ID());
                         }
+
+                        creditosBaseAccountID = accountID;
+                        totalTaxBaseAmtCreditos = totalTaxBaseAmtCreditos.add(amtMP);
+
+                        // Cuando este medio de pago va al crédito en el asiento de ventas, debo obtener valor de impuesto según tasa parametrizada
+                        // en configuraciones de retail. Este monto lo imputo a la cuenta de venta de dicha tasa de impuesto.
+                        if (retailConfig.getC_Tax_ID() <= 0){
+                            p_Error = "No se indica Tasa de Impuestos para Cŕeditos en Asientos de Venta, en configuración de retail";
+                            log.log(Level.SEVERE, p_Error);
+                            fact = null;
+                            facts.add(fact);
+                            return facts;
+                        }
+
+                        if (taxCreditos == null){
+                            taxCreditos = (MTax) retailConfig.getC_Tax();
+                        }
+                        if (creditosAccountID <= 0){
+                            sql = " select t_due_acct from c_tax_acct where c_tax_id =" + retailConfig.getC_Tax_ID();
+                            creditosAccountID = DB.getSQLValueEx(null, sql);
+                            if (creditosAccountID <= 0){
+
+                                p_Error = "No se indica Cuenta Contable de Venta de Tasa de Impuesto : " + taxCreditos.getName();
+                                log.log(Level.SEVERE, p_Error);
+                                fact = null;
+                                facts.add(fact);
+                                return facts;
+                            }
+                        }
+
+                        BigDecimal taxAmt = amtMP.multiply(taxCreditos.getRate().divide(Env.ONEHUNDRED, 2, RoundingMode.HALF_UP)).setScale(2, RoundingMode.HALF_UP);
+
+                        FactLine fl2 = fact.createLine(null, MAccount.get(getCtx(), creditosAccountID), cCurrencyID, null, taxAmt);
+                        if (fl2 != null){
+                            fl2.setAD_Org_ID(this.generaAstoVta.getAD_Org_ID());
+                        }
+
+                        totalTaxAmtCreditos = totalTaxAmtCreditos.add(taxAmt);
                     }
 
                 }
@@ -134,16 +185,6 @@ public class Doc_GeneraAstoVta extends Doc {
                 }
 
                 DB.close(rs, pstmt);
-            }
-
-            // Obtengo configuraciones de retail para obtener cuentas de ventas segun categoría de impuestos.
-            MZRetailConfig retailConfig = MZRetailConfig.getDefault(getCtx(), null);
-            if ((retailConfig == null) || (retailConfig.get_ID() <= 0)){
-                p_Error = "Falta parametrizaciones en Configuraciones de Retail";
-                log.log(Level.SEVERE, p_Error);
-                fact = null;
-                facts.add(fact);
-                return facts;
             }
 
             // CR - Cuentas de Impuestos
@@ -168,7 +209,20 @@ public class Doc_GeneraAstoVta extends Doc {
                         facts.add(fact);
                         return facts;
                     }
-                    FactLine fl1 = fact.createLine(null, MAccount.get(getCtx(), accountVtasID), getC_Currency_ID(), null, sumTax.getTaxBaseAmt());
+
+                    BigDecimal taxBaseAmt = sumTax.getTaxBaseAmt();
+                    if (accountVtasID == creditosBaseAccountID){
+
+                        // DR- Base impuesto (lo doy vuelta)
+                        FactLine fl3 = fact.createLine(null, MAccount.get(getCtx(), accountVtasID), getC_Currency_ID(), totalTaxBaseAmtCreditos, null);
+                        if (fl3 != null){
+                            fl3.setAD_Org_ID(this.generaAstoVta.getAD_Org_ID());
+                        }
+
+                        taxBaseAmt = taxBaseAmt.subtract(totalTaxBaseAmtCreditos);
+                    }
+
+                    FactLine fl1 = fact.createLine(null, MAccount.get(getCtx(), accountVtasID), getC_Currency_ID(), null, taxBaseAmt);
                     if (fl1 != null){
                         fl1.setAD_Org_ID(this.generaAstoVta.getAD_Org_ID());
                     }
@@ -194,10 +248,17 @@ public class Doc_GeneraAstoVta extends Doc {
                         facts.add(fact);
                         return facts;
                     }
-                    FactLine fl2 = fact.createLine(null, MAccount.get(getCtx(), accountID), getC_Currency_ID(), null, sumTax.getTaxAmt());
+
+                    BigDecimal taxAmt = sumTax.getTaxAmt();
+                    if (accountID == creditosAccountID){
+                        taxAmt = taxAmt.subtract(totalTaxAmtCreditos);
+                    }
+
+                    FactLine fl2 = fact.createLine(null, MAccount.get(getCtx(), accountID), getC_Currency_ID(), null, taxAmt);
                     if (fl2 != null){
                         fl2.setAD_Org_ID(this.generaAstoVta.getAD_Org_ID());
                     }
+
 
                 }
 
