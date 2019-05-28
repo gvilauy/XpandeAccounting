@@ -1,9 +1,6 @@
 package org.compiere.acct;
 
-import org.compiere.model.MAccount;
-import org.compiere.model.MAcctSchema;
-import org.compiere.model.MBPBankAccount;
-import org.compiere.model.MDocType;
+import org.compiere.model.*;
 import org.compiere.util.Env;
 import org.xpande.acct.model.MZAcctFactDet;
 import org.xpande.acct.model.X_Z_AcctFactDet;
@@ -140,6 +137,8 @@ public class Doc_Pago extends Doc {
                     p_Error = "Falta parametrizar Cuenta Contable para Anticipo a Proveedor en moneda de este Documento.";
                     log.log(Level.SEVERE, p_Error);
                     fact = null;
+                    facts.add(fact);
+                    return facts;
                 }
                 FactLine fl1 = fact.createLine(null, MAccount.get(getCtx(), acctAnticipoID), getC_Currency_ID(), grossAmt, null);
                 if (fl1 != null){
@@ -152,6 +151,8 @@ public class Doc_Pago extends Doc {
                     p_Error = "Falta parametrizar Cuenta Contable para CxP del Proveedor en moneda de este Documento.";
                     log.log(Level.SEVERE, p_Error);
                     fact = null;
+                    facts.add(fact);
+                    return facts;
                 }
                 FactLine fl2 = fact.createLine(null, MAccount.get(getCtx(), acctAcreedID), getC_Currency_ID(),  null, grossAmt);
                 if (fl2 != null){
@@ -220,19 +221,46 @@ public class Doc_Pago extends Doc {
                     int accountID = -1;
                     if (pagoMedioPago.getC_BankAccount_ID() > 0){
                         accountID = AccountUtils.getBankValidCombinationID(getCtx(), Doc.ACCTTYPE_BankInTransit, pagoMedioPago.getC_BankAccount_ID(), as, null);
+                        if (accountID <= 0){
+                            MBankAccount bankAccount = (MBankAccount) pagoMedioPago.getC_BankAccount();
+                            p_Error = "No se obtuvo Cuenta Contable (BankInTransit) asociada a la Cuenta Bancaria : " + bankAccount.getName();
+                            log.log(Level.SEVERE, p_Error);
+                            fact = null;
+                            facts.add(fact);
+                            return facts;
+                        }
                     }
                     else if (pagoMedioPago.getC_CashBook_ID() > 0){
                         this.setC_CashBook_ID(pagoMedioPago.getC_CashBook_ID());
                         accountID = getValidCombination_ID(Doc.ACCTTYPE_CashExpense, as);
+                        if (accountID <= 0){
+                            MCashBook cashBook = (MCashBook) pagoMedioPago.getC_CashBook();
+                            p_Error = "No se obtuvo Cuenta Contable (CashExpense) asociada a la caja : " + cashBook.getName();
+                            log.log(Level.SEVERE, p_Error);
+                            fact = null;
+                            facts.add(fact);
+                            return facts;
+                        }
                     }
                     else{
                         if (pagoMedioPago.getZ_MedioPago_ID() > 0){
                             accountID = AccountUtils.getMedioPagoValidCombinationID(getCtx(), Doc.ACCTYPE_MP_Entregados, pagoMedioPago.getZ_MedioPago_ID(), pagoMedioPago.getC_Currency_ID(), as, null);
+                            if (accountID <= 0){
+                                MZMedioPago medioPago = (MZMedioPago) pagoMedioPago.getZ_MedioPago();
+                                p_Error = "No se obtuvo Cuenta Contable (MP_Entregados) asociada al medio de pago : " + medioPago.getName();
+                                log.log(Level.SEVERE, p_Error);
+                                fact = null;
+                                facts.add(fact);
+                                return facts;
+
+                            }
                         }
                         else{
                             p_Error = "No se indica Cuenta Bancaria y tampoco se indica Medio de Pago";
                             log.log(Level.SEVERE, p_Error);
                             fact = null;
+                            facts.add(fact);
+                            return facts;
                         }
                     }
                     if (accountID > 0){
@@ -279,6 +307,13 @@ public class Doc_Pago extends Doc {
                         }
 
                     }
+                    else{
+                        p_Error = "No se indica Cuenta Bancaria y tampoco se indica Medio de Pago";
+                        log.log(Level.SEVERE, p_Error);
+                        fact = null;
+                        facts.add(fact);
+                        return facts;
+                    }
                 }
                 // Si tengo importe de anticipos afectados en este recibo, hago el asiento correspondiente
                 if ((this.pago.getAmtAnticipo() != null) && (this.pago.getAmtAnticipo().compareTo(Env.ZERO) != 0)){
@@ -289,6 +324,8 @@ public class Doc_Pago extends Doc {
                         p_Error = "Falta parametrizar Cuenta Contable para Anticipo a Proveedor en moneda de este Documento.";
                         log.log(Level.SEVERE, p_Error);
                         fact = null;
+                        facts.add(fact);
+                        return facts;
                     }
                     FactLine fl1 = fact.createLine(null, MAccount.get(getCtx(), acctAnticipoID), getC_Currency_ID(), null, this.pago.getAmtAnticipo());
                     if (fl1 != null){
@@ -301,6 +338,8 @@ public class Doc_Pago extends Doc {
                         p_Error = "Falta parametrizar Cuenta Contable para CxP del Proveedor en moneda de este Documento.";
                         log.log(Level.SEVERE, p_Error);
                         fact = null;
+                        facts.add(fact);
+                        return facts;
                     }
                     FactLine fl2 = fact.createLine(null, MAccount.get(getCtx(), acctAcreedID), getC_Currency_ID(), this.pago.getAmtAnticipo(), null);
                     if (fl2 != null){
@@ -343,6 +382,8 @@ public class Doc_Pago extends Doc {
                         p_Error = "No se indica Cuenta Bancaria y tampoco se indica Medio de Pago";
                         log.log(Level.SEVERE, p_Error);
                         fact = null;
+                        facts.add(fact);
+                        return facts;
                     }
                 }
 
