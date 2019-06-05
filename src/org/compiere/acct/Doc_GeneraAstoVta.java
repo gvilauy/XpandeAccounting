@@ -6,10 +6,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.xpande.acct.model.MZAcctConfig;
 import org.xpande.financial.model.MZPago;
-import org.xpande.retail.model.MZGeneraAstoVta;
-import org.xpande.retail.model.MZGeneraAstoVtaSumMP;
-import org.xpande.retail.model.MZGeneraAstoVtaSumTax;
-import org.xpande.retail.model.MZRetailConfig;
+import org.xpande.retail.model.*;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -76,6 +73,8 @@ public class Doc_GeneraAstoVta extends Doc {
 
         try{
 
+            MZPosVendor posVendor = (MZPosVendor) this.generaAstoVta.getZ_PosVendor();
+
             MTax taxCreditos = null;
             BigDecimal totalTaxAmtCreditos = Env.ZERO, totalTaxBaseAmtCreditos = Env.ZERO;
             int creditosAccountID = 0, creditosBaseAccountID = 0;
@@ -101,13 +100,46 @@ public class Doc_GeneraAstoVta extends Doc {
                     this.setIsMultiCurrency(true);
                 }
 
-                // Obtengo info de este tipo de linea
-                sql = " select a.c_receivable_acct, a.c_bpartner_id, a.m_product_id, b.iscredito " +
-                        " from z_sistecolinea_acct a " +
-                        " inner join z_sistecotipolineapazos b on a.z_sistecotipolineapazos_id = b.z_sistecotipolineapazos_id " +
-                        " where b.value ='" + sumMP.getCodTipoLineaPOS() + "' " +
-                        " and a.c_acctschema_id =" + this.generaAstoVta.getC_AcctSchema_ID() +
-                        " and a.c_currency_id =" + cCurrencyID;
+                // Obtengo info de cuenta contable a utilizar segun proveedor de pos
+                if (posVendor.getValue().equalsIgnoreCase("SISTECO")){
+                    // Obtengo info de este tipo de linea
+                    sql = " select a.c_receivable_acct, a.c_bpartner_id, a.m_product_id, b.iscredito " +
+                            " from z_sistecolinea_acct a " +
+                            " inner join z_sistecotipolineapazos b on a.z_sistecotipolineapazos_id = b.z_sistecotipolineapazos_id " +
+                            " where b.value ='" + sumMP.getCodTipoLineaPOS() + "' " +
+                            " and a.c_acctschema_id =" + this.generaAstoVta.getC_AcctSchema_ID() +
+                            " and a.c_currency_id =" + cCurrencyID;
+                }
+                else if (posVendor.getValue().equalsIgnoreCase("SCANNTECH")){
+                    // Obtengo info del medio de pago, ya sea del tipo credito o no.
+                    sql = " select z_stechcreditos_id from z_stechcreditos where value ='" + sumMP.getCodMedioPagoPOS() + "'";
+                    int IDMp = DB.getSQLValueEx(null, sql);
+                    if (IDMp > 0){
+                        sql = " select a.c_receivable_acct, a.c_bpartner_id, a.m_product_id, 'Y' as iscredito " +
+                                " from z_stechcreditos_acct a " +
+                                " where a.z_stechcreditos_id =" + IDMp +
+                                " and a.c_acctschema_id =" + this.generaAstoVta.getC_AcctSchema_ID() +
+                                " and a.c_currency_id =" + cCurrencyID;
+                    }
+                    else{
+                        sql = " select z_stechmediopago_id from z_stechmediopago where value ='" + sumMP.getCodMedioPagoPOS() + "'";
+                        IDMp = DB.getSQLValueEx(null, sql);
+                        if (IDMp > 0){
+                            sql = " select a.c_receivable_acct, a.c_bpartner_id, a.m_product_id, 'Y' as iscredito " +
+                                    " from z_stechmediopago_acct a " +
+                                    " where a.z_stechmediopago_id =" + IDMp +
+                                    " and a.c_acctschema_id =" + this.generaAstoVta.getC_AcctSchema_ID() +
+                                    " and a.c_currency_id =" + cCurrencyID;
+                        }
+                        else{
+                            p_Error = "Falta parametrización en Configuracion de Scanntech para Cuenta Contable asociada a Medio de Pago : " + sumMP.getCodMedioPagoPOS();
+                            log.log(Level.SEVERE, p_Error);
+                            fact = null;
+                            facts.add(fact);
+                            return facts;
+                        }
+                    }
+                }
 
                 pstmt = DB.prepareStatement(sql, null);
                 rs = pstmt.executeQuery();
