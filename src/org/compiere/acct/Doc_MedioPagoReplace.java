@@ -1,5 +1,6 @@
 package org.compiere.acct;
 
+import com.sun.org.apache.bcel.internal.generic.NEW;
 import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MDocType;
@@ -158,6 +159,128 @@ public class Doc_MedioPagoReplace extends Doc {
                     }
                 }
             }
+
+            String nroMedioPago = null;
+            int OLD_emisionMedioPago_ID = 0;
+            if (replaceLin.getZ_MedioPagoItem_ID() > 0){
+
+                MZMedioPagoItem pagoItem = (MZMedioPagoItem) replaceLin.getZ_MedioPagoItem();
+                nroMedioPago = pagoItem.getNroMedioPago();
+                if (pagoItem.getDocumentSerie() != null){
+                    nroMedioPago = pagoItem.getDocumentSerie().trim() + nroMedioPago;
+                }
+                OLD_emisionMedioPago_ID = pagoItem.getZ_EmisionMedioPago_ID();
+            }
+            else{
+                nroMedioPago = replaceLin.getNroMedioPago();
+            }
+
+            // Recorro nuevos medios de pago y contabilizo
+            List<MZMedioPagoReplaceDet> dets = replaceLin.getDetail();
+            for (MZMedioPagoReplaceDet replaceDet: dets){
+
+                /*
+                El reemplazo deberia hacer el siguiente asiento:
+                DEBE HABER
+                Medios de pago emitidos 2,800.00
+                Cargo 30.00
+                Medios de pago emitidos 2,770.00
+                 */
+
+                MZMedioPagoItem NEW_medioPagoItem = (MZMedioPagoItem) replaceDet.getZ_MedioPagoItem();
+
+
+                // DR - Monto del medio de pago reemplazado - Cuenta del medio de pago a emitir
+                // Datos del medio de pago reemplazado
+                int mpEmitidos_ID = getValidCombination_ID (Doc.ACCTYPE_MP_Emitidos, as);
+                if (mpEmitidos_ID <= 0){
+                    p_Error = "No se obtuvo Cuenta Contable para Medios de Pago Emitidos";
+                    log.log(Level.SEVERE, p_Error);
+                    fact = null;
+                    facts.add(fact);
+                    return facts;
+                }
+
+                FactLine fl1 = fact.createLine(null, MAccount.get(getCtx(), mpEmitidos_ID), getC_Currency_ID(), amt, null);
+
+                // Guardo detalles asociados a esta pata del asiento contable
+                if (fl1 != null){
+                    fl1.saveEx();
+                    MZAcctFactDet factDet = new MZAcctFactDet(getCtx(), 0, getTrxName());
+                    factDet.setFact_Acct_ID(fl1.get_ID());
+                    factDet.setAD_Org_ID(this.medioPagoReplace.getAD_Org_ID());
+                    factDet.setZ_MedioPagoReplace_ID(this.medioPagoReplace.get_ID());
+                    factDet.setZ_EmisionMedioPago_ID(OLD_emisionMedioPago_ID);
+                    factDet.setZ_MedioPago_ID(replaceLin.getZ_MedioPago_ID());
+
+                    if (replaceLin.getC_BankAccount_ID() > 0){
+                        factDet.setC_BankAccount_ID(replaceLin.getC_BankAccount_ID());
+                        factDet.setC_Bank_ID(replaceLin.getC_BankAccount().getC_Bank_ID());
+                    }
+
+                    if (replaceLin.getZ_MedioPagoItem_ID() > 0){
+                        factDet.setZ_MedioPagoItem_ID(replaceLin.getZ_MedioPagoItem_ID());
+                    }
+
+                    factDet.setNroMedioPago(nroMedioPago);
+                    factDet.setEstadoMedioPago(X_Z_AcctFactDet.ESTADOMEDIOPAGO_ANULADO);
+                    factDet.setCurrencyRate(Env.ONE);
+                    factDet.setDueDate(replaceLin.getDueDate());
+                    factDet.saveEx();
+                }
+
+                // CR - Cuenta contable y monto del Cargo ingresado en el cabezal del reemplazo
+                if (this.medioPagoReplace.getC_Charge_ID() > 0){
+
+                    BigDecimal amtCharge = this.medioPagoReplace.getChargeAmt();
+                    if ((amt != null) && (amt.compareTo(Env.ZERO) != 0)){
+                        FactLine fl2 = fact.createLine(null, getAccount(Doc.ACCTTYPE_Charge, as), getC_Currency_ID(), null, amt);
+                        if (fl2 != null){
+                            fl2.setAD_Org_ID(this.medioPagoReplace.getAD_Org_ID());
+                        }
+                    }
+                }
+
+                // CR - Datos de este nuevo medio de pago
+                FactLine fl3 = fact.createLine(null, MAccount.get(getCtx(), mpEmitidos_ID), getC_Currency_ID(), null, replaceDet.getTotalAmt());
+
+                // Guardo detalles asociados a esta pata del asiento contable
+                if (fl3 != null){
+                    fl3.saveEx();
+                    MZAcctFactDet factDet = new MZAcctFactDet(getCtx(), 0, getTrxName());
+                    factDet.setFact_Acct_ID(fl3.get_ID());
+                    factDet.setAD_Org_ID(this.medioPagoReplace.getAD_Org_ID());
+                    factDet.setZ_MedioPagoReplace_ID(this.medioPagoReplace.get_ID());
+
+                    if ((NEW_medioPagoItem != null) && (NEW_medioPagoItem.getZ_EmisionMedioPago_ID() > 0)){
+                        factDet.setZ_EmisionMedioPago_ID(NEW_medioPagoItem.getZ_EmisionMedioPago_ID());
+                    }
+
+                    factDet.setZ_MedioPago_ID(replaceDet.getZ_MedioPago_ID());
+
+                    if (replaceDet.getC_BankAccount_ID() > 0){
+                        factDet.setC_BankAccount_ID(replaceDet.getC_BankAccount_ID());
+                        factDet.setC_Bank_ID(replaceDet.getC_BankAccount().getC_Bank_ID());
+                    }
+
+                    if (replaceDet.getZ_MedioPagoItem_ID() > 0){
+                        factDet.setZ_MedioPagoItem_ID(replaceLin.getZ_MedioPagoItem_ID());
+                    }
+
+                    if ((NEW_medioPagoItem != null) && (NEW_medioPagoItem.getNroMedioPago() != null)){
+                        factDet.setNroMedioPago(NEW_medioPagoItem.getNroMedioPago());
+                    }
+                    else{
+                        factDet.setNroMedioPago(replaceDet.getDocumentNoRef());
+                    }
+
+                    factDet.setEstadoMedioPago(X_Z_AcctFactDet.ESTADOMEDIOPAGO_EMITIDO);
+                    factDet.setCurrencyRate(Env.ONE);
+                    factDet.setDueDate(replaceDet.getDueDate());
+                    factDet.saveEx();
+                }
+            }
+
         }
 
         facts.add(fact);

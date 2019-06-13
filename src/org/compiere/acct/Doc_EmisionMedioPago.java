@@ -74,6 +74,14 @@ public class Doc_EmisionMedioPago extends Doc {
         ArrayList<Fact> facts = new ArrayList<Fact>();
         Fact fact = new Fact(this, as, Fact.POST_Actual);
 
+        // Si esta emision de medio de pago tiene como origen un documento de reemplazo, no hago el asiento aca, sino que se hace en el
+        // documento mismo del reemplazo.
+        if (this.emisionMedioPago.getZ_MedioPagoReplace_ID() > 0){
+            facts.add(fact);
+            return facts;
+        }
+
+
         BigDecimal grossAmt = getAmount(Doc.AMTTYPE_Gross);
 
         // Obtengo numero de medio de pago para luego guardarlo asociado a cada pata del asiento contable.
