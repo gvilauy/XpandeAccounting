@@ -51,6 +51,8 @@ public class Doc_MedioPagoReplace extends Doc {
         this.docType = (MDocType) this.medioPagoReplace.getC_DocType();
         setDocumentType(docType.getDocBaseType());
 
+        setAmount(Doc.AMTTYPE_Charge, this.medioPagoReplace.getChargeAmt());
+
         //	Lineas del documento.
         p_lines = loadLines();
 
@@ -233,8 +235,8 @@ public class Doc_MedioPagoReplace extends Doc {
                 if (this.medioPagoReplace.getC_Charge_ID() > 0){
 
                     BigDecimal amtCharge = this.medioPagoReplace.getChargeAmt();
-                    if ((amt != null) && (amt.compareTo(Env.ZERO) != 0)){
-                        FactLine fl2 = fact.createLine(null, getAccount(Doc.ACCTTYPE_Charge, as), getC_Currency_ID(), null, amt);
+                    if ((amtCharge != null) && (amtCharge.compareTo(Env.ZERO) != 0)){
+                        FactLine fl2 = fact.createLine(null, getAccount(Doc.ACCTTYPE_Charge, as), getC_Currency_ID(), null, amtCharge);
                         if (fl2 != null){
                             fl2.setAD_Org_ID(this.medioPagoReplace.getAD_Org_ID());
                         }
