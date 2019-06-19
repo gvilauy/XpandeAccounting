@@ -5,6 +5,7 @@ import org.compiere.model.MJournal;
 import org.compiere.model.MJournalLine;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
+import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.xpande.acct.utils.AccountUtils;
 import org.xpande.core.utils.CurrencyUtils;
@@ -89,6 +90,30 @@ public class CopiarAsiento extends SvrProcess {
                 }
 
                 journalLineDest.saveEx();
+
+                // El metodo MJournalLine.beforeSave(), sobreescribe el producto y socio de negocio de la linea con el producto y socio
+                // que esten asociados a la combinacion contable (c_validcombination).
+                // El problema que en esta copia, al sobre-escribirlos, los deja en null.
+                // Por este motivo una vez pasado el beforeSave, fuerzo la actualización de estos valores en la linea.
+                // Cuido de no copiar valores en cero
+                String action = null;
+                if ((journalLineOrigen.getM_Product_ID() > 0) && (journalLineOrigen.getC_BPartner_ID() > 0)){
+                    action = " update gl_journalline set m_product_id =" + journalLineOrigen.getM_Product_ID() + ", " +
+                            " c_bpartner_id =" + journalLineOrigen.getC_BPartner_ID() +
+                            " where gl_journalline_id =" + journalLineDest.get_ID();
+                }
+                else if (journalLineOrigen.getM_Product_ID() > 0){
+                    action = " update gl_journalline set m_product_id =" + journalLineOrigen.getM_Product_ID() +
+                            " where gl_journalline_id =" + journalLineDest.get_ID();
+                }
+                else if (journalLineOrigen.getC_BPartner_ID() > 0){
+                    action = " update gl_journalline set c_bpartner_id =" + journalLineOrigen.getC_BPartner_ID() +
+                            " where gl_journalline_id =" + journalLineDest.get_ID();
+                }
+
+                if (action != null){
+                    DB.executeUpdateEx(action, get_TrxName());
+                }
             }
 
         }
