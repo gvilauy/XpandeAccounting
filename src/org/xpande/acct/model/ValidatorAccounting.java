@@ -265,7 +265,7 @@ public class ValidatorAccounting implements ModelValidator {
     private String docValidate(MJournal model, int timing) {
 
         String message = null;
-        String action = "";
+        String action = "", sql = "";
 
         if (timing == TIMING_BEFORE_COMPLETE){
 
@@ -274,6 +274,14 @@ public class ValidatorAccounting implements ModelValidator {
                     " where gl_journal_id =" + model.get_ID();
 
             DB.executeUpdateEx(action, model.get_TrxName());
+
+            // Me aseguro que no haya lineas con montos en cero al mismo tiempo tanto en debito como en créditos.
+            sql = " select count(*) from gl_journalline where amtacctdr = 0 and amtacctcr = 0 and gl_journal_id =" + model.get_ID();
+            int contador = DB.getSQLValueEx(model.get_TrxName(), sql);
+            if (contador > 0){
+                return "No se puede Completar este Documento, ya que tiene lineas con montos en CERO al mismo tiempo en el Debe y en el Haber.";
+            }
+
         }
 
         return message;
