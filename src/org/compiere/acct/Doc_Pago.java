@@ -65,12 +65,19 @@ public class Doc_Pago extends Doc {
         // Si es un pago
         if (!this.pago.isSOTrx()){
 
-            // Total del documento es igual al total de medios de pago, ya que para Pagos no se consideraran Resguardos en este asiento.
-            setAmount(Doc.AMTTYPE_Gross, this.amtMediosPago);
+            // Si no es un anticipo
+            if (!this.pago.isAnticipo()){
+                // Total del documento es igual al total de medios de pago, ya que para Pagos no se consideraran Resguardos en este asiento.
+                setAmount(Doc.AMTTYPE_Gross, this.amtMediosPago);
+            }
+            else{
+                // Total del documento es igual al total digitado por el usuario en el cabezal del anticipo
+                setAmount(Doc.AMTTYPE_Gross, this.pago.getPayAmt());
+            }
+
         }
         // Si es un cobro
         else{
-
             // Total del documento
             setAmount(Doc.AMTTYPE_Gross, pago.getPayAmt());
         }
@@ -86,6 +93,14 @@ public class Doc_Pago extends Doc {
 
         BigDecimal retValue = Env.ZERO;
         StringBuffer sb = new StringBuffer (" [");
+
+        // Para anticipos de proveedores, es un solo monto, y siempre cierra.
+        if (!this.pago.isSOTrx()){
+            if (this.pago.isAnticipo()){
+                return  retValue;
+            }
+        }
+
 
         //  Total
         retValue = retValue.add(getAmount(Doc.AMTTYPE_Gross));
