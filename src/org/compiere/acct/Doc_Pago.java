@@ -267,7 +267,6 @@ public class Doc_Pago extends Doc {
                                 fact = null;
                                 facts.add(fact);
                                 return facts;
-
                             }
                         }
                         else{
@@ -394,10 +393,26 @@ public class Doc_Pago extends Doc {
                 int accountID = -1;
                 if (pagoMedioPago.getC_BankAccount_ID() > 0){
                     accountID = AccountUtils.getBankValidCombinationID(getCtx(), Doc.ACCTTYPE_BankAsset, pagoMedioPago.getC_BankAccount_ID(), as, null);
+                    if (accountID <= 0){
+                        MBankAccount bankAccount = (MBankAccount) pagoMedioPago.getC_BankAccount();
+                        p_Error = "No se obtuvo Cuenta Contable (BankAsset) asociada a la Cuenta Bancaria : " + bankAccount.getName();
+                        log.log(Level.SEVERE, p_Error);
+                        fact = null;
+                        facts.add(fact);
+                        return facts;
+                    }
                 }
                 else{
                     if (pagoMedioPago.getZ_MedioPago_ID() > 0){
                         accountID = AccountUtils.getMedioPagoValidCombinationID(getCtx(), Doc.ACCTYPE_MP_Recibidos, pagoMedioPago.getZ_MedioPago_ID(), pagoMedioPago.getC_Currency_ID(), as, null);
+                        if (accountID <= 0){
+                            MZMedioPago medioPago = (MZMedioPago) pagoMedioPago.getZ_MedioPago();
+                            p_Error = "No se obtuvo Cuenta Contable (MP_Recibidos) asociada al medio de pago : " + medioPago.getName();
+                            log.log(Level.SEVERE, p_Error);
+                            fact = null;
+                            facts.add(fact);
+                            return facts;
+                        }
                     }
                     else{
                         p_Error = "No se indica Cuenta Bancaria y tampoco se indica Medio de Pago";
