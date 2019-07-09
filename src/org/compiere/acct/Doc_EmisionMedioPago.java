@@ -8,10 +8,7 @@ import org.compiere.util.Env;
 import org.xpande.acct.model.MZAcctFactDet;
 import org.xpande.acct.model.X_Z_AcctFactDet;
 import org.xpande.acct.utils.AccountUtils;
-import org.xpande.financial.model.MZEmisionMedioPago;
-import org.xpande.financial.model.MZMedioPagoItem;
-import org.xpande.financial.model.MZPago;
-import org.xpande.financial.model.MZPagoMedioPago;
+import org.xpande.financial.model.*;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
@@ -55,6 +52,8 @@ public class Doc_EmisionMedioPago extends Doc {
         this.docType = (MDocType) emisionMedioPago.getC_DocType();
         setDocumentType(docType.getDocBaseType());
 
+        setAmount(Doc.AMTTYPE_Charge, this.emisionMedioPago.getChargeAmt());
+
         return null;
     }
 
@@ -74,13 +73,9 @@ public class Doc_EmisionMedioPago extends Doc {
         ArrayList<Fact> facts = new ArrayList<Fact>();
         Fact fact = new Fact(this, as, Fact.POST_Actual);
 
-        // Si esta emision de medio de pago tiene como origen un documento de reemplazo, no hago el asiento aca, sino que se hace en el
-        // documento mismo del reemplazo.
-        if (this.emisionMedioPago.getZ_MedioPagoReplace_ID() > 0){
-            facts.add(fact);
-            return facts;
-        }
-
+        int cChargeID = this.emisionMedioPago.getC_Charge_ID();
+        BigDecimal amtCharge = this.emisionMedioPago.getChargeAmt();
+        if (amtCharge == null) amtCharge = Env.ZERO;
 
         BigDecimal grossAmt = getAmount(Doc.AMTTYPE_Gross);
 
@@ -99,9 +94,9 @@ public class Doc_EmisionMedioPago extends Doc {
         }
 
 
-        // DR : Monto de la emisión - Cuenta del Socio de Negocio
+        // DR : Monto de la emisión - Cuenta Acreedores del Socio de Negocio
         int payables_ID = getValidCombination_ID (Doc.ACCTTYPE_V_Liability, as);
-        FactLine fl1 = fact.createLine(null, MAccount.get(getCtx(), payables_ID), getC_Currency_ID(), grossAmt, null);
+        FactLine fl1 = fact.createLine(null, MAccount.get(getCtx(), payables_ID), getC_Currency_ID(), grossAmt.add(amtCharge), null);
 
         // Guardo detalles asociados a esta pata del asiento contable
         if (fl1 != null){
@@ -126,6 +121,14 @@ public class Doc_EmisionMedioPago extends Doc {
             factDet.setCurrencyRate(this.emisionMedioPago.getCurrencyRate());
             factDet.setDueDate(this.emisionMedioPago.getDueDate());
             factDet.saveEx();
+        }
+
+        // CR - Monto de cargos contables si tengo
+        if ((cChargeID > 0) && (amtCharge.compareTo(Env.ZERO) != 0)){
+            FactLine flCharge = fact.createLine(null, getAccount(Doc.ACCTTYPE_Charge, as), getC_Currency_ID(), null, amtCharge);
+            if (flCharge != null){
+                flCharge.setAD_Org_ID(this.emisionMedioPago.getAD_Org_ID());
+            }
         }
 
         // CR - Monto de la emisión - Cuenta del medio de pago a emitir
