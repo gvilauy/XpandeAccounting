@@ -84,6 +84,8 @@ public class Doc_MedioPagoReplace extends Doc {
 
             MZMedioPagoReplaceLin replaceLin = new MZMedioPagoReplaceLin(getCtx(), p_lines[i].get_ID(), this.getTrxName());
 
+            setC_BPartner_ID(replaceLin.getC_BPartner_ID());
+
             String nroMedioPagoOLD = null;
             int OLD_emisionMedioPago_ID = 0;
             if (replaceLin.getZ_MedioPagoItem_ID() > 0){
