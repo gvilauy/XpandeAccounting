@@ -96,8 +96,15 @@ public class Doc_EmisionMedioPago extends Doc {
 
         // DR : Monto de la emisión - Cuenta Acreedores del Socio de Negocio
         int payables_ID = getValidCombination_ID (Doc.ACCTTYPE_V_Liability, as);
-        FactLine fl1 = fact.createLine(null, MAccount.get(getCtx(), payables_ID), getC_Currency_ID(), grossAmt.add(amtCharge), null);
 
+        FactLine fl1 = null;
+
+        if (!emisionMedioPago.isExtornarAcct()){
+            fl1 = fact.createLine(null, MAccount.get(getCtx(), payables_ID), getC_Currency_ID(), grossAmt.add(amtCharge), null);
+        }
+        else{
+            fl1 = fact.createLine(null, MAccount.get(getCtx(), payables_ID), getC_Currency_ID(), null, grossAmt.add(amtCharge));
+        }
         // Guardo detalles asociados a esta pata del asiento contable
         if (fl1 != null){
             fl1.saveEx();
@@ -123,9 +130,18 @@ public class Doc_EmisionMedioPago extends Doc {
             factDet.saveEx();
         }
 
+
         // CR - Monto de cargos contables si tengo
         if ((cChargeID > 0) && (amtCharge.compareTo(Env.ZERO) != 0)){
-            FactLine flCharge = fact.createLine(null, getAccount(Doc.ACCTTYPE_Charge, as), getC_Currency_ID(), null, amtCharge);
+
+            FactLine flCharge = null;
+            if (!emisionMedioPago.isExtornarAcct()){
+                flCharge = fact.createLine(null, getAccount(Doc.ACCTTYPE_Charge, as), getC_Currency_ID(), null, amtCharge);
+            }
+            else{
+                flCharge = fact.createLine(null, getAccount(Doc.ACCTTYPE_Charge, as), getC_Currency_ID(), amtCharge, null);
+            }
+
             if (flCharge != null){
                 flCharge.setAD_Org_ID(this.emisionMedioPago.getAD_Org_ID());
             }
@@ -133,7 +149,15 @@ public class Doc_EmisionMedioPago extends Doc {
 
         // CR - Monto de la emisión - Cuenta del medio de pago a emitir
         int mpEmitidos_ID = getValidCombination_ID (Doc.ACCTYPE_MP_Emitidos, as);
-        FactLine fl2 = fact.createLine(null, MAccount.get(getCtx(), mpEmitidos_ID), getC_Currency_ID(), null, grossAmt);
+
+        FactLine fl2 = null;
+
+        if (!emisionMedioPago.isExtornarAcct()){
+            fl2 = fact.createLine(null, MAccount.get(getCtx(), mpEmitidos_ID), getC_Currency_ID(), null, grossAmt);
+        }
+        else{
+            fl2 = fact.createLine(null, MAccount.get(getCtx(), mpEmitidos_ID), getC_Currency_ID(), grossAmt, null);
+        }
 
         // Guardo detalles asociados a esta pata del asiento contable
         if (fl2 != null){

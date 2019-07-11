@@ -155,7 +155,15 @@ public class Doc_Pago extends Doc {
                     facts.add(fact);
                     return facts;
                 }
-                FactLine fl1 = fact.createLine(null, MAccount.get(getCtx(), acctAnticipoID), getC_Currency_ID(), grossAmt, null);
+
+                FactLine fl1 = null;
+                if (!pago.isExtornarAcct()){
+                    fl1 = fact.createLine(null, MAccount.get(getCtx(), acctAnticipoID), getC_Currency_ID(), grossAmt, null);
+                }
+                else{
+                    fl1 = fact.createLine(null, MAccount.get(getCtx(), acctAnticipoID), getC_Currency_ID(), null, grossAmt);
+                }
+
                 if (fl1 != null){
                     fl1.setAD_Org_ID(this.pago.getAD_Org_ID());
                 }
@@ -169,7 +177,15 @@ public class Doc_Pago extends Doc {
                     facts.add(fact);
                     return facts;
                 }
-                FactLine fl2 = fact.createLine(null, MAccount.get(getCtx(), acctAcreedID), getC_Currency_ID(),  null, grossAmt);
+
+                FactLine fl2 = null;
+                if (!pago.isExtornarAcct()){
+                    fl2 = fact.createLine(null, MAccount.get(getCtx(), acctAcreedID), getC_Currency_ID(),  null, grossAmt);
+                }
+                else{
+                    fl2 = fact.createLine(null, MAccount.get(getCtx(), acctAcreedID), getC_Currency_ID(), grossAmt, null);
+                }
+
                 if (fl2 != null){
                     fl2.setAD_Org_ID(this.pago.getAD_Org_ID());
                 }
@@ -186,7 +202,14 @@ public class Doc_Pago extends Doc {
 
                     // DR - Lineas de Medios de Pago - Monto de cada linea - Cuenta del medio de pago a emitir
                     int mpEmitidos_ID = getValidCombination_ID (Doc.ACCTYPE_MP_Emitidos, as);
-                    FactLine fl1 = fact.createLine(p_lines[i], MAccount.get(getCtx(), mpEmitidos_ID), getC_Currency_ID(), amt, null);
+
+                    FactLine fl1 = null;
+                    if (!pago.isExtornarAcct()){
+                        fl1 = fact.createLine(p_lines[i], MAccount.get(getCtx(), mpEmitidos_ID), getC_Currency_ID(), amt, null);
+                    }
+                    else{
+                        fl1 = fact.createLine(p_lines[i], MAccount.get(getCtx(), mpEmitidos_ID), getC_Currency_ID(), null, amt);
+                    }
 
                     if (fl1 != null){
                         fl1.setAD_Org_ID(this.pago.getAD_Org_ID());
@@ -279,7 +302,14 @@ public class Doc_Pago extends Doc {
                     }
                     if (accountID > 0){
                         MAccount acctBankCr = MAccount.get(getCtx(), accountID);
-                        FactLine fl2 = fact.createLine (p_lines[i], acctBankCr, getC_Currency_ID(), null, amt);
+
+                        FactLine fl2 = null;
+                        if (!pago.isExtornarAcct()){
+                            fl2 = fact.createLine (p_lines[i], acctBankCr, getC_Currency_ID(), null, amt);
+                        }
+                        else{
+                            fl2 = fact.createLine (p_lines[i], acctBankCr, getC_Currency_ID(), amt, null);
+                        }
 
                         if (fl2 != null){
                             fl2.setAD_Org_ID(this.pago.getAD_Org_ID());
@@ -346,7 +376,15 @@ public class Doc_Pago extends Doc {
                         facts.add(fact);
                         return facts;
                     }
-                    FactLine fl2 = fact.createLine(null, MAccount.get(getCtx(), acctAcreedID), getC_Currency_ID(), this.pago.getAmtAnticipo(), null);
+
+                    FactLine fl2 = null;
+                    if (!pago.isExtornarAcct()){
+                        fl2 = fact.createLine(null, MAccount.get(getCtx(), acctAcreedID), getC_Currency_ID(), this.pago.getAmtAnticipo(), null);
+                    }
+                    else{
+                        fl2 = fact.createLine(null, MAccount.get(getCtx(), acctAcreedID), getC_Currency_ID(), null, this.pago.getAmtAnticipo());
+                    }
+
                     if (fl2 != null){
                         fl2.setAD_Org_ID(this.pago.getAD_Org_ID());
                     }
@@ -361,7 +399,15 @@ public class Doc_Pago extends Doc {
                         facts.add(fact);
                         return facts;
                     }
-                    FactLine fl1 = fact.createLine(null, MAccount.get(getCtx(), acctAnticipoID), getC_Currency_ID(), null, this.pago.getAmtAnticipo());
+
+                    FactLine fl1 = null;
+                    if (!pago.isExtornarAcct()){
+                        fl1 = fact.createLine(null, MAccount.get(getCtx(), acctAnticipoID), getC_Currency_ID(), null, this.pago.getAmtAnticipo());
+                    }
+                    else{
+                        fl1 = fact.createLine(null, MAccount.get(getCtx(), acctAnticipoID), getC_Currency_ID(),  this.pago.getAmtAnticipo(), null);
+                    }
+
                     if (fl1 != null){
                         fl1.setAD_Org_ID(this.pago.getAD_Org_ID());
                     }
