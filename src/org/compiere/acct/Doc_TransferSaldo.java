@@ -82,33 +82,70 @@ public class Doc_TransferSaldo extends Doc {
         // Contabilización de una transferencia de saldo para pago.
         if (!this.transferSaldo.isSOTrx()){
 
-            // CR - Cuenta contable para el socio de negocio destino de la transferencia de saldo
-            setC_BPartner_ID(this.transferSaldo.getC_BPartner_ID());
-            int accountID = getValidCombination_ID (Doc.ACCTTYPE_V_Liability, as);
+            MDocType docTypeInv = (MDocType) this.transferSaldo.getC_DocTypeTarget();
+            if (docTypeInv.getDocBaseType().equalsIgnoreCase("API")){
 
-            if (accountID <= 0){
-                p_Error = "Falta parametrizar cuenta para socio de negocio.";
-                log.log(Level.SEVERE, p_Error);
-                fact = null;
-                facts.add(fact);
-                return facts;
+                // CR - Cuenta contable para el socio de negocio destino de la transferencia de saldo
+                setC_BPartner_ID(this.transferSaldo.getC_BPartner_ID());
+                int accountID = getValidCombination_ID (Doc.ACCTTYPE_V_Liability, as);
+
+                if (accountID <= 0){
+                    p_Error = "Falta parametrizar cuenta para socio de negocio.";
+                    log.log(Level.SEVERE, p_Error);
+                    fact = null;
+                    facts.add(fact);
+                    return facts;
+                }
+
+                fact.createLine(null, MAccount.get(getCtx(), accountID), getC_Currency_ID(), null, grossAmt);
+
+                // DR - Cuenta contable para el socio de negocio referenciado
+                setC_BPartner_ID(this.transferSaldo.getC_BPartnerRelation_ID());
+                accountID = getValidCombination_ID (Doc.ACCTTYPE_V_Liability, as);
+
+                if (accountID <= 0){
+                    p_Error = "Falta parametrizar cuenta para socio de negocio referenciado.";
+                    log.log(Level.SEVERE, p_Error);
+                    fact = null;
+                    facts.add(fact);
+                    return facts;
+                }
+
+                fact.createLine(null, MAccount.get(getCtx(), accountID), getC_Currency_ID(), grossAmt, null);
+            }
+            else{
+
+                // DR - Cuenta contable para el socio de negocio destino de la transferencia de saldo
+                setC_BPartner_ID(this.transferSaldo.getC_BPartner_ID());
+                int accountID = getValidCombination_ID (Doc.ACCTTYPE_V_Liability, as);
+
+                if (accountID <= 0){
+                    p_Error = "Falta parametrizar cuenta para socio de negocio.";
+                    log.log(Level.SEVERE, p_Error);
+                    fact = null;
+                    facts.add(fact);
+                    return facts;
+                }
+
+                fact.createLine(null, MAccount.get(getCtx(), accountID), getC_Currency_ID(), grossAmt, null);
+
+                // CR - Cuenta contable para el socio de negocio referenciado
+                setC_BPartner_ID(this.transferSaldo.getC_BPartnerRelation_ID());
+                accountID = getValidCombination_ID (Doc.ACCTTYPE_V_Liability, as);
+
+                if (accountID <= 0){
+                    p_Error = "Falta parametrizar cuenta para socio de negocio referenciado.";
+                    log.log(Level.SEVERE, p_Error);
+                    fact = null;
+                    facts.add(fact);
+                    return facts;
+                }
+
+                fact.createLine(null, MAccount.get(getCtx(), accountID), getC_Currency_ID(), null, grossAmt);
+
+
             }
 
-            fact.createLine(null, MAccount.get(getCtx(), accountID), getC_Currency_ID(), null, grossAmt);
-
-            // DR - Cuenta contable para el socio de negocio referenciado
-            setC_BPartner_ID(this.transferSaldo.getC_BPartnerRelation_ID());
-            accountID = getValidCombination_ID (Doc.ACCTTYPE_V_Liability, as);
-
-            if (accountID <= 0){
-                p_Error = "Falta parametrizar cuenta para socio de negocio referenciado.";
-                log.log(Level.SEVERE, p_Error);
-                fact = null;
-                facts.add(fact);
-                return facts;
-            }
-
-            fact.createLine(null, MAccount.get(getCtx(), accountID), getC_Currency_ID(), grossAmt, null);
 
         }
         else{
