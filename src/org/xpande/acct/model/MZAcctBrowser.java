@@ -256,7 +256,6 @@ public class MZAcctBrowser extends X_Z_AcctBrowser {
 
         try{
 
-
             // Secuencia de tabla de detalle de consulta de balance contable
             MSequence sequence = MSequence.get(getCtx(), I_Z_AcctBrowserBal.Table_Name, get_TrxName());
 
