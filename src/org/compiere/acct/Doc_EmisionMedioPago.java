@@ -13,6 +13,7 @@ import org.xpande.financial.model.*;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.logging.Level;
 
 /**
  * Product: Adempiere ERP & CRM Smart Business Solution. Localization : Uruguay - Xpande
@@ -93,23 +94,73 @@ public class Doc_EmisionMedioPago extends Doc {
             nroMedioPago = this.emisionMedioPago.getReferenceNo();
         }
 
-
-        // DR : Monto de la emisión - Cuenta Acreedores del Socio de Negocio
-        int payables_ID = getValidCombination_ID (Doc.ACCTTYPE_V_Liability, as);
+        // DR : Monto de la emisión - Cuenta Medios de Pago Pendientes de Entrega (cuenta puente)
+        int emiPendEnt_ID = getValidCombination_ID (Doc.ACCTYPE_MP_EmiPendEnt, as);
+        if (emiPendEnt_ID <= 0){
+            p_Error = "Falta parametrizar Cuenta Contable para Medio de Pago Emitido y Pendiente de Entrega en moneda de este Documento.";
+            log.log(Level.SEVERE, p_Error);
+            fact = null;
+            facts.add(fact);
+            return facts;
+        }
 
         FactLine fl1 = null;
 
         if (!emisionMedioPago.isExtornarAcct()){
-            fl1 = fact.createLine(null, MAccount.get(getCtx(), payables_ID), getC_Currency_ID(), grossAmt.add(amtCharge), null);
+            fl1 = fact.createLine(null, MAccount.get(getCtx(), emiPendEnt_ID), getC_Currency_ID(), grossAmt.add(amtCharge), null);
         }
         else{
-            fl1 = fact.createLine(null, MAccount.get(getCtx(), payables_ID), getC_Currency_ID(), null, grossAmt.add(amtCharge));
+            fl1 = fact.createLine(null, MAccount.get(getCtx(), emiPendEnt_ID), getC_Currency_ID(), null, grossAmt.add(amtCharge));
         }
         // Guardo detalles asociados a esta pata del asiento contable
         if (fl1 != null){
             fl1.saveEx();
             MZAcctFactDet factDet = new MZAcctFactDet(getCtx(), 0, getTrxName());
             factDet.setFact_Acct_ID(fl1.get_ID());
+            factDet.setAD_Org_ID(this.emisionMedioPago.getAD_Org_ID());
+            factDet.setZ_EmisionMedioPago_ID(this.emisionMedioPago.get_ID());
+            factDet.setZ_MedioPago_ID(this.emisionMedioPago.getZ_MedioPago_ID());
+
+            if (this.emisionMedioPago.getC_BankAccount_ID() > 0){
+                factDet.setC_BankAccount_ID(this.emisionMedioPago.getC_BankAccount_ID());
+                factDet.setC_Bank_ID(this.emisionMedioPago.getC_BankAccount().getC_Bank_ID());
+            }
+
+            if (this.emisionMedioPago.getZ_MedioPagoItem_ID() > 0){
+                factDet.setZ_MedioPagoItem_ID(this.emisionMedioPago.getZ_MedioPagoItem_ID());
+            }
+
+            factDet.setNroMedioPago(nroMedioPago);
+            factDet.setEstadoMedioPago(X_Z_AcctFactDet.ESTADOMEDIOPAGO_EMITIDO);
+            factDet.setCurrencyRate(this.emisionMedioPago.getCurrencyRate());
+            factDet.setDueDate(this.emisionMedioPago.getDueDate());
+            factDet.saveEx();
+        }
+
+        // CR - Monto de la emisión - Cuenta del medio de pago a emitir
+        int mpEmitidos_ID = getValidCombination_ID (Doc.ACCTYPE_MP_Emitidos, as);
+        if (mpEmitidos_ID <= 0){
+            p_Error = "Falta parametrizar Cuenta Contable para Medio de Pago Emitido en moneda de este Documento.";
+            log.log(Level.SEVERE, p_Error);
+            fact = null;
+            facts.add(fact);
+            return facts;
+        }
+
+        FactLine fl2 = null;
+
+        if (!emisionMedioPago.isExtornarAcct()){
+            fl2 = fact.createLine(null, MAccount.get(getCtx(), mpEmitidos_ID), getC_Currency_ID(), null, grossAmt);
+        }
+        else{
+            fl2 = fact.createLine(null, MAccount.get(getCtx(), mpEmitidos_ID), getC_Currency_ID(), grossAmt, null);
+        }
+
+        // Guardo detalles asociados a esta pata del asiento contable
+        if (fl2 != null){
+            fl2.saveEx();
+            MZAcctFactDet factDet = new MZAcctFactDet(getCtx(), 0, getTrxName());
+            factDet.setFact_Acct_ID(fl2.get_ID());
             factDet.setAD_Org_ID(this.emisionMedioPago.getAD_Org_ID());
             factDet.setZ_EmisionMedioPago_ID(this.emisionMedioPago.get_ID());
             factDet.setZ_MedioPago_ID(this.emisionMedioPago.getZ_MedioPago_ID());
@@ -147,42 +198,6 @@ public class Doc_EmisionMedioPago extends Doc {
             }
         }
 
-        // CR - Monto de la emisión - Cuenta del medio de pago a emitir
-        int mpEmitidos_ID = getValidCombination_ID (Doc.ACCTYPE_MP_Emitidos, as);
-
-        FactLine fl2 = null;
-
-        if (!emisionMedioPago.isExtornarAcct()){
-            fl2 = fact.createLine(null, MAccount.get(getCtx(), mpEmitidos_ID), getC_Currency_ID(), null, grossAmt);
-        }
-        else{
-            fl2 = fact.createLine(null, MAccount.get(getCtx(), mpEmitidos_ID), getC_Currency_ID(), grossAmt, null);
-        }
-
-        // Guardo detalles asociados a esta pata del asiento contable
-        if (fl2 != null){
-            fl2.saveEx();
-            MZAcctFactDet factDet = new MZAcctFactDet(getCtx(), 0, getTrxName());
-            factDet.setFact_Acct_ID(fl2.get_ID());
-            factDet.setAD_Org_ID(this.emisionMedioPago.getAD_Org_ID());
-            factDet.setZ_EmisionMedioPago_ID(this.emisionMedioPago.get_ID());
-            factDet.setZ_MedioPago_ID(this.emisionMedioPago.getZ_MedioPago_ID());
-
-            if (this.emisionMedioPago.getC_BankAccount_ID() > 0){
-                factDet.setC_BankAccount_ID(this.emisionMedioPago.getC_BankAccount_ID());
-                factDet.setC_Bank_ID(this.emisionMedioPago.getC_BankAccount().getC_Bank_ID());
-            }
-
-            if (this.emisionMedioPago.getZ_MedioPagoItem_ID() > 0){
-                factDet.setZ_MedioPagoItem_ID(this.emisionMedioPago.getZ_MedioPagoItem_ID());
-            }
-
-            factDet.setNroMedioPago(nroMedioPago);
-            factDet.setEstadoMedioPago(X_Z_AcctFactDet.ESTADOMEDIOPAGO_EMITIDO);
-            factDet.setCurrencyRate(this.emisionMedioPago.getCurrencyRate());
-            factDet.setDueDate(this.emisionMedioPago.getDueDate());
-            factDet.saveEx();
-        }
 
         facts.add(fact);
         return facts;

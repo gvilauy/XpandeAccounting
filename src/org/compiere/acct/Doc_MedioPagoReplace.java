@@ -118,6 +118,7 @@ public class Doc_MedioPagoReplace extends Doc {
 
             // Guardo detalles asociados a esta pata del asiento contable
             if (fl1 != null){
+                fl1.setAD_Org_ID(this.getAD_Org_ID());
                 fl1.saveEx();
                 MZAcctFactDet factDet = new MZAcctFactDet(getCtx(), 0, getTrxName());
                 factDet.setFact_Acct_ID(fl1.get_ID());
@@ -142,20 +143,43 @@ public class Doc_MedioPagoReplace extends Doc {
                 factDet.saveEx();
             }
 
-            // CR : Monto del medio de pago reemplazado - Cuenta Acreedores del Socio de Negocio
-            int acctAcreedID = getValidCombination_ID (Doc.ACCTTYPE_V_Liability, as);
-            if (acctAcreedID <= 0){
-                p_Error = "Falta parametrizar Cuenta Contable para CxP del Proveedor en moneda de este Documento.";
+            // CR : Monto del medio de pago reemplazado - Cuenta medio de pago emitido y pendiente de entrega
+            int emiPendEnt_ID = getValidCombination_ID (Doc.ACCTYPE_MP_EmiPendEnt, as);
+            if (emiPendEnt_ID <= 0){
+                p_Error = "Falta parametrizar Cuenta Contable para Medio de Pago Emitido y Pendiente de Entrega en moneda de este Documento.";
                 log.log(Level.SEVERE, p_Error);
                 fact = null;
                 facts.add(fact);
                 return facts;
             }
-            FactLine fl2 = fact.createLine(null, MAccount.get(getCtx(), acctAcreedID), getC_Currency_ID(),  null, amt);
-            if (fl2 != null){
-                fl2.setAD_Org_ID(this.medioPagoReplace.getAD_Org_ID());
-            }
+            FactLine fl2 = fact.createLine(null, MAccount.get(getCtx(), emiPendEnt_ID), getC_Currency_ID(),  null, amt);
 
+            // Guardo detalles asociados a esta pata del asiento contable
+            if (fl2 != null){
+                fl2.setAD_Org_ID(this.getAD_Org_ID());
+                fl2.saveEx();
+                MZAcctFactDet factDet = new MZAcctFactDet(getCtx(), 0, getTrxName());
+                factDet.setFact_Acct_ID(fl2.get_ID());
+                factDet.setAD_Org_ID(this.medioPagoReplace.getAD_Org_ID());
+                factDet.setZ_MedioPagoReplace_ID(this.medioPagoReplace.get_ID());
+                factDet.setZ_EmisionMedioPago_ID(OLD_emisionMedioPago_ID);
+                factDet.setZ_MedioPago_ID(replaceLin.getZ_MedioPago_ID());
+
+                if (replaceLin.getC_BankAccount_ID() > 0){
+                    factDet.setC_BankAccount_ID(replaceLin.getC_BankAccount_ID());
+                    factDet.setC_Bank_ID(replaceLin.getC_BankAccount().getC_Bank_ID());
+                }
+
+                if (replaceLin.getZ_MedioPagoItem_ID() > 0){
+                    factDet.setZ_MedioPagoItem_ID(replaceLin.getZ_MedioPagoItem_ID());
+                }
+
+                factDet.setNroMedioPago(nroMedioPagoOLD);
+                factDet.setEstadoMedioPago(X_Z_AcctFactDet.ESTADOMEDIOPAGO_ANULADO);
+                factDet.setCurrencyRate(Env.ONE);
+                factDet.setDueDate(replaceLin.getDueDate());
+                factDet.saveEx();
+            }
 
             // Si hay un pago asociado a este medio de pago
             if (replaceLin.getZ_Pago_ID() > 0){
