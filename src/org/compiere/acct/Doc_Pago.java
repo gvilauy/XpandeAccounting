@@ -1,6 +1,7 @@
 package org.compiere.acct;
 
 import org.compiere.model.*;
+import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.xpande.acct.model.MZAcctFactDet;
 import org.xpande.acct.model.X_Z_AcctFactDet;
@@ -11,6 +12,7 @@ import org.xpande.financial.model.*;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 
@@ -208,14 +210,17 @@ public class Doc_Pago extends Doc {
                 }
                 FactLine fl2 = null;
                 if (!pago.isExtornarAcct()){
-                    fl2 = fact.createLine(null, MAccount.get(getCtx(), acctAcreedID), getC_Currency_ID(), this.pago.getPayAmt().add(montoAnticipos), null);
+                    fl2 = fact.createLine(null, MAccount.get(getCtx(), acctAcreedID), getC_Currency_ID(), grossAmt.add(montoAnticipos), null);
                 }
                 else{
-                    fl2 = fact.createLine(null, MAccount.get(getCtx(), acctAcreedID), getC_Currency_ID(), null, this.pago.getPayAmt().add(montoAnticipos));
+                    fl2 = fact.createLine(null, MAccount.get(getCtx(), acctAcreedID), getC_Currency_ID(), null, grossAmt.add(montoAnticipos));
                 }
                 if (fl2 != null){
                     fl2.setAD_Org_ID(this.pago.getAD_Org_ID());
                 }
+
+                HashMap<Integer, Integer> hashRepItemsCharge = new HashMap<Integer, Integer>();
+                String sql = "";
 
                 // Lineas de Medios de Pago - Monto de cada linea
                 for (int i = 0; i < p_lines.length; i++)
@@ -454,6 +459,27 @@ public class Doc_Pago extends Doc {
                         fact = null;
                         facts.add(fact);
                         return facts;
+                    }
+
+                    // CR - Cargos contables en caso que este medio de pago tenga un cargo asociado en un reemplazo (como nuevo medio de pago)
+                    // Si este item de medio de pago surge de un reemplazo de medio de pago que ademas tiene cargo contable
+                    sql = " select z_mediopagoreplace_id from zv_financial_repitemcharge where z_mediopagoitem_id =" + medioPagoItem.get_ID();
+                    int medioPagoReplaceID = DB.getSQLValueEx(null, sql);
+                    if (medioPagoReplaceID > 0){
+                        // Si ya no procese este cargo de este documento de reemplazo
+                        if (!hashRepItemsCharge.containsKey(medioPagoReplaceID)){
+
+                            MZMedioPagoReplace medioPagoReplace = new MZMedioPagoReplace(getCtx(), medioPagoReplaceID, null);
+                            if (medioPagoReplace.getC_Charge_ID() > 0){
+                                if ((medioPagoReplace.getChargeAmt() != null) && (medioPagoReplace.getChargeAmt().compareTo(Env.ZERO) != 0)){
+                                    this.pago.setC_Charge_ID(medioPagoReplace.getC_Charge_ID());
+                                    this.pago.setChargeAmt(medioPagoReplace.getChargeAmt());
+                                    setAmount(Doc.AMTTYPE_Charge, medioPagoReplace.getChargeAmt());
+                                    fact.createLine(null, getAccount(Doc.ACCTTYPE_Charge, as), getC_Currency_ID(), null, getAmount(Doc.AMTTYPE_Charge));
+                                }
+                            }
+                            hashRepItemsCharge.put(medioPagoReplaceID, medioPagoReplaceID);
+                        }
                     }
                 }
 
