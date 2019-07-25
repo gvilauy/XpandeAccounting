@@ -1,9 +1,11 @@
 package org.compiere.acct;
 
 import com.sun.org.apache.bcel.internal.generic.NEW;
+import org.adempiere.pdf.Document;
 import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MDocType;
+import org.compiere.process.DocumentEngine;
 import org.compiere.util.Env;
 import org.xpande.acct.model.MZAcctFactDet;
 import org.xpande.acct.model.X_Z_AcctFactDet;
@@ -184,80 +186,20 @@ public class Doc_MedioPagoReplace extends Doc {
             // Si hay un pago asociado a este medio de pago
             if (replaceLin.getZ_Pago_ID() > 0){
 
-                MZMedioPagoItem medioPagoItem = (MZMedioPagoItem) replaceLin.getZ_MedioPagoItem();
+                // Si el pago esta completo hago asientos, sino no hago nada.
+                MZPago pago = (MZPago) replaceLin.getZ_Pago();
+                if ((pago != null) && (pago.get_ID() > 0) && pago.getDocStatus().equalsIgnoreCase(DocumentEngine.STATUS_Completed)){
 
-                // DR - Lineas de Medios de Pago - Monto de cada linea - Cuenta contable asociada a la cuenta bancaria del medio de pago viejo.
-                int accountID = -1;
-                if (replaceLin.getC_BankAccount_ID() > 0){
-                    accountID = AccountUtils.getBankValidCombinationID(getCtx(), Doc.ACCTTYPE_BankInTransit, replaceLin.getC_BankAccount_ID(), as, null);
-                }
-                else{
-                    if (replaceLin.getZ_MedioPago_ID() > 0){
-                        accountID = AccountUtils.getMedioPagoValidCombinationID(getCtx(), Doc.ACCTYPE_MP_Entregados, replaceLin.getZ_MedioPago_ID(), replaceLin.getC_Currency_ID(), as, null);
+                    MZMedioPagoItem medioPagoItem = (MZMedioPagoItem) replaceLin.getZ_MedioPagoItem();
+
+                    // DR - Lineas de Medios de Pago - Monto de cada linea - Cuenta contable asociada a la cuenta bancaria del medio de pago viejo.
+                    int accountID = -1;
+                    if (replaceLin.getC_BankAccount_ID() > 0){
+                        accountID = AccountUtils.getBankValidCombinationID(getCtx(), Doc.ACCTTYPE_BankInTransit, replaceLin.getC_BankAccount_ID(), as, null);
                     }
                     else{
-                        p_Error = "No se indica Cuenta Bancaria y tampoco se indica Medio de Pago";
-                        log.log(Level.SEVERE, p_Error);
-                        fact = null;
-                    }
-                }
-                if (accountID > 0){
-                    MAccount acctBankCr = MAccount.get(getCtx(), accountID);
-                    FactLine fl3 = fact.createLine (p_lines[i], acctBankCr, getC_Currency_ID(), amt, null);
-
-                    // Detalle de asiento
-                    if (fl3 != null){
-                        fl3.saveEx();
-                        MZAcctFactDet factDet = new MZAcctFactDet(getCtx(), 0, getTrxName());
-                        factDet.setFact_Acct_ID(fl3.get_ID());
-                        factDet.setAD_Org_ID(this.medioPagoReplace.getAD_Org_ID());
-                        factDet.setZ_Pago_ID(medioPagoItem.getZ_Pago_ID());
-                        factDet.setZ_MedioPagoReplace_ID(this.medioPagoReplace.get_ID());
-                        factDet.setZ_MedioPago_ID(replaceLin.getZ_MedioPago_ID());
-                        if (replaceLin.getC_BankAccount_ID() > 0){
-                            factDet.setC_BankAccount_ID(replaceLin.getC_BankAccount_ID());
-                            factDet.setC_Bank_ID(replaceLin.getC_BankAccount().getC_Bank_ID());
-                        }
-
-                        factDet.setZ_MedioPagoItem_ID(medioPagoItem.get_ID());
-
-                        String nroMedioPago = medioPagoItem.getNroMedioPago();
-                        if (medioPagoItem.getDocumentSerie() != null){
-                            nroMedioPago = medioPagoItem.getDocumentSerie().trim() + nroMedioPago;
-                        }
-                        factDet.setNroMedioPago(nroMedioPago);
-                        factDet.setEstadoMedioPago(X_Z_AcctFactDet.ESTADOMEDIOPAGO_ENTREGADO);
-                        factDet.setCurrencyRate(Env.ONE);
-                        factDet.setDueDate(replaceLin.getDueDate());
-                        factDet.saveEx();
-                    }
-                }
-
-                // CR - Cargo contable asociado al cabezal de este documento
-                if (this.medioPagoReplace.getC_Charge_ID() > 0){
-                    if ((this.medioPagoReplace.getChargeAmt() != null) && (this.medioPagoReplace.getChargeAmt().compareTo(Env.ZERO) != 0)){
-                        fact.createLine(null, getAccount(Doc.ACCTTYPE_Charge, as), getC_Currency_ID(), null, getAmount(Doc.AMTTYPE_Charge));
-                    }
-                }
-
-                // CR - Lineas de Medios de Pago - Monto de cada linea - Cuenta contable asociada a la cuenta bancaria del medio de pago nuevo
-                List<MZMedioPagoReplaceDet> dets = replaceLin.getDetail();
-                for (MZMedioPagoReplaceDet replaceDet: dets){
-
-                    MZMedioPagoItem NEW_medioPagoItem = (MZMedioPagoItem) replaceDet.getZ_MedioPagoItem();
-                    String nroMedioPago = NEW_medioPagoItem.getNroMedioPago();
-                    if (NEW_medioPagoItem.getDocumentSerie() != null){
-                        nroMedioPago = NEW_medioPagoItem.getDocumentSerie().trim() + nroMedioPago;
-                    }
-
-                    // CR -  Monto del nuevo medio de pago - Cuenta contable asociada a la cuenta bancaria.
-                    int bankAccountID = -1;
-                    if (replaceDet.getC_BankAccount_ID() > 0){
-                        bankAccountID = AccountUtils.getBankValidCombinationID(getCtx(), Doc.ACCTTYPE_BankInTransit, replaceDet.getC_BankAccount_ID(), as, null);
-                    }
-                    else{
-                        if (replaceDet.getZ_MedioPago_ID() > 0){
-                            bankAccountID = AccountUtils.getMedioPagoValidCombinationID(getCtx(), Doc.ACCTYPE_MP_Entregados, replaceDet.getZ_MedioPago_ID(), replaceDet.getC_Currency_ID(), as, null);
+                        if (replaceLin.getZ_MedioPago_ID() > 0){
+                            accountID = AccountUtils.getMedioPagoValidCombinationID(getCtx(), Doc.ACCTYPE_MP_Entregados, replaceLin.getZ_MedioPago_ID(), replaceLin.getC_Currency_ID(), as, null);
                         }
                         else{
                             p_Error = "No se indica Cuenta Bancaria y tampoco se indica Medio de Pago";
@@ -265,9 +207,9 @@ public class Doc_MedioPagoReplace extends Doc {
                             fact = null;
                         }
                     }
-                    if (bankAccountID > 0){
+                    if (accountID > 0){
                         MAccount acctBankCr = MAccount.get(getCtx(), accountID);
-                        FactLine fl3 = fact.createLine (p_lines[i], acctBankCr, getC_Currency_ID(), null, replaceDet.getTotalAmt());
+                        FactLine fl3 = fact.createLine (p_lines[i], acctBankCr, getC_Currency_ID(), amt, null);
 
                         // Detalle de asiento
                         if (fl3 != null){
@@ -277,18 +219,83 @@ public class Doc_MedioPagoReplace extends Doc {
                             factDet.setAD_Org_ID(this.medioPagoReplace.getAD_Org_ID());
                             factDet.setZ_Pago_ID(medioPagoItem.getZ_Pago_ID());
                             factDet.setZ_MedioPagoReplace_ID(this.medioPagoReplace.get_ID());
-                            factDet.setZ_MedioPago_ID(replaceDet.getZ_MedioPago_ID());
-                            if (replaceDet.getC_BankAccount_ID() > 0){
-                                factDet.setC_BankAccount_ID(replaceDet.getC_BankAccount_ID());
-                                factDet.setC_Bank_ID(replaceDet.getC_BankAccount().getC_Bank_ID());
+                            factDet.setZ_MedioPago_ID(replaceLin.getZ_MedioPago_ID());
+                            if (replaceLin.getC_BankAccount_ID() > 0){
+                                factDet.setC_BankAccount_ID(replaceLin.getC_BankAccount_ID());
+                                factDet.setC_Bank_ID(replaceLin.getC_BankAccount().getC_Bank_ID());
                             }
 
-                            factDet.setZ_MedioPagoItem_ID(NEW_medioPagoItem.get_ID());
+                            factDet.setZ_MedioPagoItem_ID(medioPagoItem.get_ID());
+
+                            String nroMedioPago = medioPagoItem.getNroMedioPago();
+                            if (medioPagoItem.getDocumentSerie() != null){
+                                nroMedioPago = medioPagoItem.getDocumentSerie().trim() + nroMedioPago;
+                            }
                             factDet.setNroMedioPago(nroMedioPago);
                             factDet.setEstadoMedioPago(X_Z_AcctFactDet.ESTADOMEDIOPAGO_ENTREGADO);
                             factDet.setCurrencyRate(Env.ONE);
                             factDet.setDueDate(replaceLin.getDueDate());
                             factDet.saveEx();
+                        }
+                    }
+
+                    // CR - Cargo contable asociado al cabezal de este documento
+                    if (this.medioPagoReplace.getC_Charge_ID() > 0){
+                        if ((this.medioPagoReplace.getChargeAmt() != null) && (this.medioPagoReplace.getChargeAmt().compareTo(Env.ZERO) != 0)){
+                            fact.createLine(null, getAccount(Doc.ACCTTYPE_Charge, as), getC_Currency_ID(), null, getAmount(Doc.AMTTYPE_Charge));
+                        }
+                    }
+
+                    // CR - Lineas de Medios de Pago - Monto de cada linea - Cuenta contable asociada a la cuenta bancaria del medio de pago nuevo
+                    List<MZMedioPagoReplaceDet> dets = replaceLin.getDetail();
+                    for (MZMedioPagoReplaceDet replaceDet: dets){
+
+                        MZMedioPagoItem NEW_medioPagoItem = (MZMedioPagoItem) replaceDet.getZ_MedioPagoItem();
+                        String nroMedioPago = NEW_medioPagoItem.getNroMedioPago();
+                        if (NEW_medioPagoItem.getDocumentSerie() != null){
+                            nroMedioPago = NEW_medioPagoItem.getDocumentSerie().trim() + nroMedioPago;
+                        }
+
+                        // CR -  Monto del nuevo medio de pago - Cuenta contable asociada a la cuenta bancaria.
+                        int bankAccountID = -1;
+                        if (replaceDet.getC_BankAccount_ID() > 0){
+                            bankAccountID = AccountUtils.getBankValidCombinationID(getCtx(), Doc.ACCTTYPE_BankInTransit, replaceDet.getC_BankAccount_ID(), as, null);
+                        }
+                        else{
+                            if (replaceDet.getZ_MedioPago_ID() > 0){
+                                bankAccountID = AccountUtils.getMedioPagoValidCombinationID(getCtx(), Doc.ACCTYPE_MP_Entregados, replaceDet.getZ_MedioPago_ID(), replaceDet.getC_Currency_ID(), as, null);
+                            }
+                            else{
+                                p_Error = "No se indica Cuenta Bancaria y tampoco se indica Medio de Pago";
+                                log.log(Level.SEVERE, p_Error);
+                                fact = null;
+                            }
+                        }
+                        if (bankAccountID > 0){
+                            MAccount acctBankCr = MAccount.get(getCtx(), accountID);
+                            FactLine fl3 = fact.createLine (p_lines[i], acctBankCr, getC_Currency_ID(), null, replaceDet.getTotalAmt());
+
+                            // Detalle de asiento
+                            if (fl3 != null){
+                                fl3.saveEx();
+                                MZAcctFactDet factDet = new MZAcctFactDet(getCtx(), 0, getTrxName());
+                                factDet.setFact_Acct_ID(fl3.get_ID());
+                                factDet.setAD_Org_ID(this.medioPagoReplace.getAD_Org_ID());
+                                factDet.setZ_Pago_ID(medioPagoItem.getZ_Pago_ID());
+                                factDet.setZ_MedioPagoReplace_ID(this.medioPagoReplace.get_ID());
+                                factDet.setZ_MedioPago_ID(replaceDet.getZ_MedioPago_ID());
+                                if (replaceDet.getC_BankAccount_ID() > 0){
+                                    factDet.setC_BankAccount_ID(replaceDet.getC_BankAccount_ID());
+                                    factDet.setC_Bank_ID(replaceDet.getC_BankAccount().getC_Bank_ID());
+                                }
+
+                                factDet.setZ_MedioPagoItem_ID(NEW_medioPagoItem.get_ID());
+                                factDet.setNroMedioPago(nroMedioPago);
+                                factDet.setEstadoMedioPago(X_Z_AcctFactDet.ESTADOMEDIOPAGO_ENTREGADO);
+                                factDet.setCurrencyRate(Env.ONE);
+                                factDet.setDueDate(replaceLin.getDueDate());
+                                factDet.saveEx();
+                            }
                         }
                     }
                 }
