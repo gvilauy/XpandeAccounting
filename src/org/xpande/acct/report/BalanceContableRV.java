@@ -11,11 +11,11 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 /**
- * Proceso para reporte jasper del Balance Contable.
+ * Proceso para reporte RV del Balance Contable.
  * Product: Adempiere ERP & CRM Smart Business Solution. Localization : Uruguay - Xpande
- * Xpande. Created by Gabriel Vila on 7/19/19.
+ * Xpande. Created by Gabriel Vila on 7/28/19.
  */
-public class BalanceContableRP extends SvrProcess {
+public class BalanceContableRV extends SvrProcess {
 
     private BalanceContable balanceProcessor = null;
 
