@@ -28,6 +28,7 @@ public class MayorContableRP extends SvrProcess {
     private ProcessInfoParameter paramFechaInicio = null;
     private ProcessInfoParameter paramFechaFin = null;
     private ProcessInfoParameter paramUsuario = null;
+    private ProcessInfoParameter paramSaldoInicial = null;
 
 
     @Override
@@ -85,6 +86,10 @@ public class MayorContableRP extends SvrProcess {
                         this.mayorProcessor.cActivityID = ((BigDecimal)para[i].getParameter()).intValueExact();
                     }
                 }
+                else if (name.trim().equalsIgnoreCase("IncSaldoInicial")) {
+                    this.mayorProcessor.consideraSaldoInicial = (((String) para[i].getParameter()).trim().equalsIgnoreCase("Y")) ? true : false;
+                    this.mayorProcessor.incSaldoInicial = (String) ((String) para[i].getParameter()).trim();
+                }
 
                 else if (name.trim().equalsIgnoreCase("DateAcct")){
                     this.mayorProcessor.startDate = (Timestamp)para[i].getParameter();
@@ -116,6 +121,9 @@ public class MayorContableRP extends SvrProcess {
                 }
                 else if (name.trim().equalsIgnoreCase("RP_EndDate")){
                     paramFechaFin = para[i];
+                }
+                else if (name.trim().equalsIgnoreCase("RP_SaldoInicial")){
+                    paramSaldoInicial = para[i];
                 }
             }
         }
@@ -159,6 +167,11 @@ public class MayorContableRP extends SvrProcess {
         if (paramFechaFin != null){
             paramFechaFin.setParameter(this.mayorProcessor.endDate);
         }
+
+        if (paramSaldoInicial != null){
+            paramSaldoInicial.setParameter(this.mayorProcessor.incSaldoInicial);
+        }
+
 
         MCurrency currency1 = new MCurrency(getCtx(), this.mayorProcessor.cCurrencyID, null);
         MCurrency currency2 = null;

@@ -2,11 +2,8 @@ package org.xpande.acct.report;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.MAcctSchema;
-import org.compiere.model.MSequence;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.xpande.acct.model.I_Z_AcctBrowserMayor;
-import org.xpande.acct.model.MZAcctBrowFiltroCta;
 import org.xpande.core.utils.CurrencyUtils;
 
 import java.math.BigDecimal;
@@ -38,6 +35,8 @@ public class MayorContable {
     public int cBPartnerID = 0;
     public int mProductID = 0;
     public int cActivityID = 0;
+    public boolean consideraSaldoInicial = true;
+    public String incSaldoInicial = "Y";
 
     private Properties ctx = null;
     private String trxName = null;
@@ -136,11 +135,22 @@ public class MayorContable {
 
             // Cuentas Contables
             // Si tengo cuentas contables para filtrar, agrego condición
-            sql = " select count(*) from " + TABLA_FILTRO_CTA + " where ad_user_id =" + this.adUserID;
-            int contadorCta = DB.getSQLValueEx(null, sql);
-            if (contadorCta > 0) {
+            if ((this.textoFiltroCuentas != null) && (!this.textoFiltroCuentas.trim().equalsIgnoreCase(""))){
+
+                this.setCuentasFiltro();
+
                 whereClause += " and f.account_id in (select distinct(c_elementvalue_id) " +
                         " from " + TABLA_FILTRO_CTA + " where ad_user_id =" + this.adUserID + ") ";
+
+                /*
+                sql = " select count(*) from " + TABLA_FILTRO_CTA + " where ad_user_id =" + this.adUserID;
+                int contadorCta = DB.getSQLValueEx(null, sql);
+                if (contadorCta > 0) {
+                    whereClause += " and f.account_id in (select distinct(c_elementvalue_id) " +
+                            " from " + TABLA_FILTRO_CTA + " where ad_user_id =" + this.adUserID + ") ";
+                }
+
+                 */
             }
 
             // Socio de Negocio
@@ -159,18 +169,20 @@ public class MayorContable {
             }
 
             // Inserto en tabla de reporte
-            action = " insert into " + TABLA_REPORTE + " (ad_client_id, ad_org_id, created, createdby " +
+            action = " insert into " + TABLA_REPORTE + " (ad_client_id, ad_org_id, ad_user_id, fact_acct_id, created, createdby, " +
                     " ad_table_id, record_id, c_elementvalue_id, c_currency_id, amtsourcedr, amtsourcecr, amtacctdr, amtacctcr, " +
-                    " c_period_id, dateacct, datedoc, description, c_bpartner_id, m_product_id, c_tax_id, qty, taxid, ad_user_id, " +
+                    " c_period_id, dateacct, datedoc, description, c_bpartner_id, m_product_id, c_tax_id, qty, taxid, " +
                     " c_doctype_id, documentnoref, currencyrate, duedate, estadomediopago, nromediopago, z_mediopago_id, z_retencionsocio_id, " +
-                    " c_activity_id) ";
+                    " c_activity_id, codigocuenta, nombrecuenta) ";
 
-            sql = " select f.ad_client_id, f.ad_org_id, f.created, f.createdby, f.ad_table_id, f.record_id, f.account_id, f.c_currency_id, " +
+            sql = " select f.ad_client_id, f.ad_org_id, " + this.adUserID + ", f.fact_acct_id, f.created, f.createdby, f.ad_table_id, f.record_id, f.account_id, f.c_currency_id, " +
                     " f.amtsourcedr, f.amtsourcecr, f.amtacctdr, f.amtacctcr, " +
-                    " f.c_period_id, f.dateacct, f.datetrx, f.description, f.c_bpartner_id, f.m_product_id, f.c_tax_id, f.qty, bp.taxid, f.createdby, " +
+                    " f.c_period_id, f.dateacct, f.datetrx, f.description, f.c_bpartner_id, f.m_product_id, f.c_tax_id, f.qty, bp.taxid, " +
                     " f.c_doctype_id, f.documentnoref, " +
-                    " f.currencyrate, f.duedate, det.estadomediopago, det.nromediopago, det.z_mediopago_id, det.z_retencionsocio_id, f.c_activity_id) " +
+                    " f.currencyrate, f.duedate, det.estadomediopago, det.nromediopago, det.z_mediopago_id, det.z_retencionsocio_id, " +
+                    " f.c_activity_id, ev.value, ev.name " +
                     " from fact_acct f " +
+                    " inner join c_elementvalue ev on f.account_id = ev.c_elementvalue_id " +
                     " left outer join c_bpartner bp on f.c_bpartner_id = bp.c_bpartner_id " +
                     " left outer join z_acctfactdet det on f.fact_acct_id = det.fact_acct_id " +
                     " where f.ad_client_id =" + this.adClientID +
@@ -378,36 +390,82 @@ public class MayorContable {
         ResultSet rs = null;
 
         try{
-            sql = " select distinct c_elementvalue_id " +
+            sql = " select c_elementvalue_id, codigocuenta, dateacct, fact_acct_id, " +
+                    " coalesce(amtdr1,0) as amtdr1, coalesce(amtcr1,0) as amtcr1, " +
+                    " coalesce(amtdr2,0) as amtdr2, coalesce(amtcr2,0) as amtcr2 " +
                     " from " + TABLA_REPORTE +
-                    " where ad_user_id =" + this.adUserID;
+                    " where ad_user_id =" + this.adUserID +
+                    " order by codigocuenta, dateacct, fact_acct_id ";
 
             pstmt = DB.prepareStatement(sql, null);
             rs = pstmt.executeQuery();
 
+            int cElementValueID = 0;
+            BigDecimal saldoInicial1 = Env.ZERO, saldoInicial2 = Env.ZERO;
+            BigDecimal amtAcumulado1 = Env.ZERO, amtAcumulado2 = Env.ZERO;
+
             while(rs.next()){
 
-                BigDecimal saldoInicial1 = Env.ZERO, saldoInicial2 = Env.ZERO;
-                int cElementValueID = rs.getInt("c_elementvalue_id");
+                if (cElementValueID != rs.getInt("c_elementvalue_id")){
 
-                // Obtengo saldo inicial en moneda uno de consulta para esta cuenta contable
-                saldoInicial1 = this.getSaldoInicial(cElementValueID, this.cCurrencyID);
-                if (saldoInicial1 == null) saldoInicial1 = Env.ZERO;
+                    cElementValueID = rs.getInt("c_elementvalue_id");
 
-                // Si corresponde obtengo saldo inicial en moneda dos de consulta
-                if (this.cCurrencyID_2 > 0){
-                    saldoInicial2 = this.getSaldoInicial(cElementValueID, this.cCurrencyID_2);
-                    if (saldoInicial2 == null) saldoInicial2 = Env.ZERO;
+                    if (this.consideraSaldoInicial){
+
+                        saldoInicial1 = Env.ZERO;
+                        saldoInicial2 = Env.ZERO;
+
+                        // Obtengo saldo inicial en moneda uno de consulta para esta cuenta contable
+                        saldoInicial1 = this.getSaldoInicial(cElementValueID, this.cCurrencyID);
+                        if (saldoInicial1 == null) saldoInicial1 = Env.ZERO;
+
+                        // Si corresponde obtengo saldo inicial en moneda dos de consulta
+                        if (this.cCurrencyID_2 > 0){
+                            saldoInicial2 = this.getSaldoInicial(cElementValueID, this.cCurrencyID_2);
+                            if (saldoInicial2 == null) saldoInicial2 = Env.ZERO;
+                        }
+
+                        // Actualizo saldos iniciales en ambas monedas para esta cuenta en tabla del reporte
+                        action = " update " + TABLA_REPORTE + " set AmtInicial1 =" + saldoInicial1 + ", " +
+                                " AmtInicial2 =" + saldoInicial2 +
+                                " where ad_user_id =" + this.adUserID +
+                                " and c_elementvalue_id =" + cElementValueID;
+                        DB.executeUpdateEx(action, null);
+
+                        // Saldo acumulado comienza con saldo inicial
+                        amtAcumulado1 = saldoInicial1;
+                        amtAcumulado2 = saldoInicial2;
+                    }
+                    else{
+                        // Saldo acumulado comienza en cero al no considerarse saldo inicial
+                        amtAcumulado1 = Env.ZERO;
+                        amtAcumulado2 = Env.ZERO;
+                    }
                 }
 
-                action = " update " + TABLA_REPORTE + " set AmtInicial1 =" + saldoInicial1 + ", " +
-                        " AmtInicial2 =" + saldoInicial2 + ", " +
+                // Obtengo saldo acumulado en ambas monedas
+                if (rs.getBigDecimal("amtdr1").compareTo(Env.ZERO) != 0){
+                    amtAcumulado1 = amtAcumulado1.add(rs.getBigDecimal("amtdr1"));
+                }
+                if (rs.getBigDecimal("amtcr1").compareTo(Env.ZERO) != 0){
+                    amtAcumulado1 = amtAcumulado1.subtract(rs.getBigDecimal("amtcr1"));
+                }
+                if (rs.getBigDecimal("amtdr2").compareTo(Env.ZERO) != 0){
+                    amtAcumulado2 = amtAcumulado2.add(rs.getBigDecimal("amtdr2"));
+                }
+                if (rs.getBigDecimal("amtcr2").compareTo(Env.ZERO) != 0){
+                    amtAcumulado2 = amtAcumulado2.subtract(rs.getBigDecimal("amtcr2"));
+                }
+
+                // Actualizo montos acumulados en tabla del reporte
+                action = " update " + TABLA_REPORTE + " set AmtAcumulado1 =" + amtAcumulado1 + ", " +
+                        " AmtAcumulado2 =" + amtAcumulado2 + ", " +
                         " AmtSubtotal1 = (AmtDr1 - AmtCr1), " +
-                        " AmtTotal1 = (" + saldoInicial1 + " + AmtDr1 - AmtCr1), " +
+                        " AmtTotal1 = (AmtInicial1 + AmtDr1 - AmtCr1), " +
                         " AmtSubtotal2 = (AmtDr2 - AmtCr2), " +
-                        " AmtTotal2 = (" + saldoInicial2 + " + AmtDr2 - AmtCr2) " +
+                        " AmtTotal2 = (AmtInicial2 + AmtDr2 - AmtCr2) " +
                         " where ad_user_id =" + this.adUserID +
-                        " and c_elementvalue_id =" + cElementValueID;
+                        " and fact_acct_id =" + rs.getInt("fact_acct_id");
                 DB.executeUpdateEx(action, null);
             }
         }
