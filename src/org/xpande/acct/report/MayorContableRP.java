@@ -29,6 +29,7 @@ public class MayorContableRP extends SvrProcess {
     private ProcessInfoParameter paramFechaFin = null;
     private ProcessInfoParameter paramUsuario = null;
     private ProcessInfoParameter paramSaldoInicial = null;
+    private ProcessInfoParameter paramVarianteJasper = null;
 
 
     @Override
@@ -125,6 +126,9 @@ public class MayorContableRP extends SvrProcess {
                 else if (name.trim().equalsIgnoreCase("RP_SaldoInicial")){
                     paramSaldoInicial = para[i];
                 }
+                else if (name.trim().equalsIgnoreCase("RP_VarianteJasper")){
+                    paramVarianteJasper = para[i];
+                }
             }
         }
 
@@ -189,9 +193,16 @@ public class MayorContableRP extends SvrProcess {
         if (paramMoneda1 != null){
             paramMoneda1.setParameter("Saldo " + currency1.getISO_Code());
         }
+
         if (paramMoneda2 != null){
             if (currency2 != null){
                 paramMoneda2.setParameter("Saldo " + currency2.getISO_Code());
+            }
+        }
+
+        if (paramVarianteJasper != null){
+            if (this.mayorProcessor.cCurrencyID_2 > 0){
+                paramVarianteJasper.setParameter("DOS_MONEDAS_SIMPLE");
             }
         }
     }

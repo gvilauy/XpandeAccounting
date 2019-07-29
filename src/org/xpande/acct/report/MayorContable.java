@@ -541,7 +541,7 @@ public class MayorContable {
                 amtNotSchemaCurrency = DB.getSQLValueBDEx(null, sql);
                 if (amtNotSchemaCurrency == null) amtNotSchemaCurrency = Env.ZERO;
 
-                sql = " select sum(round(((f.amtsourcedr - f.amtsourcecr) * currencyrate(c_currency_id," + cCurrencyID + ", dateacct, 114, ad_client_id, ad_org_id)),2)) " +
+                sql = " select sum(round(((f.amtsourcedr - f.amtsourcecr) / currencyrate(" + cCurrencyID + ", c_currency_id, dateacct, 114, ad_client_id, ad_org_id)),2)) " +
                         " from fact_acct f " +
                         " where f.ad_client_id =" + this.adClientID +
                         " and f.ad_org_id =" + this.adOrgID +
