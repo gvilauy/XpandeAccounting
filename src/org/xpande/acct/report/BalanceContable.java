@@ -15,6 +15,7 @@ import java.sql.Timestamp;
 import java.util.Properties;
 
 /**
+ * Lógica del reporte de Balance Contable.
  * Product: Adempiere ERP & CRM Smart Business Solution. Localization : Uruguay - Xpande
  * Xpande. Created by Gabriel Vila on 7/19/19.
  */
@@ -217,7 +218,9 @@ public class BalanceContable {
             }
             else {
                 // Si tengo una sola moneda y la misma no es moneda nacional, filtro que traiga movimientos en moneda nacional y en moneda extranjera seleccionaca.
-                whereClause += " and f.c_currency_id in (" + this.cCurrencyID + ", " + this.acctSchema.getC_Currency_ID() + ") ";
+                if (this.cCurrencyID != acctSchema.getC_Currency_ID()){
+                    whereClause += " and f.c_currency_id in (" + this.cCurrencyID + ", " + this.acctSchema.getC_Currency_ID() + ") ";
+                }
             }
 
             sql = " select f.account_id, f.c_currency_id, sum(f.amtsourcedr - f.amtsourcecr) as saldomo, " +

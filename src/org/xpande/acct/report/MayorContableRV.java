@@ -11,13 +11,13 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 /**
- * Proceso para reporte RV del Balance Contable.
+ * Proceso para reporte RV del Mayor Contable.
  * Product: Adempiere ERP & CRM Smart Business Solution. Localization : Uruguay - Xpande
  * Xpande. Created by Gabriel Vila on 7/28/19.
  */
-public class BalanceContableRV extends SvrProcess {
+public class MayorContableRV extends SvrProcess {
 
-    private BalanceContable balanceProcessor = null;
+    private MayorContable mayorProcessor = null;
 
     private ProcessInfoParameter paramTituloReporte = null;
     private ProcessInfoParameter paramCompania = null;
@@ -33,7 +33,7 @@ public class BalanceContableRV extends SvrProcess {
     @Override
     protected void prepare() {
 
-        this.balanceProcessor = new BalanceContable(getCtx(), null);
+        this.mayorProcessor = new MayorContable(getCtx(), null);
 
         ProcessInfoParameter[] para = getParameter();
 
@@ -43,37 +43,52 @@ public class BalanceContableRV extends SvrProcess {
 
             if (name != null){
                 if (name.trim().equalsIgnoreCase("AD_Client_ID")){
-                    this.balanceProcessor.adClientID = ((BigDecimal)para[i].getParameter()).intValueExact();
+                    this.mayorProcessor.adClientID = ((BigDecimal)para[i].getParameter()).intValueExact();
                 }
                 else if (name.trim().equalsIgnoreCase("AD_Org_ID")){
-                    this.balanceProcessor.adOrgID = ((BigDecimal)para[i].getParameter()).intValueExact();
+                    this.mayorProcessor.adOrgID = ((BigDecimal)para[i].getParameter()).intValueExact();
                 }
                 else if (name.trim().equalsIgnoreCase("C_AcctSchema_ID")){
-                    this.balanceProcessor.cAcctSchemaID = ((BigDecimal)para[i].getParameter()).intValueExact();
+                    this.mayorProcessor.cAcctSchemaID = ((BigDecimal)para[i].getParameter()).intValueExact();
                 }
                 else if (name.trim().equalsIgnoreCase("C_Currency_ID")){
                     if (para[i].getParameter() != null){
-                        this.balanceProcessor.cCurrencyID = ((BigDecimal)para[i].getParameter()).intValueExact();
+                        this.mayorProcessor.cCurrencyID = ((BigDecimal)para[i].getParameter()).intValueExact();
                     }
                 }
                 else if (name.trim().equalsIgnoreCase("C_Currency_2_ID")){
                     if (para[i].getParameter() != null){
-                        this.balanceProcessor.cCurrencyID_2 = ((BigDecimal)para[i].getParameter()).intValueExact();
+                        this.mayorProcessor.cCurrencyID_2 = ((BigDecimal)para[i].getParameter()).intValueExact();
                     }
                 }
                 else if (name.trim().equalsIgnoreCase("TipoFiltroMonAcct")){
-                    this.balanceProcessor.tipoFiltroMonAcct = (String)para[i].getParameter();
+                    this.mayorProcessor.tipoFiltroMonAcct = (String)para[i].getParameter();
                 }
-                else if (name.trim().equalsIgnoreCase("TipoBalanceAcct")){
-                    this.balanceProcessor.tipoBalanceAcct = (String)para[i].getParameter();
+
+                else if (name.trim().equalsIgnoreCase("TextoFiltro")){
+                    if (para[i].getParameter() != null){
+                        this.mayorProcessor.textoFiltroCuentas = ((String)para[i].getParameter()).trim();
+                    }
                 }
+                else if (name.trim().equalsIgnoreCase("C_BPartner_ID")){
+                    if (para[i].getParameter() != null){
+                        this.mayorProcessor.cBPartnerID = ((BigDecimal)para[i].getParameter()).intValueExact();
+                    }
+                }
+                else if (name.trim().equalsIgnoreCase("M_Product_ID")){
+                    if (para[i].getParameter() != null){
+                        this.mayorProcessor.mProductID = ((BigDecimal)para[i].getParameter()).intValueExact();
+                    }
+                }
+                else if (name.trim().equalsIgnoreCase("C_Activity_ID")){
+                    if (para[i].getParameter() != null){
+                        this.mayorProcessor.cActivityID = ((BigDecimal)para[i].getParameter()).intValueExact();
+                    }
+                }
+
                 else if (name.trim().equalsIgnoreCase("DateAcct")){
-                    this.balanceProcessor.startDate = (Timestamp)para[i].getParameter();
-                    this.balanceProcessor.endDate = (Timestamp)para[i].getParameter_To();
-                }
-                else if (name.trim().equalsIgnoreCase("IncCtaSaldoSinMov")) {
-                    this.balanceProcessor.mostrarSinSaldo = (((String) para[i].getParameter()).trim().equalsIgnoreCase("Y")) ? true : false;
-                    this.balanceProcessor.incCtaSaldoSinMov = (String) ((String) para[i].getParameter()).trim();
+                    this.mayorProcessor.startDate = (Timestamp)para[i].getParameter();
+                    this.mayorProcessor.endDate = (Timestamp)para[i].getParameter_To();
                 }
                 else if (name.trim().equalsIgnoreCase("RP_Titulo")){
                     paramTituloReporte = para[i];
@@ -105,13 +120,13 @@ public class BalanceContableRV extends SvrProcess {
             }
         }
 
-        this.balanceProcessor.adUserID = this.getAD_User_ID();
+        this.mayorProcessor.adUserID = this.getAD_User_ID();
     }
 
     @Override
     protected String doIt() throws Exception {
 
-        String message = this.balanceProcessor.executeReport();
+        String message = this.mayorProcessor.executeReport();
 
         if (message != null){
             return "@Error@ " + message;
@@ -119,4 +134,5 @@ public class BalanceContableRV extends SvrProcess {
 
         return "OK";
     }
+
 }
