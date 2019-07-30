@@ -28,6 +28,8 @@ public class MayorContableRV extends SvrProcess {
     private ProcessInfoParameter paramFechaInicio = null;
     private ProcessInfoParameter paramFechaFin = null;
     private ProcessInfoParameter paramUsuario = null;
+    private ProcessInfoParameter paramSaldoInicial = null;
+    private ProcessInfoParameter paramVarianteJasper = null;
 
 
     @Override
@@ -85,43 +87,22 @@ public class MayorContableRV extends SvrProcess {
                         this.mayorProcessor.cActivityID = ((BigDecimal)para[i].getParameter()).intValueExact();
                     }
                 }
+                else if (name.trim().equalsIgnoreCase("IncSaldoInicial")) {
+                    this.mayorProcessor.consideraSaldoInicial = (((String) para[i].getParameter()).trim().equalsIgnoreCase("Y")) ? true : false;
+                    this.mayorProcessor.incSaldoInicial = (String) ((String) para[i].getParameter()).trim();
+                }
 
                 else if (name.trim().equalsIgnoreCase("DateAcct")){
                     this.mayorProcessor.startDate = (Timestamp)para[i].getParameter();
                     this.mayorProcessor.endDate = (Timestamp)para[i].getParameter_To();
                 }
-                else if (name.trim().equalsIgnoreCase("RP_Titulo")){
-                    paramTituloReporte = para[i];
-                }
-                else if (name.trim().equalsIgnoreCase("RP_Compania")){
-                    paramCompania = para[i];
-                }
-                else if (name.trim().equalsIgnoreCase("RP_Organizacion")){
-                    paramOrganizacion = para[i];
-                }
-                else if (name.trim().equalsIgnoreCase("RP_Moneda")){
-                    paramMonedaReporte = para[i];
-                }
-                else if (name.trim().equalsIgnoreCase("RP_Moneda1")){
-                    paramMoneda1 = para[i];
-                }
-                else if (name.trim().equalsIgnoreCase("RP_Moneda2")){
-                    paramMoneda2 = para[i];
-                }
-                else if (name.trim().equalsIgnoreCase("RP_Usuario")){
-                    paramUsuario = para[i];
-                }
-                else if (name.trim().equalsIgnoreCase("RP_StartDate")){
-                    paramFechaInicio = para[i];
-                }
-                else if (name.trim().equalsIgnoreCase("RP_EndDate")){
-                    paramFechaFin = para[i];
-                }
             }
         }
 
         this.mayorProcessor.adUserID = this.getAD_User_ID();
+
     }
+
 
     @Override
     protected String doIt() throws Exception {
@@ -134,5 +115,4 @@ public class MayorContableRV extends SvrProcess {
 
         return "OK";
     }
-
 }

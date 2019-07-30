@@ -173,14 +173,15 @@ public class MayorContable {
                     " ad_table_id, record_id, c_elementvalue_id, c_currency_id, amtsourcedr, amtsourcecr, amtacctdr, amtacctcr, " +
                     " c_period_id, dateacct, datedoc, description, c_bpartner_id, m_product_id, c_tax_id, qty, taxid, " +
                     " c_doctype_id, documentnoref, currencyrate, duedate, estadomediopago, nromediopago, z_mediopago_id, z_retencionsocio_id, " +
-                    " c_activity_id, codigocuenta, nombrecuenta) ";
+                    " c_activity_id, codigocuenta, nombrecuenta, C_AcctSchema_ID, TextoFiltro, TipoFiltroMonAcct, C_Currency_2_ID, IncSaldoInicial) ";
 
             sql = " select f.ad_client_id, f.ad_org_id, " + this.adUserID + ", f.fact_acct_id, f.created, f.createdby, f.ad_table_id, f.record_id, f.account_id, f.c_currency_id, " +
                     " f.amtsourcedr, f.amtsourcecr, f.amtacctdr, f.amtacctcr, " +
                     " f.c_period_id, f.dateacct, f.datetrx, f.description, f.c_bpartner_id, f.m_product_id, f.c_tax_id, f.qty, bp.taxid, " +
                     " f.c_doctype_id, f.documentnoref, " +
                     " f.currencyrate, f.duedate, det.estadomediopago, det.nromediopago, det.z_mediopago_id, det.z_retencionsocio_id, " +
-                    " f.c_activity_id, ev.value, ev.name " +
+                    " f.c_activity_id, ev.value, ev.name, " + this.cAcctSchemaID + ",'" + this.textoFiltroCuentas + "','" +
+                    this.tipoFiltroMonAcct + "', " + this.cCurrencyID_2 + ",'" + this.incSaldoInicial + "' " +
                     " from fact_acct f " +
                     " inner join c_elementvalue ev on f.account_id = ev.c_elementvalue_id " +
                     " left outer join c_bpartner bp on f.c_bpartner_id = bp.c_bpartner_id " +
