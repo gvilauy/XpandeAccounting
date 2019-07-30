@@ -191,12 +191,12 @@ public class MayorContableRP extends SvrProcess {
         }
 
         if (paramMoneda1 != null){
-            paramMoneda1.setParameter("Saldo " + currency1.getISO_Code());
+            paramMoneda1.setParameter(currency1.getISO_Code());
         }
 
         if (paramMoneda2 != null){
             if (currency2 != null){
-                paramMoneda2.setParameter("Saldo " + currency2.getISO_Code());
+                paramMoneda2.setParameter(currency2.getISO_Code());
             }
         }
 
