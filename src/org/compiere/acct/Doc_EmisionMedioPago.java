@@ -1,9 +1,6 @@
 package org.compiere.acct;
 
-import org.compiere.model.MAccount;
-import org.compiere.model.MAcctSchema;
-import org.compiere.model.MBankAccount;
-import org.compiere.model.MDocType;
+import org.compiere.model.*;
 import org.compiere.util.Env;
 import org.xpande.acct.model.MZAcctFactDet;
 import org.xpande.acct.model.X_Z_AcctFactDet;
@@ -80,6 +77,12 @@ public class Doc_EmisionMedioPago extends Doc {
 
         BigDecimal grossAmt = getAmount(Doc.AMTTYPE_Gross);
 
+        // Obtengo modelo de banco asaociado a cuenta bancaria de este medio de pago
+        MBank bank = null;
+        if (this.emisionMedioPago.getC_BankAccount_ID() > 0){
+            bank = (MBank) this.emisionMedioPago.getC_BankAccount().getC_Bank();
+        }
+
         // Obtengo numero de medio de pago para luego guardarlo asociado a cada pata del asiento contable.
         String nroMedioPago = null;
         if (this.emisionMedioPago.getZ_MedioPagoItem_ID() > 0){
@@ -87,7 +90,11 @@ public class Doc_EmisionMedioPago extends Doc {
             MZMedioPagoItem pagoItem = (MZMedioPagoItem) this.emisionMedioPago.getZ_MedioPagoItem();
             nroMedioPago = pagoItem.getNroMedioPago();
             if (pagoItem.getDocumentSerie() != null){
-                nroMedioPago = pagoItem.getDocumentSerie().trim() + nroMedioPago;
+                if ((bank != null) && (bank.get_ID() > 0)){
+                    if (bank.get_ValueAsBoolean("IncSerieConcilia")){
+                        nroMedioPago = pagoItem.getDocumentSerie().trim() + nroMedioPago;
+                    }
+                }
             }
         }
         else{

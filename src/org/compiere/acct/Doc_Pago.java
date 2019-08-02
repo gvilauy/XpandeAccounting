@@ -229,6 +229,25 @@ public class Doc_Pago extends Doc {
 
                     MZPagoMedioPago pagoMedioPago = new MZPagoMedioPago(getCtx(), p_lines[i].get_ID(), this.getTrxName());
                     MZMedioPagoItem medioPagoItem = (MZMedioPagoItem) pagoMedioPago.getZ_MedioPagoItem();
+                    String nroMedioPago = "";
+                    MBank bank = null;
+
+                    // Seteo numero de medio de pago
+                    if (medioPagoItem != null){
+                        if (medioPagoItem.getC_BankAccount_ID() > 0){
+                            bank = (MBank) medioPagoItem.getC_BankAccount().getC_Bank();
+                        }
+                        if (medioPagoItem.getNroMedioPago() != null){
+                            nroMedioPago = medioPagoItem.getNroMedioPago().trim();
+                            if (medioPagoItem.getDocumentSerie() != null){
+                                if ((bank != null) && (bank.get_ID() > 0)){
+                                    if (bank.get_ValueAsBoolean("IncSerieConcilia")){
+                                        nroMedioPago = medioPagoItem.getDocumentSerie().trim() + medioPagoItem.getNroMedioPago().trim();
+                                    }
+                                }
+                            }
+                        }
+                    }
 
                     // DR - Lineas de Medios de Pago - Monto de cada linea - Cuenta del medio de pago a emitir
                     int mpEmitidos_ID = getValidCombination_ID (Doc.ACCTYPE_MP_Emitidos, as);
@@ -274,15 +293,8 @@ public class Doc_Pago extends Doc {
 
                         if (pagoMedioPago.getZ_MedioPagoItem_ID() > 0){
                             factDet.setZ_MedioPagoItem_ID(pagoMedioPago.getZ_MedioPagoItem_ID());
-                            if (medioPagoItem != null){
-                                if (medioPagoItem.getNroMedioPago() != null){
-                                    if (medioPagoItem.getDocumentSerie() != null){
-                                        factDet.setNroMedioPago(medioPagoItem.getDocumentSerie().trim() + medioPagoItem.getNroMedioPago());
-                                    }
-                                    else{
-                                        factDet.setNroMedioPago(medioPagoItem.getNroMedioPago());
-                                    }
-                                }
+                            if (nroMedioPago != null){
+                                factDet.setNroMedioPago(nroMedioPago);
                             }
                         }
 
@@ -334,15 +346,8 @@ public class Doc_Pago extends Doc {
 
                         if (pagoMedioPago.getZ_MedioPagoItem_ID() > 0){
                             factDet.setZ_MedioPagoItem_ID(pagoMedioPago.getZ_MedioPagoItem_ID());
-                            if (medioPagoItem != null){
-                                if (medioPagoItem.getNroMedioPago() != null){
-                                    if (medioPagoItem.getDocumentSerie() != null){
-                                        factDet.setNroMedioPago(medioPagoItem.getDocumentSerie().trim() + medioPagoItem.getNroMedioPago());
-                                    }
-                                    else{
-                                        factDet.setNroMedioPago(medioPagoItem.getNroMedioPago());
-                                    }
-                                }
+                            if (nroMedioPago != null){
+                                factDet.setNroMedioPago(nroMedioPago);
                             }
                         }
 
@@ -435,13 +440,8 @@ public class Doc_Pago extends Doc {
                             if (pagoMedioPago.getZ_MedioPagoItem_ID() > 0){
                                 factDet.setZ_MedioPagoItem_ID(pagoMedioPago.getZ_MedioPagoItem_ID());
                                 if (medioPagoItem != null){
-                                    if (medioPagoItem.getNroMedioPago() != null){
-                                        if (medioPagoItem.getDocumentSerie() != null){
-                                            factDet.setNroMedioPago(medioPagoItem.getDocumentSerie().trim() + medioPagoItem.getNroMedioPago());
-                                        }
-                                        else{
-                                            factDet.setNroMedioPago(medioPagoItem.getNroMedioPago());
-                                        }
+                                    if (nroMedioPago != null){
+                                        factDet.setNroMedioPago(nroMedioPago);
                                     }
                                 }
                             }

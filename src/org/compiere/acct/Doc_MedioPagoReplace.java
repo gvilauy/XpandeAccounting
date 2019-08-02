@@ -4,6 +4,7 @@ import com.sun.org.apache.bcel.internal.generic.NEW;
 import org.adempiere.pdf.Document;
 import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
+import org.compiere.model.MBank;
 import org.compiere.model.MDocType;
 import org.compiere.process.DocumentEngine;
 import org.compiere.util.Env;
@@ -95,7 +96,13 @@ public class Doc_MedioPagoReplace extends Doc {
                 MZMedioPagoItem pagoItem = (MZMedioPagoItem) replaceLin.getZ_MedioPagoItem();
                 nroMedioPagoOLD = pagoItem.getNroMedioPago();
                 if (pagoItem.getDocumentSerie() != null){
-                    nroMedioPagoOLD = pagoItem.getDocumentSerie().trim() + nroMedioPagoOLD;
+                    if (pagoItem.getC_BankAccount_ID() > 0){
+                        if (pagoItem.getC_BankAccount().getC_Bank_ID() > 0){
+                            if (((MBank) pagoItem.getC_BankAccount().getC_Bank()).get_ValueAsBoolean("IncSerieConcilia")){
+                                nroMedioPagoOLD = pagoItem.getDocumentSerie().trim() + nroMedioPagoOLD;
+                            }
+                        }
+                    }
                 }
                 OLD_emisionMedioPago_ID = pagoItem.getZ_EmisionMedioPago_ID();
             }
@@ -229,7 +236,13 @@ public class Doc_MedioPagoReplace extends Doc {
 
                             String nroMedioPago = medioPagoItem.getNroMedioPago();
                             if (medioPagoItem.getDocumentSerie() != null){
-                                nroMedioPago = medioPagoItem.getDocumentSerie().trim() + nroMedioPago;
+                                if (medioPagoItem.getC_BankAccount_ID() > 0){
+                                    if (medioPagoItem.getC_BankAccount().getC_Bank_ID() > 0){
+                                        if (((MBank) medioPagoItem.getC_BankAccount().getC_Bank()).get_ValueAsBoolean("IncSerieConcilia")){
+                                            nroMedioPago = medioPagoItem.getDocumentSerie().trim() + nroMedioPago;
+                                        }
+                                    }
+                                }
                             }
                             factDet.setNroMedioPago(nroMedioPago);
                             factDet.setEstadoMedioPago(X_Z_AcctFactDet.ESTADOMEDIOPAGO_ENTREGADO);
