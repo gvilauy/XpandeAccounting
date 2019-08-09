@@ -88,6 +88,8 @@ public class Doc_GeneraAstoVta extends Doc {
                 return facts;
             }
 
+            //*******************************   ASIENTO UNO
+
             // DR - Cuentas de Medios de Pago
             List<MZGeneraAstoVtaSumMP> sumMPList = this.generaAstoVta.getLineasMediosPago();
             for (MZGeneraAstoVtaSumMP sumMP: sumMPList){
@@ -349,6 +351,120 @@ public class Doc_GeneraAstoVta extends Doc {
                     }
                 }
             }
+
+            //*******************************   FIN ASIENTO UNO
+
+
+            //*******************************   ASIENTO DOS
+
+            // Obtengo lineas de detalle de medios de pago modificadas cuando tengo Pos Sisteco
+            if (posVendor.getValue().equalsIgnoreCase("SISTECO")){
+
+                List<MZGeneraAstoVtaDetMPST> vtaDetMPSTList = this.generaAstoVta.getMediosPagoModifSisteco();
+                for (MZGeneraAstoVtaDetMPST vtaDetMPST: vtaDetMPSTList){
+
+                    int cCurrencyID = as.getC_Currency_ID();
+                    if (vtaDetMPST.getST_CodigoMoneda().equalsIgnoreCase("DOLARES")){
+                        cCurrencyID = 100;
+                    }
+
+                    // Si esta linea tiene modificada la tarjeta, hago asiento
+                    if (vtaDetMPST.getZ_SistecoTipoTarjeta_ID() > 0){
+
+                        // DR - Cuenta contable asociada a la tarjeta de sisteco. Importe de este linea de detalle.
+                        sql = " select c_receivable_acct " +
+                                " from z_sistecotarjeta_acct " +
+                                " where c_acctschema_id =" + as.get_ID() +
+                                " and z_sistecotipotarjeta_id =" + vtaDetMPST.getZ_SistecoTipoTarjeta_ID() +
+                                " and c_currency_id =" + cCurrencyID;
+                        int accountID = DB.getSQLValueEx(null, sql);
+                        if (accountID <= 0){
+                            p_Error = "Falta indicar cuenta contable para Tipo de Tarjeta con ID: " + vtaDetMPST.getZ_SistecoTipoTarjeta_ID();
+                            log.log(Level.SEVERE, p_Error);
+                            fact = null;
+                            facts.add(fact);
+                            return facts;
+                        }
+                        FactLine fl1 = fact.createLine(null, MAccount.get(getCtx(), accountID), cCurrencyID, vtaDetMPST.getTotalAmt(), null);
+                        if (fl1 != null){
+                            fl1.setAD_Org_ID(this.generaAstoVta.getAD_Org_ID());
+                        }
+
+                        // CR - Cuenta contable asociada al tipo de linea de sisteco. Importe de este linea de detalle.
+                        accountID = -1;
+                        sql = " select a.c_receivable_acct " +
+                                " from z_sistecolinea_acct a " +
+                                " inner join z_sistecotipolineapazos b on a.z_sistecotipolineapazos_id = b.z_sistecotipolineapazos_id " +
+                                " where b.value ='" + vtaDetMPST.getST_TipoLinea() + "' " +
+                                " and a.c_acctschema_id =" + as.get_ID() +
+                                " and c_currency_id =" + cCurrencyID;
+
+                        accountID = DB.getSQLValueEx(null, sql);
+                        if (accountID <= 0){
+                            p_Error = "Falta indicar cuenta contable para Tipo de Linea : " + vtaDetMPST.getST_TipoLinea();
+                            log.log(Level.SEVERE, p_Error);
+                            fact = null;
+                            facts.add(fact);
+                            return facts;
+                        }
+                        FactLine fl2 = fact.createLine(null, MAccount.get(getCtx(), accountID), cCurrencyID, null, vtaDetMPST.getTotalAmt());
+                        if (fl2 != null){
+                            fl2.setAD_Org_ID(this.generaAstoVta.getAD_Org_ID());
+                        }
+
+                    }
+                    else{
+                        // Si no tiene modificada la tarjeta, pero tiene modificado el medio de pago, hago asiento
+                        if (vtaDetMPST.getZ_SistecoMedioPago_ID() > 0){
+
+                            // DR - Cuenta contable asociada a la tarjeta de sisteco. Importe de este linea de detalle.
+                            sql = " select c_receivable_acct " +
+                                    " from z_sistecompago_acct " +
+                                    " where c_acctschema_id =" + as.get_ID() +
+                                    " and z_sistecomediopago_id =" + vtaDetMPST.getZ_SistecoMedioPago_ID() +
+                                    " and c_currency_id =" + cCurrencyID;
+
+                            int accountID = DB.getSQLValueEx(null, sql);
+                            if (accountID <= 0){
+                                p_Error = "Falta indicar cuenta contable para Medio de Pago con ID: " + vtaDetMPST.getZ_SistecoTipoTarjeta_ID();
+                                log.log(Level.SEVERE, p_Error);
+                                fact = null;
+                                facts.add(fact);
+                                return facts;
+                            }
+                            FactLine fl1 = fact.createLine(null, MAccount.get(getCtx(), accountID), cCurrencyID, vtaDetMPST.getTotalAmt(), null);
+                            if (fl1 != null){
+                                fl1.setAD_Org_ID(this.generaAstoVta.getAD_Org_ID());
+                            }
+
+                            // CR - Cuenta contable asociada al tipo de linea de sisteco. Importe de este linea de detalle.
+                            accountID = -1;
+                            sql = " select a.c_receivable_acct " +
+                                    " from z_sistecolinea_acct a " +
+                                    " inner join z_sistecotipolineapazos b on a.z_sistecotipolineapazos_id = b.z_sistecotipolineapazos_id " +
+                                    " where b.value ='" + vtaDetMPST.getST_TipoLinea() + "' " +
+                                    " and a.c_acctschema_id =" + as.get_ID() +
+                                    " and c_currency_id =" + cCurrencyID;
+
+                            accountID = DB.getSQLValueEx(null, sql);
+                            if (accountID <= 0){
+                                p_Error = "Falta indicar cuenta contable para Tipo de Linea : " + vtaDetMPST.getST_TipoLinea();
+                                log.log(Level.SEVERE, p_Error);
+                                fact = null;
+                                facts.add(fact);
+                                return facts;
+                            }
+                            FactLine fl2 = fact.createLine(null, MAccount.get(getCtx(), accountID), cCurrencyID, null, vtaDetMPST.getTotalAmt());
+                            if (fl2 != null){
+                                fl2.setAD_Org_ID(this.generaAstoVta.getAD_Org_ID());
+                            }
+                        }
+                    }
+                }
+
+            }
+
+            //*******************************   FIN ASIENTO DOS
 
         }
         catch (Exception e){

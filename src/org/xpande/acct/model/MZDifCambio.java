@@ -510,7 +510,7 @@ public class MZDifCambio extends X_Z_DifCambio implements DocAction, DocOptions 
 
 		    sql = " select fa.fact_acct_id, fa.account_id, fa.c_currency_id, coalesce(fa.amtsourcedr,0) as amtsourcedr, coalesce(fa.amtsourcecr,0) as amtsourcecr," +
 					" coalesce(fa.amtacctdr,0) as amtacctdr, coalesce(fa.amtacctcr,0) as amtacctcr, " +
-					" fa.dateacct, fa.currencyrate, fa.c_doctype_id, fa.documentnoref " +
+					" fa.dateacct, fa.currencyrate, fa.c_doctype_id, fa.documentnoref, fa.c_bpartner_id " +
 					" from fact_acct fa  " +
 					" inner join c_elementvalue ev on fa.account_id = ev.c_elementvalue_id " +
 					" where fa.ad_client_id =" + this.getAD_Client_ID() +
@@ -542,6 +542,10 @@ public class MZDifCambio extends X_Z_DifCambio implements DocAction, DocOptions 
 				difCambioDet.setCurrencyRate(this.getCurrencyRate());
 				difCambioDet.setC_Currency_ID(this.getC_Currency_ID());
 				difCambioDet.setFact_Acct_ID(rs.getInt("fact_acct_id"));
+
+				if (rs.getInt("c_bpartner_id") > 0){
+					difCambioDet.setC_BPartner_ID(rs.getInt("c_bpartner_id"));
+				}
 
 				// Redondeo tasa de cambio
 				BigDecimal rate = rs.getBigDecimal("currencyrate");
