@@ -43,6 +43,9 @@ public class Doc_ResguardoSocio extends Doc {
         this.resguardoSocio = (MZResguardoSocio) getPO();
         setDateDoc(resguardoSocio.getDateDoc());
         setDateAcct(resguardoSocio.getDateDoc());
+
+        setPeriod();
+
         setC_Currency_ID(resguardoSocio.getC_Currency_ID());
         setC_BPartner_ID(resguardoSocio.getC_BPartner_ID());
         setAmount(Doc.AMTTYPE_Gross, resguardoSocio.getTotalAmt());
