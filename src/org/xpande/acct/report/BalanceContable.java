@@ -3,6 +3,8 @@ package org.xpande.acct.report;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
+import org.compiere.model.MDocType;
+import org.compiere.model.MElementValue;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.xpande.core.utils.CurrencyUtils;
@@ -213,13 +215,15 @@ public class BalanceContable {
             if (this.endDate != null){
                 whereClause += " and f.dateacct <='" + this.endDate + "'" ;
             }
+
+            String whereMoneda = "";
             if (this.cCurrencyID_2 > 0){
-                whereClause += " and f.c_currency_id in (" + this.cCurrencyID + ", " + this.cCurrencyID_2 + ") ";
+                whereMoneda += " and f.c_currency_id in (" + this.cCurrencyID + ", " + this.cCurrencyID_2 + ") ";
             }
             else {
                 // Si tengo una sola moneda y la misma no es moneda nacional, filtro que traiga movimientos en moneda nacional y en moneda extranjera seleccionaca.
                 if (this.cCurrencyID != acctSchema.getC_Currency_ID()){
-                    whereClause += " and f.c_currency_id in (" + this.cCurrencyID + ", " + this.acctSchema.getC_Currency_ID() + ") ";
+                    whereMoneda += " and f.c_currency_id in (" + this.cCurrencyID + ", " + this.acctSchema.getC_Currency_ID() + ") ";
                 }
             }
 
@@ -228,7 +232,7 @@ public class BalanceContable {
                     " from fact_acct f " +
                     " inner join " + TABLA_REPORTE + " b on (f.account_id = b.c_elementvalue_id " +
                     " and b.ad_user_id =" + this.adUserID + ") " +
-                    " where b.issummary ='N' " + whereClause +
+                    " where b.issummary ='N' " + whereClause + whereMoneda +
                     " group by f.account_id, f.c_currency_id " +
                     " order by f.account_id, f.c_currency_id ";
 
@@ -239,7 +243,6 @@ public class BalanceContable {
             BigDecimal amtCurrency1 = Env.ZERO, amtCurrency2 = Env.ZERO;
 
             while(rs.next()){
-
 
                 // Corte por cuenta contable
                 if (rs.getInt("account_id") != accountIDAux){
@@ -259,6 +262,8 @@ public class BalanceContable {
                     amtCurrency2 = Env.ZERO;
                 }
 
+                MElementValue elementValue = new MElementValue(this.ctx, accountIDAux, null);
+
                 BigDecimal saldoMO = rs.getBigDecimal("saldomo");
                 BigDecimal saldoMN = rs.getBigDecimal("saldomn");
                 int cCurrencyID = rs.getInt("c_currency_id");
@@ -275,7 +280,30 @@ public class BalanceContable {
                         if (cCurrencyID == acctSchema.getC_Currency_ID()){
                             if ((acctDifCambioGanada != null) && (acctDifCambioPerdida != null)){
                                 if ((accountIDAux != acctDifCambioGanada.getAccount_ID()) && (accountIDAux != acctDifCambioPerdida.getAccount_ID())){
-                                    BigDecimal amtConverted = saldoMN.divide(this.currencyRate, 2, RoundingMode.HALF_UP);
+
+                                    BigDecimal saldoConversion = saldoMN;
+
+                                    // Si la cuenta contable este definida como cuenta contable en moneda extranjera, y la misma particio en
+                                    // procesos de diferencia de cambio durante el período del reporte, no debo traducir el importe en moneda
+                                    // nacional a segunda moneda.
+                                    if (elementValue.isForeignCurrency()){
+                                        BigDecimal saldoDifCambio = this.getSaldoDifCambio(accountIDAux, acctSchema.getC_Currency_ID(), whereClause);
+                                        if ((saldoDifCambio != null) && (saldoDifCambio.compareTo(Env.ZERO) != 0)){
+                                            if ((saldoConversion.compareTo(Env.ZERO) > 0) && (saldoDifCambio.compareTo(Env.ZERO) < 0)){
+                                                saldoConversion = saldoConversion.add(saldoDifCambio);
+                                            }
+                                            else if ((saldoConversion.compareTo(Env.ZERO) < 0) && (saldoDifCambio.compareTo(Env.ZERO) < 0)){
+                                                saldoConversion = saldoConversion.subtract(saldoDifCambio);
+                                            }
+                                            else if ((saldoConversion.compareTo(Env.ZERO) > 0) && (saldoDifCambio.compareTo(Env.ZERO) > 0)){
+                                                saldoConversion = saldoConversion.subtract(saldoDifCambio);
+                                            }
+                                            else if ((saldoConversion.compareTo(Env.ZERO) > 0) && (saldoDifCambio.compareTo(Env.ZERO) < 0)){
+                                                saldoConversion = saldoConversion.add(saldoDifCambio);
+                                            }
+                                        }
+                                    }
+                                    BigDecimal amtConverted = saldoConversion.divide(this.currencyRate, 2, RoundingMode.HALF_UP);
                                     amtCurrency2 = amtCurrency2.add(amtConverted);
                                 }
                             }
@@ -291,7 +319,30 @@ public class BalanceContable {
                         if (this.cCurrencyID_2 <= 0){
                             if ((acctDifCambioGanada != null) && (acctDifCambioPerdida != null)){
                                 if ((accountIDAux != acctDifCambioGanada.getAccount_ID()) && (accountIDAux != acctDifCambioPerdida.getAccount_ID())){
-                                    BigDecimal amtConverted = saldoMN.divide(this.currencyRate, 2, RoundingMode.HALF_UP);
+
+                                    BigDecimal saldoConversion = saldoMN;
+
+                                    // Si la cuenta contable este definida como cuenta contable en moneda extranjera, y la misma particio en
+                                    // procesos de diferencia de cambio durante el período del reporte, no debo traducir el importe en moneda
+                                    // nacional a segunda moneda.
+                                    if (elementValue.isForeignCurrency()){
+                                        BigDecimal saldoDifCambio = this.getSaldoDifCambio(accountIDAux, acctSchema.getC_Currency_ID(), whereClause);
+                                        if ((saldoDifCambio != null) && (saldoDifCambio.compareTo(Env.ZERO) != 0)){
+                                            if ((saldoConversion.compareTo(Env.ZERO) > 0) && (saldoDifCambio.compareTo(Env.ZERO) < 0)){
+                                                saldoConversion = saldoConversion.add(saldoDifCambio);
+                                            }
+                                            else if ((saldoConversion.compareTo(Env.ZERO) < 0) && (saldoDifCambio.compareTo(Env.ZERO) < 0)){
+                                                saldoConversion = saldoConversion.subtract(saldoDifCambio);
+                                            }
+                                            else if ((saldoConversion.compareTo(Env.ZERO) > 0) && (saldoDifCambio.compareTo(Env.ZERO) > 0)){
+                                                saldoConversion = saldoConversion.subtract(saldoDifCambio);
+                                            }
+                                            else if ((saldoConversion.compareTo(Env.ZERO) > 0) && (saldoDifCambio.compareTo(Env.ZERO) < 0)){
+                                                saldoConversion = saldoConversion.add(saldoDifCambio);
+                                            }
+                                        }
+                                    }
+                                    BigDecimal amtConverted = saldoConversion.divide(this.currencyRate, 2, RoundingMode.HALF_UP);
                                     amtCurrency1 = amtCurrency1.add(amtConverted);
                                 }
                             }
@@ -307,7 +358,30 @@ public class BalanceContable {
                         if (cCurrencyID == acctSchema.getC_Currency_ID()){
                             if ((acctDifCambioGanada != null) && (acctDifCambioPerdida != null)){
                                 if ((accountIDAux != acctDifCambioGanada.getAccount_ID()) && (accountIDAux != acctDifCambioPerdida.getAccount_ID())){
-                                    BigDecimal amtConverted = saldoMN.divide(this.currencyRate, 2, RoundingMode.HALF_UP);
+
+                                    BigDecimal saldoConversion = saldoMN;
+
+                                    // Si la cuenta contable este definida como cuenta contable en moneda extranjera, y la misma particio en
+                                    // procesos de diferencia de cambio durante el período del reporte, no debo traducir el importe en moneda
+                                    // nacional a segunda moneda.
+                                    if (elementValue.isForeignCurrency()){
+                                        BigDecimal saldoDifCambio = this.getSaldoDifCambio(accountIDAux, acctSchema.getC_Currency_ID(), whereClause);
+                                        if ((saldoDifCambio != null) && (saldoDifCambio.compareTo(Env.ZERO) != 0)){
+                                            if ((saldoConversion.compareTo(Env.ZERO) > 0) && (saldoDifCambio.compareTo(Env.ZERO) < 0)){
+                                                saldoConversion = saldoConversion.add(saldoDifCambio);
+                                            }
+                                            else if ((saldoConversion.compareTo(Env.ZERO) < 0) && (saldoDifCambio.compareTo(Env.ZERO) < 0)){
+                                                saldoConversion = saldoConversion.subtract(saldoDifCambio);
+                                            }
+                                            else if ((saldoConversion.compareTo(Env.ZERO) > 0) && (saldoDifCambio.compareTo(Env.ZERO) > 0)){
+                                                saldoConversion = saldoConversion.subtract(saldoDifCambio);
+                                            }
+                                            else if ((saldoConversion.compareTo(Env.ZERO) > 0) && (saldoDifCambio.compareTo(Env.ZERO) < 0)){
+                                                saldoConversion = saldoConversion.add(saldoDifCambio);
+                                            }
+                                        }
+                                    }
+                                    BigDecimal amtConverted = saldoConversion.divide(this.currencyRate, 2, RoundingMode.HALF_UP);
                                     amtCurrency1 = amtCurrency1.add(amtConverted);
                                 }
                             }
@@ -357,6 +431,55 @@ public class BalanceContable {
             DB.close(rs, pstmt);
             rs = null; pstmt = null;
         }
+    }
+
+    /***
+     * Obtiene saldo por concepto de Diferencia de Cambio para una determinada cuenta contable y segun filtros de reporte.
+     * Xpande. Created by Gabriel Vila on 8/14/19.
+     * @param cElementValueID
+     * @param cCurrencyID
+     * @param whereClause
+     * @return
+     */
+    private BigDecimal getSaldoDifCambio(int cElementValueID, int cCurrencyID, String whereClause) {
+
+        String sql = "";
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        BigDecimal value = null;
+
+        try{
+
+            MDocType[] docTypes = MDocType.getOfDocBaseType(this.ctx, "DFC");
+            if (docTypes.length <= 0){
+                return null;
+            }
+            int cDocTypeID = docTypes[0].get_ID();
+
+            String whereMoneda = " and f.c_currency_id =" + cCurrencyID;
+
+            sql = " select sum(f.amtacctdr - f.amtacctcr) as saldomn " +
+                    " from fact_acct f " +
+                    " where f.account_id =" + cElementValueID +
+                    " and c_doctype_id =" + cDocTypeID + whereClause + whereMoneda;
+
+        	pstmt = DB.prepareStatement(sql, null);
+        	rs = pstmt.executeQuery();
+
+        	if (rs.next()){
+                value = rs.getBigDecimal("saldomn");
+        	}
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+        finally {
+            DB.close(rs, pstmt);
+        	rs = null; pstmt = null;
+        }
+
+        return value;
     }
 
 
