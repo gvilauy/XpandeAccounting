@@ -53,7 +53,7 @@ public class MayorContableRV extends SvrProcess {
                 else if (name.trim().equalsIgnoreCase("C_AcctSchema_ID")){
                     this.mayorProcessor.cAcctSchemaID = ((BigDecimal)para[i].getParameter()).intValueExact();
                 }
-                else if (name.trim().equalsIgnoreCase("C_Currency_ID")){
+                else if (name.trim().equalsIgnoreCase("C_Currency_1_ID")){
                     if (para[i].getParameter() != null){
                         this.mayorProcessor.cCurrencyID = ((BigDecimal)para[i].getParameter()).intValueExact();
                     }
