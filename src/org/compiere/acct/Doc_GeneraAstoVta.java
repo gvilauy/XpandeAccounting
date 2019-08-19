@@ -161,6 +161,12 @@ public class Doc_GeneraAstoVta extends Doc {
                         FactLine fl1 = fact.createLine(null, MAccount.get(getCtx(), accountID), cCurrencyID, amtMP, null);
                         if (fl1 != null){
                             fl1.setAD_Org_ID(this.generaAstoVta.getAD_Org_ID());
+                            if (rs.getInt("c_bpartner_id") > 0){
+                                fl1.setC_BPartner_ID(rs.getInt("c_bpartner_id"));
+                            }
+                            if (rs.getInt("m_product_id") > 0){
+                                fl1.setM_Product_ID(rs.getInt("m_product_id"));
+                            }
                         }
                     }
                     else{
@@ -168,6 +174,12 @@ public class Doc_GeneraAstoVta extends Doc {
                         FactLine fl1 = fact.createLine(null, MAccount.get(getCtx(), accountID), cCurrencyID, null, amtMP);
                         if (fl1 != null){
                             fl1.setAD_Org_ID(this.generaAstoVta.getAD_Org_ID());
+                            if (rs.getInt("c_bpartner_id") > 0){
+                                fl1.setC_BPartner_ID(rs.getInt("c_bpartner_id"));
+                            }
+                            if (rs.getInt("m_product_id") > 0){
+                                fl1.setM_Product_ID(rs.getInt("m_product_id"));
+                            }
                         }
 
                         creditosBaseAccountID = accountID;
@@ -372,7 +384,7 @@ public class Doc_GeneraAstoVta extends Doc {
                     if (vtaDetMPST.getZ_SistecoTipoTarjeta_ID() > 0){
 
                         // DR - Cuenta contable asociada a la tarjeta de sisteco. Importe de este linea de detalle.
-                        sql = " select c_receivable_acct " +
+                        sql = " select c_receivable_acct, c_bpartner_id, m_product_id " +
                                 " from z_sistecotarjeta_acct " +
                                 " where c_acctschema_id =" + as.get_ID() +
                                 " and z_sistecotipotarjeta_id =" + vtaDetMPST.getZ_SistecoTipoTarjeta_ID() +
@@ -388,11 +400,17 @@ public class Doc_GeneraAstoVta extends Doc {
                         FactLine fl1 = fact.createLine(null, MAccount.get(getCtx(), accountID), cCurrencyID, vtaDetMPST.getTotalAmt(), null);
                         if (fl1 != null){
                             fl1.setAD_Org_ID(this.generaAstoVta.getAD_Org_ID());
+                            if (rs.getInt("c_bpartner_id") > 0){
+                                fl1.setC_BPartner_ID(rs.getInt("c_bpartner_id"));
+                            }
+                            if (rs.getInt("m_product_id") > 0){
+                                fl1.setM_Product_ID(rs.getInt("m_product_id"));
+                            }
                         }
 
                         // CR - Cuenta contable asociada al tipo de linea de sisteco. Importe de este linea de detalle.
                         accountID = -1;
-                        sql = " select a.c_receivable_acct " +
+                        sql = " select a.c_receivable_acct, c_bpartner_id, m_product_id " +
                                 " from z_sistecolinea_acct a " +
                                 " inner join z_sistecotipolineapazos b on a.z_sistecotipolineapazos_id = b.z_sistecotipolineapazos_id " +
                                 " where b.value ='" + vtaDetMPST.getST_TipoLinea() + "' " +
@@ -410,6 +428,12 @@ public class Doc_GeneraAstoVta extends Doc {
                         FactLine fl2 = fact.createLine(null, MAccount.get(getCtx(), accountID), cCurrencyID, null, vtaDetMPST.getTotalAmt());
                         if (fl2 != null){
                             fl2.setAD_Org_ID(this.generaAstoVta.getAD_Org_ID());
+                            if (rs.getInt("c_bpartner_id") > 0){
+                                fl1.setC_BPartner_ID(rs.getInt("c_bpartner_id"));
+                            }
+                            if (rs.getInt("m_product_id") > 0){
+                                fl1.setM_Product_ID(rs.getInt("m_product_id"));
+                            }
                         }
 
                     }
@@ -418,7 +442,7 @@ public class Doc_GeneraAstoVta extends Doc {
                         if (vtaDetMPST.getZ_SistecoMedioPago_ID() > 0){
 
                             // DR - Cuenta contable asociada a la tarjeta de sisteco. Importe de este linea de detalle.
-                            sql = " select c_receivable_acct " +
+                            sql = " select c_receivable_acct, c_bpartner_id, m_product_id " +
                                     " from z_sistecompago_acct " +
                                     " where c_acctschema_id =" + as.get_ID() +
                                     " and z_sistecomediopago_id =" + vtaDetMPST.getZ_SistecoMedioPago_ID() +
@@ -435,11 +459,17 @@ public class Doc_GeneraAstoVta extends Doc {
                             FactLine fl1 = fact.createLine(null, MAccount.get(getCtx(), accountID), cCurrencyID, vtaDetMPST.getTotalAmt(), null);
                             if (fl1 != null){
                                 fl1.setAD_Org_ID(this.generaAstoVta.getAD_Org_ID());
+                                if (rs.getInt("c_bpartner_id") > 0){
+                                    fl1.setC_BPartner_ID(rs.getInt("c_bpartner_id"));
+                                }
+                                if (rs.getInt("m_product_id") > 0){
+                                    fl1.setM_Product_ID(rs.getInt("m_product_id"));
+                                }
                             }
 
                             // CR - Cuenta contable asociada al tipo de linea de sisteco. Importe de este linea de detalle.
                             accountID = -1;
-                            sql = " select a.c_receivable_acct " +
+                            sql = " select a.c_receivable_acct, c_bpartner_id, m_product_id " +
                                     " from z_sistecolinea_acct a " +
                                     " inner join z_sistecotipolineapazos b on a.z_sistecotipolineapazos_id = b.z_sistecotipolineapazos_id " +
                                     " where b.value ='" + vtaDetMPST.getST_TipoLinea() + "' " +
@@ -457,6 +487,12 @@ public class Doc_GeneraAstoVta extends Doc {
                             FactLine fl2 = fact.createLine(null, MAccount.get(getCtx(), accountID), cCurrencyID, null, vtaDetMPST.getTotalAmt());
                             if (fl2 != null){
                                 fl2.setAD_Org_ID(this.generaAstoVta.getAD_Org_ID());
+                                if (rs.getInt("c_bpartner_id") > 0){
+                                    fl1.setC_BPartner_ID(rs.getInt("c_bpartner_id"));
+                                }
+                                if (rs.getInt("m_product_id") > 0){
+                                    fl1.setM_Product_ID(rs.getInt("m_product_id"));
+                                }
                             }
                         }
                     }
