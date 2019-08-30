@@ -103,81 +103,66 @@ public class Doc_FormEfectivo extends Doc {
 
             // MONEDA UNO
             if ((formEfectivoLin.getAmtSubtotal1() != null) && (formEfectivoLin.getAmtSubtotal1().compareTo(Env.ZERO) != 0)){
+
                 // Obtengo cuenta contable del concepto de esta linea para moneda uno
                 MZRetailConfigForEfe configForEfe = (MZRetailConfigForEfe) formEfectivoLin.getZ_RetailConfigForEfe();
-                X_Z_RetailConfForEfe_Acct confForEfe_acct = configForEfe.getAccountConfig(as.get_ID(), formEfectivoLin.getC_Currency_ID());
-                if ((confForEfe_acct == null) || (confForEfe_acct.get_ID() <= 0)){
-                    MCurrency currency = (MCurrency) formEfectivoLin.getC_Currency();
-                    p_Error = "No se obtuvo Cuenta Contable para el Concepto : " + configForEfe.getName() + ", esquema contable y moneda : " + currency.getISO_Code();
-                    log.log(Level.SEVERE, p_Error);
-                    fact = null;
-                    facts.add(fact);
-                    return facts;
-                }
+                X_Z_RetailConfForEfe_Acct confForEfe_acct = configForEfe.getAccountConfig(this.formEfectivo.getAD_Org_ID(), as.get_ID(), formEfectivoLin.getC_Currency_ID());
 
-                if (confForEfe_acct.getAccount_Acct() <= 0){
-                    MCurrency currency = (MCurrency) formEfectivoLin.getC_Currency();
-                    p_Error = "No se obtuvo Cuenta Contable para el Concepto : " + configForEfe.getName() + ", esquema contable y moneda : " + currency.getISO_Code();
-                    log.log(Level.SEVERE, p_Error);
-                    fact = null;
-                    facts.add(fact);
-                    return facts;
-                }
+                // Si tengo cuenta (no es obligatoria)
+                if ((confForEfe_acct != null) && (confForEfe_acct.get_ID() > 0)){
 
-                MAccount acctMoneda1 = MAccount.get(getCtx(), confForEfe_acct.getAccount_Acct());
+                    MAccount acctMoneda1 = MAccount.get(getCtx(), confForEfe_acct.getAccount_Acct());
 
-                // Al debe o haber según configuracion contable del concepto (importe moneda 1)
-                FactLine f1 = null;
-                if (confForEfe_acct.isDebito()){
-                    f1 = fact.createLine(p_lines[i], acctMoneda1, formEfectivoLin.getC_Currency_ID(), formEfectivoLin.getAmtSubtotal1(), null);
-                }
-                else{
-                    f1 = fact.createLine(p_lines[i], acctMoneda1, formEfectivoLin.getC_Currency_ID(), null, formEfectivoLin.getAmtSubtotal1());
-                }
-                if (f1 != null){
-                    f1.setAD_Org_ID(this.formEfectivo.getAD_Org_ID());
+                    // Al debe o haber según configuracion contable del concepto (importe moneda 1)
+                    FactLine f1 = null;
+                    if (confForEfe_acct.isDebito()){
+                        f1 = fact.createLine(p_lines[i], acctMoneda1, formEfectivoLin.getC_Currency_ID(), formEfectivoLin.getAmtSubtotal1(), null);
+                    }
+                    else{
+                        f1 = fact.createLine(p_lines[i], acctMoneda1, formEfectivoLin.getC_Currency_ID(), null, formEfectivoLin.getAmtSubtotal1());
+                    }
+                    if (f1 != null){
+                        f1.setAD_Org_ID(this.formEfectivo.getAD_Org_ID());
+                    }
                 }
             }
 
             // MONEDA DOS
             if ((formEfectivoLin.getAmtSubtotal2() != null) && (formEfectivoLin.getAmtSubtotal2().compareTo(Env.ZERO) != 0)){
+
                 // Obtengo cuenta contable del concepto de esta linea para moneda dos
                 MZRetailConfigForEfe configForEfe = (MZRetailConfigForEfe) formEfectivoLin.getZ_RetailConfigForEfe();
-                X_Z_RetailConfForEfe_Acct confForEfe_acct = configForEfe.getAccountConfig(as.get_ID(), formEfectivoLin.getC_Currency_2_ID());
-                if ((confForEfe_acct == null) || (confForEfe_acct.get_ID() <= 0)){
-                    MCurrency currency = new MCurrency(getCtx(), formEfectivoLin.getC_Currency_2_ID(), null);
-                    p_Error = "No se obtuvo Cuenta Contable para el Concepto : " + configForEfe.getName() + ", esquema contable y moneda : " + currency.getISO_Code();
-                    log.log(Level.SEVERE, p_Error);
-                    fact = null;
-                    facts.add(fact);
-                    return facts;
-                }
+                X_Z_RetailConfForEfe_Acct confForEfe_acct = configForEfe.getAccountConfig(this.formEfectivo.getAD_Org_ID(), as.get_ID(), formEfectivoLin.getC_Currency_2_ID());
 
-                if (confForEfe_acct.getAccount_Acct() <= 0){
-                    MCurrency currency = new MCurrency(getCtx(), formEfectivoLin.getC_Currency_2_ID(), null);
-                    p_Error = "No se obtuvo Cuenta Contable para el Concepto : " + configForEfe.getName() + ", esquema contable y moneda : " + currency.getISO_Code();
-                    log.log(Level.SEVERE, p_Error);
-                    fact = null;
-                    facts.add(fact);
-                    return facts;
-                }
+                // Si tengo cuenta (no es obligatoria)
+                if ((confForEfe_acct != null) && (confForEfe_acct.get_ID() > 0)){
 
-                MAccount acctMoneda2 = MAccount.get(getCtx(), confForEfe_acct.getAccount_Acct());
+                    MAccount acctMoneda2 = MAccount.get(getCtx(), confForEfe_acct.getAccount_Acct());
 
-                // Al debe o haber según configuracion contable del concepto (importe moneda 2)
-                FactLine f1 = null;
-                if (confForEfe_acct.isDebito()){
-                    f1 = fact.createLine(p_lines[i], acctMoneda2, formEfectivoLin.getC_Currency_2_ID() , formEfectivoLin.getAmtSubtotal2(), null);
-                }
-                else{
-                    f1 = fact.createLine(p_lines[i], acctMoneda2, formEfectivoLin.getC_Currency_2_ID(), null, formEfectivoLin.getAmtSubtotal2());
-                }
-                if (f1 != null){
-                    f1.setAD_Org_ID(this.formEfectivo.getAD_Org_ID());
+                    // Al debe o haber según configuracion contable del concepto (importe moneda 2)
+                    FactLine f1 = null;
+                    if (confForEfe_acct.isDebito()){
+                        f1 = fact.createLine(p_lines[i], acctMoneda2, formEfectivoLin.getC_Currency_2_ID() , formEfectivoLin.getAmtSubtotal2(), null);
+                    }
+                    else{
+                        f1 = fact.createLine(p_lines[i], acctMoneda2, formEfectivoLin.getC_Currency_2_ID(), null, formEfectivoLin.getAmtSubtotal2());
+                    }
+                    if (f1 != null){
+                        f1.setAD_Org_ID(this.formEfectivo.getAD_Org_ID());
+                    }
                 }
             }
-
         }
+
+        /*
+        // Cuenta de balanceo en ambas monedas
+        if (this.formEfectivo.getAmtBalanceo().compareTo(Env.ZERO) != 0){
+            FactLine f1 = fact.createLine(null, acctMoneda2, 142,  null, this.formEfectivo.getAmtBalanceo());
+            if (f1 != null){
+                f1.setAD_Org_ID(this.formEfectivo.getAD_Org_ID());
+            }
+        }
+         */
 
         facts.add(fact);
         return facts;
