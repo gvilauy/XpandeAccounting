@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.logging.Level;
 
 /**
+ * Contabilización de documentos de Diferencia de Cambio.
  * Product: Adempiere ERP & CRM Smart Business Solution. Localization : Uruguay - Xpande
  * Xpande. Created by Gabriel Vila on 7/11/19.
  */
