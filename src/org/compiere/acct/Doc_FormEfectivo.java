@@ -45,6 +45,8 @@ public class Doc_FormEfectivo extends Doc {
         setDateDoc(this.formEfectivo.getDateDoc());
         setDateAcct(this.formEfectivo.getDateAcct());
 
+        setIsMultiCurrency(true);
+
         this.docType = (MDocType) this.formEfectivo.getC_DocType();
         setDocumentType(docType.getDocBaseType());
 
@@ -95,6 +97,8 @@ public class Doc_FormEfectivo extends Doc {
         // Configuracion de retail
         MZRetailConfig retailConfig = MZRetailConfig.getDefault(getCtx(), null);
 
+        BigDecimal amtBalanceo1 = Env.ZERO, amtBalanceo2 = Env.ZERO;
+
         // Recorro lineas del documento a contabilizar
         for (int i = 0; i < p_lines.length; i++){
 
@@ -103,6 +107,8 @@ public class Doc_FormEfectivo extends Doc {
 
             // MONEDA UNO
             if ((formEfectivoLin.getAmtSubtotal1() != null) && (formEfectivoLin.getAmtSubtotal1().compareTo(Env.ZERO) != 0)){
+
+
 
                 // Obtengo cuenta contable del concepto de esta linea para moneda uno
                 MZRetailConfigForEfe configForEfe = (MZRetailConfigForEfe) formEfectivoLin.getZ_RetailConfigForEfe();
@@ -117,9 +123,11 @@ public class Doc_FormEfectivo extends Doc {
                     FactLine f1 = null;
                     if (confForEfe_acct.isDebito()){
                         f1 = fact.createLine(p_lines[i], acctMoneda1, formEfectivoLin.getC_Currency_ID(), formEfectivoLin.getAmtSubtotal1(), null);
+                        amtBalanceo1 = amtBalanceo1.add(formEfectivoLin.getAmtSubtotal1());
                     }
                     else{
                         f1 = fact.createLine(p_lines[i], acctMoneda1, formEfectivoLin.getC_Currency_ID(), null, formEfectivoLin.getAmtSubtotal1());
+                        amtBalanceo1 = amtBalanceo1.subtract(formEfectivoLin.getAmtSubtotal1());
                     }
                     if (f1 != null){
                         f1.setAD_Org_ID(this.formEfectivo.getAD_Org_ID());
@@ -143,9 +151,11 @@ public class Doc_FormEfectivo extends Doc {
                     FactLine f1 = null;
                     if (confForEfe_acct.isDebito()){
                         f1 = fact.createLine(p_lines[i], acctMoneda2, formEfectivoLin.getC_Currency_2_ID() , formEfectivoLin.getAmtSubtotal2(), null);
+                        amtBalanceo2 = amtBalanceo2.add(formEfectivoLin.getAmtSubtotal2());
                     }
                     else{
                         f1 = fact.createLine(p_lines[i], acctMoneda2, formEfectivoLin.getC_Currency_2_ID(), null, formEfectivoLin.getAmtSubtotal2());
+                        amtBalanceo2 = amtBalanceo2.subtract(formEfectivoLin.getAmtSubtotal2());
                     }
                     if (f1 != null){
                         f1.setAD_Org_ID(this.formEfectivo.getAD_Org_ID());
@@ -155,22 +165,23 @@ public class Doc_FormEfectivo extends Doc {
         }
 
         // Cuenta de balanceo en ambas monedas
-        if (this.formEfectivo.getAmtBalanceo().compareTo(Env.ZERO) != 0){
+        MAccount acctBalanceoMoneda1 = null;
+        if (amtBalanceo1.compareTo(Env.ZERO) != 0){
 
             X_Z_RetailForEfe_Acct forEfeAcct = retailConfig.getFormEfectivoAcct(as.get_ID(), 142);
             if ((forEfeAcct != null) && (forEfeAcct.get_ID() > 0)){
 
-                MAccount acctMoneda1 = MAccount.get(getCtx(), forEfeAcct.getP_Revenue_Acct());
+                acctBalanceoMoneda1 = MAccount.get(getCtx(), forEfeAcct.getP_Revenue_Acct());
 
-                BigDecimal amtBalanceo = this.formEfectivo.getAmtBalanceo();
+                BigDecimal amtBalanceo = amtBalanceo1;
 
                 FactLine f1 = null;
-                if (this.formEfectivo.getAmtBalanceo().compareTo(Env.ZERO) < 0){
-                    amtBalanceo = this.formEfectivo.getAmtBalanceo().negate();
-                    f1 = fact.createLine(null, acctMoneda1, 142,  null, amtBalanceo);
+                if (amtBalanceo1.compareTo(Env.ZERO) < 0){
+                    amtBalanceo = amtBalanceo1.negate();
+                    f1 = fact.createLine(null, acctBalanceoMoneda1, 142, amtBalanceo, null);
                 }
                 else {
-                    f1 = fact.createLine(null, acctMoneda1, 142, this.formEfectivo.getAmtBalanceo(), null);
+                    f1 = fact.createLine(null, acctBalanceoMoneda1, 142, null, amtBalanceo1);
                 }
                 if (f1 != null){
                     f1.setAD_Org_ID(this.formEfectivo.getAD_Org_ID());
@@ -178,22 +189,24 @@ public class Doc_FormEfectivo extends Doc {
             }
 
         }
-        if (this.formEfectivo.getAmtBalanceo2().compareTo(Env.ZERO) != 0){
+
+        MAccount acctBalanceoMoneda2 = null;
+        if (amtBalanceo2.compareTo(Env.ZERO) != 0){
 
             X_Z_RetailForEfe_Acct forEfeAcct = retailConfig.getFormEfectivoAcct(as.get_ID(), 100);
             if ((forEfeAcct != null) && (forEfeAcct.get_ID() > 0)){
 
-                MAccount acctMoneda2 = MAccount.get(getCtx(), forEfeAcct.getP_Revenue_Acct());
+                acctBalanceoMoneda2 = MAccount.get(getCtx(), forEfeAcct.getP_Revenue_Acct());
 
-                BigDecimal amtBalanceo2 = this.formEfectivo.getAmtBalanceo2();
+                BigDecimal amtBalanceo = amtBalanceo2;
 
                 FactLine f1 = null;
-                if (this.formEfectivo.getAmtBalanceo2().compareTo(Env.ZERO) < 0){
-                    amtBalanceo2 = this.formEfectivo.getAmtBalanceo2().negate();
-                    f1 = fact.createLine(null, acctMoneda2, 100,  null, amtBalanceo2);
+                if (amtBalanceo2.compareTo(Env.ZERO) < 0){
+                    amtBalanceo = amtBalanceo2.negate();
+                    f1 = fact.createLine(null, acctBalanceoMoneda2, 100, amtBalanceo, null);
                 }
                 else {
-                    f1 = fact.createLine(null, acctMoneda2, 100, this.formEfectivo.getAmtBalanceo2(), null);
+                    f1 = fact.createLine(null, acctBalanceoMoneda2, 100, null, amtBalanceo2);
                 }
                 if (f1 != null){
                     f1.setAD_Org_ID(this.formEfectivo.getAD_Org_ID());
@@ -207,20 +220,29 @@ public class Doc_FormEfectivo extends Doc {
             X_Z_RetailForEfe_Acct forEfeAcct = retailConfig.getFormEfectivoAcct(as.get_ID(), 142);
             if ((forEfeAcct != null) && (forEfeAcct.get_ID() > 0)){
 
-                MAccount acctMoneda1 = MAccount.get(getCtx(), forEfeAcct.getP_Revenue_Acct());
+                MAccount acctMoneda1 = MAccount.get(getCtx(), forEfeAcct.getP_Expense_Acct());
 
                 BigDecimal amtDif = this.formEfectivo.getDifferenceAmt();
 
-                FactLine f1 = null;
+                FactLine f1 = null, f2 = null;
                 if (this.formEfectivo.getDifferenceAmt().compareTo(Env.ZERO) < 0){
                     amtDif = this.formEfectivo.getDifferenceAmt().negate();
-                    f1 = fact.createLine(null, acctMoneda1, 142,  null, amtDif);
+                    f1 = fact.createLine(null, acctMoneda1, 142,  amtDif, null);
+                    if (acctBalanceoMoneda1 != null){
+                        f2 = fact.createLine(null, acctBalanceoMoneda1, 142,  null, amtDif);
+                    }
                 }
                 else {
-                    f1 = fact.createLine(null, acctMoneda1, 142, this.formEfectivo.getDifferenceAmt(), null);
+                    f1 = fact.createLine(null, acctMoneda1, 142, null, this.formEfectivo.getDifferenceAmt());
+                    if (acctBalanceoMoneda1 != null){
+                        f2 = fact.createLine(null, acctBalanceoMoneda1, 142, this.formEfectivo.getDifferenceAmt(), null);
+                    }
                 }
                 if (f1 != null){
                     f1.setAD_Org_ID(this.formEfectivo.getAD_Org_ID());
+                }
+                if (f2 != null){
+                    f2.setAD_Org_ID(this.formEfectivo.getAD_Org_ID());
                 }
             }
 
@@ -230,20 +252,29 @@ public class Doc_FormEfectivo extends Doc {
             X_Z_RetailForEfe_Acct forEfeAcct = retailConfig.getFormEfectivoAcct(as.get_ID(), 100);
             if ((forEfeAcct != null) && (forEfeAcct.get_ID() > 0)){
 
-                MAccount acctMoneda2 = MAccount.get(getCtx(), forEfeAcct.getP_Revenue_Acct());
+                MAccount acctMoneda2 = MAccount.get(getCtx(), forEfeAcct.getP_Expense_Acct());
 
                 BigDecimal amtDif2 = this.formEfectivo.getDifferenceAmt2();
 
-                FactLine f1 = null;
+                FactLine f1 = null, f2 = null;
                 if (this.formEfectivo.getDifferenceAmt2().compareTo(Env.ZERO) < 0){
                     amtDif2 = this.formEfectivo.getDifferenceAmt2().negate();
-                    f1 = fact.createLine(null, acctMoneda2, 100,  null, amtDif2);
+                    f1 = fact.createLine(null, acctMoneda2, 100, amtDif2, null);
+                    if (acctBalanceoMoneda2 != null){
+                        f2 = fact.createLine(null, acctBalanceoMoneda2, 100, null, amtDif2);
+                    }
                 }
                 else {
-                    f1 = fact.createLine(null, acctMoneda2, 100, this.formEfectivo.getDifferenceAmt2(), null);
+                    f1 = fact.createLine(null, acctMoneda2, 100, null, this.formEfectivo.getDifferenceAmt2());
+                    if (acctBalanceoMoneda2 != null){
+                        f2 = fact.createLine(null, acctBalanceoMoneda2, 100, this.formEfectivo.getDifferenceAmt2(), null);
+                    }
                 }
                 if (f1 != null){
                     f1.setAD_Org_ID(this.formEfectivo.getAD_Org_ID());
+                }
+                if (f2 != null){
+                    f2.setAD_Org_ID(this.formEfectivo.getAD_Org_ID());
                 }
             }
         }

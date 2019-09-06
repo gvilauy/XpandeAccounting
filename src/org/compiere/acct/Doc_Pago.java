@@ -701,5 +701,4 @@ public class Doc_Pago extends Doc {
         return dls;
     }
 
-
 }
