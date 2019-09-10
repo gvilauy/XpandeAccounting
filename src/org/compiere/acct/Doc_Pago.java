@@ -588,6 +588,9 @@ public class Doc_Pago extends Doc {
                             factDet.setC_Bank_ID(pagoMedioPago.getC_Bank_ID());
                         }
                     }
+                    if (pagoMedioPago.getZ_MedioPagoIdent_ID() > 0){
+                        factDet.setZ_MedioPagoIdent_ID(pagoMedioPago.getZ_MedioPagoIdent_ID());
+                    }
 
                     factDet.setNroMedioPago(pagoMedioPago.getDocumentNoRef());
 
