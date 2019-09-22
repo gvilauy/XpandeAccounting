@@ -341,11 +341,13 @@ public class MZAcctBrowser extends X_Z_AcctBrowser {
                     DB.executeUpdateEx(action, get_TrxName());
 
                     // Actualizo importes para asientos con distinta moneda de asiento, considerando tipo de cambio del día del asiento
+                    // No considerar asientos contables hecho en el proceso de diferencia de cambio para esta traduccion.
                     action = " update z_acctbrowsermayor set " +
                             " amtdr2 = round((amtsourcedr * z_currencyrate(c_currency_id, " + this.getC_Currency_2_ID() + ", dateacct, 114, ad_client_id, ad_org_id)), 2), " +
                             " amtcr2 = round((amtsourcecr * z_currencyrate(c_currency_id, " + this.getC_Currency_2_ID() + ", dateacct, 114, ad_client_id, ad_org_id)), 2), " +
                             " c_currency_2_id =" + this.getC_Currency_2_ID() +
                             " where z_acctbrowser_id =" + this.get_ID() +
+                            " and ad_table_id !=" + I_Z_DifCambio.Table_ID +
                             " and c_currency_id !=" + this.getC_Currency_2_ID();
                     DB.executeUpdateEx(action, get_TrxName());
                 }

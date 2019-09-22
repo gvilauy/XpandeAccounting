@@ -31,7 +31,7 @@ public class X_Z_GeneraFormDGI extends PO implements I_Z_GeneraFormDGI, I_Persis
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20181125L;
+	private static final long serialVersionUID = 20190922L;
 
     /** Standard Constructor */
     public X_Z_GeneraFormDGI (Properties ctx, int Z_GeneraFormDGI_ID, String trxName)
@@ -149,6 +149,40 @@ public class X_Z_GeneraFormDGI extends PO implements I_Z_GeneraFormDGI, I_Persis
 		return (Timestamp)get_Value(COLUMNNAME_EndDate);
 	}
 
+	/** Set EndDate2.
+		@param EndDate2 
+		Fecha hasta secundaria
+	  */
+	public void setEndDate2 (Timestamp EndDate2)
+	{
+		set_Value (COLUMNNAME_EndDate2, EndDate2);
+	}
+
+	/** Get EndDate2.
+		@return Fecha hasta secundaria
+	  */
+	public Timestamp getEndDate2 () 
+	{
+		return (Timestamp)get_Value(COLUMNNAME_EndDate2);
+	}
+
+	/** Set EndDate3.
+		@param EndDate3 
+		Fecha hasta 3
+	  */
+	public void setEndDate3 (Timestamp EndDate3)
+	{
+		set_Value (COLUMNNAME_EndDate3, EndDate3);
+	}
+
+	/** Get EndDate3.
+		@return Fecha hasta 3
+	  */
+	public Timestamp getEndDate3 () 
+	{
+		return (Timestamp)get_Value(COLUMNNAME_EndDate3);
+	}
+
 	/** Set File Path or Name.
 		@param FilePathOrName 
 		Path of directory or name of the local file or URL
@@ -212,6 +246,40 @@ public class X_Z_GeneraFormDGI extends PO implements I_Z_GeneraFormDGI, I_Persis
 	public Timestamp getStartDate () 
 	{
 		return (Timestamp)get_Value(COLUMNNAME_StartDate);
+	}
+
+	/** Set StartDate2.
+		@param StartDate2 
+		Fecha desde secundaria
+	  */
+	public void setStartDate2 (Timestamp StartDate2)
+	{
+		set_Value (COLUMNNAME_StartDate2, StartDate2);
+	}
+
+	/** Get StartDate2.
+		@return Fecha desde secundaria
+	  */
+	public Timestamp getStartDate2 () 
+	{
+		return (Timestamp)get_Value(COLUMNNAME_StartDate2);
+	}
+
+	/** Set StartDate3.
+		@param StartDate3 
+		Fecha de inicio 3
+	  */
+	public void setStartDate3 (Timestamp StartDate3)
+	{
+		set_Value (COLUMNNAME_StartDate3, StartDate3);
+	}
+
+	/** Get StartDate3.
+		@return Fecha de inicio 3
+	  */
+	public Timestamp getStartDate3 () 
+	{
+		return (Timestamp)get_Value(COLUMNNAME_StartDate3);
 	}
 
 	/** TipoFormularioDGI AD_Reference_ID=1000045 */

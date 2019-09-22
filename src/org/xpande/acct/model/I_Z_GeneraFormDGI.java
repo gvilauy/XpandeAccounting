@@ -122,6 +122,32 @@ public interface I_Z_GeneraFormDGI
 	  */
 	public Timestamp getEndDate();
 
+    /** Column name EndDate2 */
+    public static final String COLUMNNAME_EndDate2 = "EndDate2";
+
+	/** Set EndDate2.
+	  * Fecha hasta secundaria
+	  */
+	public void setEndDate2(Timestamp EndDate2);
+
+	/** Get EndDate2.
+	  * Fecha hasta secundaria
+	  */
+	public Timestamp getEndDate2();
+
+    /** Column name EndDate3 */
+    public static final String COLUMNNAME_EndDate3 = "EndDate3";
+
+	/** Set EndDate3.
+	  * Fecha hasta 3
+	  */
+	public void setEndDate3(Timestamp EndDate3);
+
+	/** Get EndDate3.
+	  * Fecha hasta 3
+	  */
+	public Timestamp getEndDate3();
+
     /** Column name FilePathOrName */
     public static final String COLUMNNAME_FilePathOrName = "FilePathOrName";
 
@@ -182,6 +208,32 @@ public interface I_Z_GeneraFormDGI
 	  * First effective day (inclusive)
 	  */
 	public Timestamp getStartDate();
+
+    /** Column name StartDate2 */
+    public static final String COLUMNNAME_StartDate2 = "StartDate2";
+
+	/** Set StartDate2.
+	  * Fecha desde secundaria
+	  */
+	public void setStartDate2(Timestamp StartDate2);
+
+	/** Get StartDate2.
+	  * Fecha desde secundaria
+	  */
+	public Timestamp getStartDate2();
+
+    /** Column name StartDate3 */
+    public static final String COLUMNNAME_StartDate3 = "StartDate3";
+
+	/** Set StartDate3.
+	  * Fecha de inicio 3
+	  */
+	public void setStartDate3(Timestamp StartDate3);
+
+	/** Get StartDate3.
+	  * Fecha de inicio 3
+	  */
+	public Timestamp getStartDate3();
 
     /** Column name TipoFormularioDGI */
     public static final String COLUMNNAME_TipoFormularioDGI = "TipoFormularioDGI";

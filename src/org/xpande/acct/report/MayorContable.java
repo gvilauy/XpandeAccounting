@@ -4,6 +4,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.MAcctSchema;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.xpande.acct.model.I_Z_DifCambio;
 import org.xpande.core.utils.CurrencyUtils;
 
 import java.math.BigDecimal;
@@ -259,12 +260,14 @@ public class MayorContable {
                             " and c_currency_id =" + this.cCurrencyID_2;
                     DB.executeUpdateEx(action, null);
 
-                    // Actualizo importes para asientos con distinta moneda de asiento, considerando tipo de cambio del día del asiento
+                    // Actualizo importes para asientos con distinta moneda de asiento, considerando tipo de cambio del día del asiento.
+                    // No considerar asientos contables hecho en el proceso de diferencia de cambio para esta traduccion.
                     action = " update " + TABLA_REPORTE + " set " +
                             " amtdr2 = round((amtsourcedr * z_currencyrate(c_currency_id, " + this.cCurrencyID_2 + ", dateacct, 114, ad_client_id, ad_org_id)), 2), " +
                             " amtcr2 = round((amtsourcecr * z_currencyrate(c_currency_id, " + this.cCurrencyID_2 + ", dateacct, 114, ad_client_id, ad_org_id)), 2), " +
                             " c_currency_2_id =" + this.cCurrencyID_2 +
                             " where ad_user_id =" + this.adUserID +
+                            " and ad_table_id !=" + I_Z_DifCambio.Table_ID +
                             " and c_currency_id !=" + this.cCurrencyID_2;
                     DB.executeUpdateEx(action, null);
                 }
