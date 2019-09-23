@@ -18,6 +18,7 @@
 package org.xpande.acct.model;
 
 import java.sql.ResultSet;
+import java.sql.Timestamp;
 import java.util.Properties;
 import org.compiere.model.*;
 
@@ -30,7 +31,7 @@ public class X_Z_GeneraFormDGIError extends PO implements I_Z_GeneraFormDGIError
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20181121L;
+	private static final long serialVersionUID = 20190923L;
 
     /** Standard Constructor */
     public X_Z_GeneraFormDGIError (Properties ctx, int Z_GeneraFormDGIError_ID, String trxName)
@@ -72,6 +73,194 @@ public class X_Z_GeneraFormDGIError extends PO implements I_Z_GeneraFormDGIError
       return sb.toString();
     }
 
+	public I_C_BPartner getC_BPartner() throws RuntimeException
+    {
+		return (I_C_BPartner)MTable.get(getCtx(), I_C_BPartner.Table_Name)
+			.getPO(getC_BPartner_ID(), get_TrxName());	}
+
+	/** Set Business Partner .
+		@param C_BPartner_ID 
+		Identifies a Business Partner
+	  */
+	public void setC_BPartner_ID (int C_BPartner_ID)
+	{
+		if (C_BPartner_ID < 1) 
+			set_Value (COLUMNNAME_C_BPartner_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
+	}
+
+	/** Get Business Partner .
+		@return Identifies a Business Partner
+	  */
+	public int getC_BPartner_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	public I_C_Currency getC_Currency() throws RuntimeException
+    {
+		return (I_C_Currency)MTable.get(getCtx(), I_C_Currency.Table_Name)
+			.getPO(getC_Currency_ID(), get_TrxName());	}
+
+	/** Set Currency.
+		@param C_Currency_ID 
+		The Currency for this record
+	  */
+	public void setC_Currency_ID (int C_Currency_ID)
+	{
+		if (C_Currency_ID < 1) 
+			set_Value (COLUMNNAME_C_Currency_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Currency_ID, Integer.valueOf(C_Currency_ID));
+	}
+
+	/** Get Currency.
+		@return The Currency for this record
+	  */
+	public int getC_Currency_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	public I_C_DocType getC_DocType() throws RuntimeException
+    {
+		return (I_C_DocType)MTable.get(getCtx(), I_C_DocType.Table_Name)
+			.getPO(getC_DocType_ID(), get_TrxName());	}
+
+	/** Set Document Type.
+		@param C_DocType_ID 
+		Document type or rules
+	  */
+	public void setC_DocType_ID (int C_DocType_ID)
+	{
+		if (C_DocType_ID < 0) 
+			set_Value (COLUMNNAME_C_DocType_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_DocType_ID, Integer.valueOf(C_DocType_ID));
+	}
+
+	/** Get Document Type.
+		@return Document type or rules
+	  */
+	public int getC_DocType_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_DocType_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	public I_C_Invoice getC_Invoice() throws RuntimeException
+    {
+		return (I_C_Invoice)MTable.get(getCtx(), I_C_Invoice.Table_Name)
+			.getPO(getC_Invoice_ID(), get_TrxName());	}
+
+	/** Set Invoice.
+		@param C_Invoice_ID 
+		Invoice Identifier
+	  */
+	public void setC_Invoice_ID (int C_Invoice_ID)
+	{
+		if (C_Invoice_ID < 1) 
+			set_Value (COLUMNNAME_C_Invoice_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Invoice_ID, Integer.valueOf(C_Invoice_ID));
+	}
+
+	/** Get Invoice.
+		@return Invoice Identifier
+	  */
+	public int getC_Invoice_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Invoice_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	public org.eevolution.model.I_C_TaxGroup getC_TaxGroup() throws RuntimeException
+    {
+		return (org.eevolution.model.I_C_TaxGroup)MTable.get(getCtx(), org.eevolution.model.I_C_TaxGroup.Table_Name)
+			.getPO(getC_TaxGroup_ID(), get_TrxName());	}
+
+	/** Set Tax Group.
+		@param C_TaxGroup_ID Tax Group	  */
+	public void setC_TaxGroup_ID (int C_TaxGroup_ID)
+	{
+		if (C_TaxGroup_ID < 1) 
+			set_Value (COLUMNNAME_C_TaxGroup_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_TaxGroup_ID, Integer.valueOf(C_TaxGroup_ID));
+	}
+
+	/** Get Tax Group.
+		@return Tax Group	  */
+	public int getC_TaxGroup_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_TaxGroup_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Account Date.
+		@param DateAcct 
+		Accounting Date
+	  */
+	public void setDateAcct (Timestamp DateAcct)
+	{
+		set_Value (COLUMNNAME_DateAcct, DateAcct);
+	}
+
+	/** Get Account Date.
+		@return Accounting Date
+	  */
+	public Timestamp getDateAcct () 
+	{
+		return (Timestamp)get_Value(COLUMNNAME_DateAcct);
+	}
+
+	/** Set Document Date.
+		@param DateDoc 
+		Date of the Document
+	  */
+	public void setDateDoc (Timestamp DateDoc)
+	{
+		set_Value (COLUMNNAME_DateDoc, DateDoc);
+	}
+
+	/** Get Document Date.
+		@return Date of the Document
+	  */
+	public Timestamp getDateDoc () 
+	{
+		return (Timestamp)get_Value(COLUMNNAME_DateDoc);
+	}
+
+	/** Set DocumentNoRef.
+		@param DocumentNoRef 
+		Numero de documento referenciado
+	  */
+	public void setDocumentNoRef (String DocumentNoRef)
+	{
+		set_Value (COLUMNNAME_DocumentNoRef, DocumentNoRef);
+	}
+
+	/** Get DocumentNoRef.
+		@return Numero de documento referenciado
+	  */
+	public String getDocumentNoRef () 
+	{
+		return (String)get_Value(COLUMNNAME_DocumentNoRef);
+	}
+
 	/** Set Error Msg.
 		@param ErrorMsg Error Msg	  */
 	public void setErrorMsg (String ErrorMsg)
@@ -84,6 +273,23 @@ public class X_Z_GeneraFormDGIError extends PO implements I_Z_GeneraFormDGIError
 	public String getErrorMsg () 
 	{
 		return (String)get_Value(COLUMNNAME_ErrorMsg);
+	}
+
+	/** Set Tax ID.
+		@param TaxID 
+		Tax Identification
+	  */
+	public void setTaxID (String TaxID)
+	{
+		set_Value (COLUMNNAME_TaxID, TaxID);
+	}
+
+	/** Get Tax ID.
+		@return Tax Identification
+	  */
+	public String getTaxID () 
+	{
+		return (String)get_Value(COLUMNNAME_TaxID);
 	}
 
 	/** Set Immutable Universally Unique Identifier.
@@ -123,9 +329,9 @@ public class X_Z_GeneraFormDGIError extends PO implements I_Z_GeneraFormDGIError
 		return ii.intValue();
 	}
 
-	public org.xpande.acct.model.I_Z_GeneraFormDGI getZ_GeneraFormDGI() throws RuntimeException
+	public I_Z_GeneraFormDGI getZ_GeneraFormDGI() throws RuntimeException
     {
-		return (org.xpande.acct.model.I_Z_GeneraFormDGI)MTable.get(getCtx(), org.xpande.acct.model.I_Z_GeneraFormDGI.Table_Name)
+		return (I_Z_GeneraFormDGI)MTable.get(getCtx(), I_Z_GeneraFormDGI.Table_Name)
 			.getPO(getZ_GeneraFormDGI_ID(), get_TrxName());	}
 
 	/** Set Z_GeneraFormDGI ID.
@@ -143,6 +349,26 @@ public class X_Z_GeneraFormDGIError extends PO implements I_Z_GeneraFormDGIError
 	public int getZ_GeneraFormDGI_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Z_GeneraFormDGI_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Z_RetencionSocio ID.
+		@param Z_RetencionSocio_ID Z_RetencionSocio ID	  */
+	public void setZ_RetencionSocio_ID (int Z_RetencionSocio_ID)
+	{
+		if (Z_RetencionSocio_ID < 1) 
+			set_Value (COLUMNNAME_Z_RetencionSocio_ID, null);
+		else 
+			set_Value (COLUMNNAME_Z_RetencionSocio_ID, Integer.valueOf(Z_RetencionSocio_ID));
+	}
+
+	/** Get Z_RetencionSocio ID.
+		@return Z_RetencionSocio ID	  */
+	public int getZ_RetencionSocio_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_RetencionSocio_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

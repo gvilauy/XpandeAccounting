@@ -63,6 +63,66 @@ public interface I_Z_GeneraFormDGIError
 	  */
 	public int getAD_Org_ID();
 
+    /** Column name C_BPartner_ID */
+    public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+
+	/** Set Business Partner .
+	  * Identifies a Business Partner
+	  */
+	public void setC_BPartner_ID(int C_BPartner_ID);
+
+	/** Get Business Partner .
+	  * Identifies a Business Partner
+	  */
+	public int getC_BPartner_ID();
+
+	public I_C_BPartner getC_BPartner() throws RuntimeException;
+
+    /** Column name C_Currency_ID */
+    public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
+
+	/** Set Currency.
+	  * The Currency for this record
+	  */
+	public void setC_Currency_ID(int C_Currency_ID);
+
+	/** Get Currency.
+	  * The Currency for this record
+	  */
+	public int getC_Currency_ID();
+
+	public I_C_Currency getC_Currency() throws RuntimeException;
+
+    /** Column name C_DocType_ID */
+    public static final String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
+
+	/** Set Document Type.
+	  * Document type or rules
+	  */
+	public void setC_DocType_ID(int C_DocType_ID);
+
+	/** Get Document Type.
+	  * Document type or rules
+	  */
+	public int getC_DocType_ID();
+
+	public I_C_DocType getC_DocType() throws RuntimeException;
+
+    /** Column name C_Invoice_ID */
+    public static final String COLUMNNAME_C_Invoice_ID = "C_Invoice_ID";
+
+	/** Set Invoice.
+	  * Invoice Identifier
+	  */
+	public void setC_Invoice_ID(int C_Invoice_ID);
+
+	/** Get Invoice.
+	  * Invoice Identifier
+	  */
+	public int getC_Invoice_ID();
+
+	public I_C_Invoice getC_Invoice() throws RuntimeException;
+
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
 
@@ -78,6 +138,56 @@ public interface I_Z_GeneraFormDGIError
 	  * User who created this records
 	  */
 	public int getCreatedBy();
+
+    /** Column name C_TaxGroup_ID */
+    public static final String COLUMNNAME_C_TaxGroup_ID = "C_TaxGroup_ID";
+
+	/** Set Tax Group	  */
+	public void setC_TaxGroup_ID(int C_TaxGroup_ID);
+
+	/** Get Tax Group	  */
+	public int getC_TaxGroup_ID();
+
+	public org.eevolution.model.I_C_TaxGroup getC_TaxGroup() throws RuntimeException;
+
+    /** Column name DateAcct */
+    public static final String COLUMNNAME_DateAcct = "DateAcct";
+
+	/** Set Account Date.
+	  * Accounting Date
+	  */
+	public void setDateAcct(Timestamp DateAcct);
+
+	/** Get Account Date.
+	  * Accounting Date
+	  */
+	public Timestamp getDateAcct();
+
+    /** Column name DateDoc */
+    public static final String COLUMNNAME_DateDoc = "DateDoc";
+
+	/** Set Document Date.
+	  * Date of the Document
+	  */
+	public void setDateDoc(Timestamp DateDoc);
+
+	/** Get Document Date.
+	  * Date of the Document
+	  */
+	public Timestamp getDateDoc();
+
+    /** Column name DocumentNoRef */
+    public static final String COLUMNNAME_DocumentNoRef = "DocumentNoRef";
+
+	/** Set DocumentNoRef.
+	  * Numero de documento referenciado
+	  */
+	public void setDocumentNoRef(String DocumentNoRef);
+
+	/** Get DocumentNoRef.
+	  * Numero de documento referenciado
+	  */
+	public String getDocumentNoRef();
 
     /** Column name ErrorMsg */
     public static final String COLUMNNAME_ErrorMsg = "ErrorMsg";
@@ -100,6 +210,19 @@ public interface I_Z_GeneraFormDGIError
 	  * The record is active in the system
 	  */
 	public boolean isActive();
+
+    /** Column name TaxID */
+    public static final String COLUMNNAME_TaxID = "TaxID";
+
+	/** Set Tax ID.
+	  * Tax Identification
+	  */
+	public void setTaxID(String TaxID);
+
+	/** Get Tax ID.
+	  * Tax Identification
+	  */
+	public String getTaxID();
 
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
@@ -148,5 +271,14 @@ public interface I_Z_GeneraFormDGIError
 	/** Get Z_GeneraFormDGI ID	  */
 	public int getZ_GeneraFormDGI_ID();
 
-	public org.xpande.acct.model.I_Z_GeneraFormDGI getZ_GeneraFormDGI() throws RuntimeException;
+	public I_Z_GeneraFormDGI getZ_GeneraFormDGI() throws RuntimeException;
+
+    /** Column name Z_RetencionSocio_ID */
+    public static final String COLUMNNAME_Z_RetencionSocio_ID = "Z_RetencionSocio_ID";
+
+	/** Set Z_RetencionSocio ID	  */
+	public void setZ_RetencionSocio_ID(int Z_RetencionSocio_ID);
+
+	/** Get Z_RetencionSocio ID	  */
+	public int getZ_RetencionSocio_ID();
 }
