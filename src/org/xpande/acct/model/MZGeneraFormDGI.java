@@ -299,18 +299,20 @@ public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
 
             while(rs.next()){
 
+                // Periodo del comprobante
+                MPeriod periodInv = MPeriod.get(getCtx(), rs.getInt("c_period_id"));
+                MYear yearInv = (MYear)periodInv.getC_Year();
+                String monthInv = org.apache.commons.lang.StringUtils.leftPad(String.valueOf(periodInv.getPeriodNo()), 2, "0");
+                String literalPeriodInv = String.valueOf(yearInv.getYearAsInt()) + monthInv;
+
                 String cadena = "";
-                cadena += taxID + ";02183;" + literalPeriodo + ";";
+                cadena += taxID + ";02183;" + literalPeriodInv + ";";
 
                 // Rut del Socio de Negocio
                 String rutPartner = org.apache.commons.lang.StringUtils.leftPad(rs.getString("taxid"), 12, "0");
                 cadena += rutPartner + ";";
 
                 // Periodo del comprobante
-                MPeriod periodInv = MPeriod.get(getCtx(), rs.getInt("c_period_id"));
-                MYear yearInv = (MYear)periodInv.getC_Year();
-                String monthInv = org.apache.commons.lang.StringUtils.leftPad(String.valueOf(periodInv.getPeriodNo()), 2, "0");
-                String literalPeriodInv = String.valueOf(yearInv.getYearAsInt()) + monthInv;
                 cadena += literalPeriodInv + ";";
 
                 // Rubro DGI
