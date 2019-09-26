@@ -138,6 +138,66 @@ public final class AccountUtils {
         return value;
     }
 
+    /***
+     * Metodo que retorna id de combinación de cuenta para determinado identificador de medio de pago y AcctType.
+     * Xpande. Created by Gabriel Vila on 9/26/19.
+     * @param ctx
+     * @param AcctType
+     * @param zMedioPagoIdentID
+     * @param cCurrencyID
+     * @param as
+     * @param trxName
+     * @return
+     */
+    public static int getMedioPagoIdentValidCombinationID (Properties ctx, int AcctType, int zMedioPagoIdentID, int cCurrencyID, MAcctSchema as, String trxName){
+
+        int value = -1;
+
+        String sql = "";
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try{
+
+            String fieldAccount = "";
+
+            if (AcctType == ACCTYPE_MP_Recibidos)
+            {
+                fieldAccount = "MP_Recibidos_Acct";
+            }
+            else if (AcctType == ACCTYPE_MP_Entregados)
+            {
+                fieldAccount = "MP_Entregados_Acct";
+            }
+            else{
+                return -1;
+            }
+
+            sql = "SELECT " +  fieldAccount  + " FROM Z_MPagoIdent_Acct WHERE Z_MedioPagoIdent_ID=? AND C_AcctSchema_ID =? " +
+                    " AND C_Currency_ID =?";
+
+            pstmt = DB.prepareStatement(sql, trxName);
+            pstmt.setInt (1, zMedioPagoIdentID);
+            pstmt.setInt (2, as.getC_AcctSchema_ID());
+            pstmt.setInt (3, cCurrencyID);
+
+            rs = pstmt.executeQuery();
+
+            if (rs.next()){
+                value = rs.getInt(1);
+            }
+
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+        finally {
+            DB.close(rs, pstmt);
+            rs = null; pstmt = null;
+        }
+
+        return value;
+    }
 
     /***
      * Metodo que retorna id de combinación de cuenta para determinada Retención y AcctType.

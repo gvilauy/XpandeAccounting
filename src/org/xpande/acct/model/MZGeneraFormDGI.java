@@ -485,7 +485,16 @@ public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
 
         	        MZGeneraFormDGIError dgiError = new MZGeneraFormDGIError(getCtx(), 0, get_TrxName());
         	        dgiError.setZ_GeneraFormDGI_ID(this.get_ID());
-        	        dgiError.setErrorMsg("Socio de Negocio NO tiene NUMERO DE IDENTIFICACIÓN : " + rs.getString("value") +
+                    dgiError.setC_BPartner_ID(rs.getInt("c_bpartner_id"));
+                    dgiError.setC_DocType_ID(rs.getInt("c_doctypetarget_id"));
+                    dgiError.setDocumentNoRef(rs.getString("documentnoref"));
+                    dgiError.setDateDoc(rs.getTimestamp("dateinvoiced"));
+                    dgiError.setDateAcct(rs.getTimestamp("dateacct"));
+                    dgiError.setC_Invoice_ID(rs.getInt("c_invoice_id"));
+                    dgiError.setC_Currency_ID(rs.getInt("c_currency_id"));
+                    dgiError.setC_TaxGroup_ID(rs.getInt("c_taxgroup_id"));
+                    dgiError.setTaxID(rs.getString("TaxID"));
+                    dgiError.setErrorMsg("Socio de Negocio NO tiene NUMERO DE IDENTIFICACIÓN : " + rs.getString("value") +
                             " - " + rs.getString("name"));
         	        dgiError.saveEx();
 
@@ -521,6 +530,15 @@ public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
                     if ((periodInv == null) || (periodInv.get_ID() <= 0)){
                         MZGeneraFormDGIError dgiError = new MZGeneraFormDGIError(getCtx(), 0, get_TrxName());
                         dgiError.setZ_GeneraFormDGI_ID(this.get_ID());
+                        dgiError.setC_BPartner_ID(rs.getInt("c_bpartner_id"));
+                        dgiError.setC_DocType_ID(rs.getInt("c_doctypetarget_id"));
+                        dgiError.setDocumentNoRef(rs.getString("documentnoref"));
+                        dgiError.setDateDoc(rs.getTimestamp("dateinvoiced"));
+                        dgiError.setDateAcct(rs.getTimestamp("dateacct"));
+                        dgiError.setC_Invoice_ID(rs.getInt("c_invoice_id"));
+                        dgiError.setC_Currency_ID(rs.getInt("c_currency_id"));
+                        dgiError.setC_TaxGroup_ID(rs.getInt("c_taxgroup_id"));
+                        dgiError.setTaxID(rs.getString("TaxID"));
                         dgiError.setErrorMsg("Falta Período Contable para fecha : " + linea.getDateAcct().toString());
                         dgiError.saveEx();
                         hayError = true;
@@ -544,6 +562,15 @@ public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
 
                             MZGeneraFormDGIError dgiError = new MZGeneraFormDGIError(getCtx(), 0, get_TrxName());
                             dgiError.setZ_GeneraFormDGI_ID(this.get_ID());
+                            dgiError.setC_BPartner_ID(rs.getInt("c_bpartner_id"));
+                            dgiError.setC_DocType_ID(rs.getInt("c_doctypetarget_id"));
+                            dgiError.setDocumentNoRef(rs.getString("documentnoref"));
+                            dgiError.setDateDoc(rs.getTimestamp("dateinvoiced"));
+                            dgiError.setDateAcct(rs.getTimestamp("dateacct"));
+                            dgiError.setC_Invoice_ID(rs.getInt("c_invoice_id"));
+                            dgiError.setC_Currency_ID(rs.getInt("c_currency_id"));
+                            dgiError.setC_TaxGroup_ID(rs.getInt("c_taxgroup_id"));
+                            dgiError.setTaxID(rs.getString("TaxID"));
                             dgiError.setErrorMsg("Falta tasa de Cambio para moneda : " + linea.getC_Currency_ID() + ", fecha : " + linea.getDateAcct().toString());
                             dgiError.saveEx();
                             hayError = true;
@@ -567,11 +594,19 @@ public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
 
                             MZGeneraFormDGIError dgiError = new MZGeneraFormDGIError(getCtx(), 0, get_TrxName());
                             dgiError.setZ_GeneraFormDGI_ID(this.get_ID());
+                            dgiError.setC_BPartner_ID(rs.getInt("c_bpartner_id"));
+                            dgiError.setC_DocType_ID(rs.getInt("c_doctypetarget_id"));
+                            dgiError.setDocumentNoRef(rs.getString("documentnoref"));
+                            dgiError.setDateDoc(rs.getTimestamp("dateinvoiced"));
+                            dgiError.setDateAcct(rs.getTimestamp("dateacct"));
+                            dgiError.setC_Invoice_ID(rs.getInt("c_invoice_id"));
+                            dgiError.setC_Currency_ID(rs.getInt("c_currency_id"));
+                            dgiError.setC_TaxGroup_ID(rs.getInt("c_taxgroup_id"));
+                            dgiError.setTaxID(rs.getString("TaxID"));
                             dgiError.setErrorMsg("Impuesto NO TIENE Rubro de DGI Asociado : " + tax.getName() + " - Documento : " + rs.getString("documentnoref"));
                             dgiError.saveEx();
                         }
                     }
-
                 }
         	}
 
@@ -651,7 +686,7 @@ public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
 
                     MZGeneraFormDGIError dgiError = new MZGeneraFormDGIError(getCtx(), 0, get_TrxName());
                     dgiError.setZ_GeneraFormDGI_ID(this.get_ID());
-                    dgiError.setErrorMsg("Socio de Negocio NO tiene NUMERO DE IDENTIFICACIÓN : " + rs.getString("value") +
+                    dgiError.setErrorMsg("POS - Socio de Negocio NO tiene NUMERO DE IDENTIFICACIÓN : " + rs.getString("value") +
                             " - " + rs.getString("name"));
                     dgiError.saveEx();
                 }
@@ -661,7 +696,7 @@ public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
 
                         MZGeneraFormDGIError dgiError = new MZGeneraFormDGIError(getCtx(), 0, get_TrxName());
                         dgiError.setZ_GeneraFormDGI_ID(this.get_ID());
-                        dgiError.setErrorMsg("No existe un Socio de Negocio definido con NUMERO DE IDENTIFICACIÓN : " + nroIdentificacion);
+                        dgiError.setErrorMsg("POS - No existe un Socio de Negocio definido con NUMERO DE IDENTIFICACIÓN : " + nroIdentificacion);
                         dgiError.saveEx();
                     }
                     else{
@@ -686,7 +721,7 @@ public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
                         if ((periodInv == null) || (periodInv.get_ID() <= 0)){
                             MZGeneraFormDGIError dgiError = new MZGeneraFormDGIError(getCtx(), 0, get_TrxName());
                             dgiError.setZ_GeneraFormDGI_ID(this.get_ID());
-                            dgiError.setErrorMsg("Falta Período Contable para fecha : " + linea.getDateAcct().toString());
+                            dgiError.setErrorMsg("POS - Falta Período Contable para fecha : " + linea.getDateAcct().toString());
                             dgiError.saveEx();
                         }
                         else{
@@ -709,7 +744,7 @@ public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
 
                                     MZGeneraFormDGIError dgiError = new MZGeneraFormDGIError(getCtx(), 0, get_TrxName());
                                     dgiError.setZ_GeneraFormDGI_ID(this.get_ID());
-                                    dgiError.setErrorMsg("Falta tasa de Cambio para moneda : " + linea.getC_Currency_ID() + ", fecha : " + linea.getDateAcct().toString());
+                                    dgiError.setErrorMsg("POS - Falta tasa de Cambio para moneda : " + linea.getC_Currency_ID() + ", fecha : " + linea.getDateAcct().toString());
                                     dgiError.saveEx();
                                 }
                                 else{
@@ -729,7 +764,7 @@ public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
 
                                 MZGeneraFormDGIError dgiError = new MZGeneraFormDGIError(getCtx(), 0, get_TrxName());
                                 dgiError.setZ_GeneraFormDGI_ID(this.get_ID());
-                                dgiError.setErrorMsg("Impuesto NO TIENE Rubro de DGI Asociado : " + tax.getName() + " - Documento : " + rs.getString("documentnoref"));
+                                dgiError.setErrorMsg("POS - Impuesto NO TIENE Rubro de DGI Asociado : " + tax.getName() + " - Documento : " + rs.getString("documentnoref"));
                                 dgiError.saveEx();
                             }
 
@@ -803,6 +838,8 @@ public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
 
                     MZGeneraFormDGIError dgiError = new MZGeneraFormDGIError(getCtx(), 0, get_TrxName());
                     dgiError.setZ_GeneraFormDGI_ID(this.get_ID());
+
+
                     dgiError.setErrorMsg("Socio de Negocio NO tiene NUMERO DE IDENTIFICACIÓN : " + rs.getString("value") +
                             " - " + rs.getString("name"));
                     dgiError.saveEx();

@@ -545,23 +545,30 @@ public class Doc_Pago extends Doc {
                     }
                 }
                 else{
-                    if (pagoMedioPago.getZ_MedioPago_ID() > 0){
-                        accountID = AccountUtils.getMedioPagoValidCombinationID(getCtx(), Doc.ACCTYPE_MP_Recibidos, pagoMedioPago.getZ_MedioPago_ID(), pagoMedioPago.getC_Currency_ID(), as, null);
-                        if (accountID <= 0){
-                            MZMedioPago medioPago = (MZMedioPago) pagoMedioPago.getZ_MedioPago();
-                            p_Error = "No se obtuvo Cuenta Contable (MP_Recibidos) asociada al medio de pago : " + medioPago.getName();
+
+                    if (pagoMedioPago.getZ_MedioPagoIdent_ID() > 0){
+                        accountID = AccountUtils.getMedioPagoIdentValidCombinationID(getCtx(), Doc.ACCTYPE_MP_Recibidos, pagoMedioPago.getZ_MedioPagoIdent_ID(), pagoMedioPago.getC_Currency_ID(), as, null);
+                    }
+
+                    if (accountID <= 0) {
+                        if (pagoMedioPago.getZ_MedioPago_ID() > 0){
+                            accountID = AccountUtils.getMedioPagoValidCombinationID(getCtx(), Doc.ACCTYPE_MP_Recibidos, pagoMedioPago.getZ_MedioPago_ID(), pagoMedioPago.getC_Currency_ID(), as, null);
+                            if (accountID <= 0){
+                                MZMedioPago medioPago = (MZMedioPago) pagoMedioPago.getZ_MedioPago();
+                                p_Error = "No se obtuvo Cuenta Contable (MP_Recibidos) asociada al medio de pago : " + medioPago.getName();
+                                log.log(Level.SEVERE, p_Error);
+                                fact = null;
+                                facts.add(fact);
+                                return facts;
+                            }
+                        }
+                        else{
+                            p_Error = "No se indica Cuenta Bancaria y tampoco se indica Medio de Pago";
                             log.log(Level.SEVERE, p_Error);
                             fact = null;
                             facts.add(fact);
                             return facts;
                         }
-                    }
-                    else{
-                        p_Error = "No se indica Cuenta Bancaria y tampoco se indica Medio de Pago";
-                        log.log(Level.SEVERE, p_Error);
-                        fact = null;
-                        facts.add(fact);
-                        return facts;
                     }
                 }
 
