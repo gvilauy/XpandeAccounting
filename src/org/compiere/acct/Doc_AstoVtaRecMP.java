@@ -114,12 +114,15 @@ public class Doc_AstoVtaRecMP extends Doc {
                         FactLine fl1 = fact.createLine(null, MAccount.get(getCtx(), accountID), cCurrencyID, astoVtaRecMPLinST.getTotalAmt(), null);
                         if (fl1 != null){
                             fl1.setAD_Org_ID(this.astoVtaRecMP.getAD_Org_ID());
+
+                            /*
                             if (rs.getInt("c_bpartner_id") > 0){
                                 fl1.setC_BPartner_ID(rs.getInt("c_bpartner_id"));
                             }
                             if (rs.getInt("m_product_id") > 0){
                                 fl1.setM_Product_ID(rs.getInt("m_product_id"));
                             }
+                            */
                         }
 
                         // CR - Cuenta contable asociada al tipo de linea de sisteco. Importe de este linea de detalle.
@@ -142,12 +145,15 @@ public class Doc_AstoVtaRecMP extends Doc {
                         FactLine fl2 = fact.createLine(null, MAccount.get(getCtx(), accountID), cCurrencyID, null, astoVtaRecMPLinST.getTotalAmt());
                         if (fl2 != null){
                             fl2.setAD_Org_ID(this.astoVtaRecMP.getAD_Org_ID());
+
+                            /*
                             if (rs.getInt("c_bpartner_id") > 0){
                                 fl1.setC_BPartner_ID(rs.getInt("c_bpartner_id"));
                             }
                             if (rs.getInt("m_product_id") > 0){
                                 fl1.setM_Product_ID(rs.getInt("m_product_id"));
                             }
+                            */
                         }
 
                     }
@@ -173,12 +179,16 @@ public class Doc_AstoVtaRecMP extends Doc {
                             FactLine fl1 = fact.createLine(null, MAccount.get(getCtx(), accountID), cCurrencyID, astoVtaRecMPLinST.getTotalAmt(), null);
                             if (fl1 != null){
                                 fl1.setAD_Org_ID(this.astoVtaRecMP.getAD_Org_ID());
+
+                                /*
                                 if (rs.getInt("c_bpartner_id") > 0){
                                     fl1.setC_BPartner_ID(rs.getInt("c_bpartner_id"));
                                 }
                                 if (rs.getInt("m_product_id") > 0){
                                     fl1.setM_Product_ID(rs.getInt("m_product_id"));
                                 }
+
+                                 */
                             }
 
                             // CR - Cuenta contable asociada al tipo de linea de sisteco. Importe de este linea de detalle.
@@ -201,12 +211,16 @@ public class Doc_AstoVtaRecMP extends Doc {
                             FactLine fl2 = fact.createLine(null, MAccount.get(getCtx(), accountID), cCurrencyID, null, astoVtaRecMPLinST.getTotalAmt());
                             if (fl2 != null){
                                 fl2.setAD_Org_ID(this.astoVtaRecMP.getAD_Org_ID());
+
+                                /*
                                 if (rs.getInt("c_bpartner_id") > 0){
                                     fl1.setC_BPartner_ID(rs.getInt("c_bpartner_id"));
                                 }
                                 if (rs.getInt("m_product_id") > 0){
                                     fl1.setM_Product_ID(rs.getInt("m_product_id"));
                                 }
+
+                                 */
                             }
                         }
                     }

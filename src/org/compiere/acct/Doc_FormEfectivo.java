@@ -108,8 +108,6 @@ public class Doc_FormEfectivo extends Doc {
             // MONEDA UNO
             if ((formEfectivoLin.getAmtSubtotal1() != null) && (formEfectivoLin.getAmtSubtotal1().compareTo(Env.ZERO) != 0)){
 
-
-
                 // Obtengo cuenta contable del concepto de esta linea para moneda uno
                 MZRetailConfigForEfe configForEfe = (MZRetailConfigForEfe) formEfectivoLin.getZ_RetailConfigForEfe();
                 X_Z_RetailConfForEfe_Acct confForEfe_acct = configForEfe.getAccountConfig(this.formEfectivo.getAD_Org_ID(), as.get_ID(), formEfectivoLin.getC_Currency_ID());
@@ -131,6 +129,9 @@ public class Doc_FormEfectivo extends Doc {
                     }
                     if (f1 != null){
                         f1.setAD_Org_ID(this.formEfectivo.getAD_Org_ID());
+                        if (confForEfe_acct.getM_Product_ID() > 0){
+                            f1.setM_Product_ID(confForEfe_acct.getM_Product_ID());
+                        }
                     }
                 }
             }
@@ -159,6 +160,9 @@ public class Doc_FormEfectivo extends Doc {
                     }
                     if (f1 != null){
                         f1.setAD_Org_ID(this.formEfectivo.getAD_Org_ID());
+                        if (confForEfe_acct.getM_Product_ID() > 0){
+                            f1.setM_Product_ID(confForEfe_acct.getM_Product_ID());
+                        }
                     }
                 }
             }
