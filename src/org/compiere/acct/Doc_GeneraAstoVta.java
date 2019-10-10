@@ -180,9 +180,10 @@ public class Doc_GeneraAstoVta extends Doc {
                             }
                         }
 
-                        creditosBaseAccountID = accountID;
-                        totalTaxBaseAmtCreditos = totalTaxBaseAmtCreditos.add(amtMP);
+                        //creditosBaseAccountID = accountID;
+                        //totalTaxBaseAmtCreditos = totalTaxBaseAmtCreditos.add(amtMP);
 
+                        /*
                         // Cuando este medio de pago va al crédito en el asiento de ventas, debo obtener valor de impuesto según tasa parametrizada
                         // en configuraciones de retail. Este monto lo imputo a la cuenta de venta de dicha tasa de impuesto.
                         if (retailConfig.getC_Tax_ID() <= 0){
@@ -217,6 +218,7 @@ public class Doc_GeneraAstoVta extends Doc {
                         }
 
                         totalTaxAmtCreditos = totalTaxAmtCreditos.add(taxAmt);
+                         */
                     }
 
                 }
