@@ -96,10 +96,13 @@ public class Doc_GeneraAstoVta extends Doc {
 
                 int cCurrencyID = sumMP.getC_Currency_ID();
                 BigDecimal amtMP = sumMP.getAmtTotal1();
+                BigDecimal currencyRate = Env.ONE;
                 if ((sumMP.getAmtTotal2() != null) && (sumMP.getAmtTotal2().compareTo(Env.ZERO) > 0)){
                     cCurrencyID = sumMP.getC_Currency_2_ID();
                     amtMP = sumMP.getAmtTotal2();
                     this.setIsMultiCurrency(true);
+                    currencyRate = sumMP.getCurrencyRate();
+                    if (currencyRate == null) currencyRate = Env.ONE;
                 }
 
                 // Obtengo info de cuenta contable a utilizar segun proveedor de pos
@@ -220,6 +223,11 @@ public class Doc_GeneraAstoVta extends Doc {
                             if (mProductID > 0){
                                 fl1.setM_Product_ID(mProductID);
                             }
+                            if (currencyRate.compareTo(Env.ONE) > 0){
+                                fl1.set_ValueOfColumn("CurrencyRate", currencyRate);
+                                //fl1.setAmtAcctDr(fl1.getAmtSourceDr().multiply(currencyRate).setScale(2, RoundingMode.HALF_UP));
+                                fl1.setAmtAcctDr(sumMP.getAmtTotal1());
+                            }
                         }
                     }
                     else{
@@ -231,6 +239,11 @@ public class Doc_GeneraAstoVta extends Doc {
                             }
                             if (mProductID > 0){
                                 fl1.setM_Product_ID(mProductID);
+                            }
+                            if (currencyRate.compareTo(Env.ONE) > 0){
+                                fl1.set_ValueOfColumn("CurrencyRate", currencyRate);
+                                //fl1.setAmtAcctCr(fl1.getAmtSourceCr().multiply(currencyRate).setScale(2, RoundingMode.HALF_UP));
+                                fl1.setAmtAcctCr(sumMP.getAmtTotal1());
                             }
                         }
                     }
