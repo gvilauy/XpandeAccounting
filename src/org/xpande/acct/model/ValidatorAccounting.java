@@ -9,6 +9,7 @@ import org.compiere.util.Env;
 import org.xpande.comercial.model.MZComercialConfig;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 /**
  * Validador de modelos para el modulo Contable.
@@ -93,6 +94,26 @@ public class ValidatorAccounting implements ModelValidator {
         // Seteo tasa de cambio cuando sea necesario
         if ((type == ModelValidator.TYPE_AFTER_NEW) || (type == ModelValidator.TYPE_AFTER_CHANGE)){
 
+            // Si es contabilidad asociada a una Invoice
+            if (model.getAD_Table_ID() == I_C_Invoice.Table_ID){
+                // Si tengo tasa de cambio seteada en la invoice
+                MInvoice invoice = new MInvoice(model.getCtx(), model.getRecord_ID(), model.get_TrxName());
+                if (invoice.isSOTrx()){
+                    if (invoice.get_Value("CurrencyRate") != null){
+                        BigDecimal currencyRate = (BigDecimal) invoice.get_Value("CurrencyRate");
+                        if (currencyRate.compareTo(Env.ONE) > 0){
+                            // Me aseguro de tomar esa tasa de cambio y refreso importes en moneda del schema.
+                            action = " update fact_acct set currencyrate =" + currencyRate + ", " +
+                                    " amtacctdr = round(amtsourcedr * " + currencyRate + ", 2), " +
+                                    " amtacctcr = round(amtsourcecr * " + currencyRate + ", 2) " +
+                                    " where fact_acct_id =" + model.get_ID();
+                            DB.executeUpdateEx(action, model.get_TrxName());
+                            return null;
+                        }
+                    }
+                }
+            }
+
             boolean obtenerTasa = true;
 
             // Si es un cambio de datos y no es la columna de fecha contable, no hago nada.
@@ -121,11 +142,10 @@ public class ValidatorAccounting implements ModelValidator {
 
             // Actualizo tasa si tengo valor
             if ((currencyRate != null) && (currencyRate.compareTo(Env.ZERO) > 0)){
+                currencyRate = currencyRate.setScale(3, RoundingMode.HALF_UP);
                 action = " update fact_acct set currencyrate =" + currencyRate + " where fact_acct_id =" + model.get_ID();
                 DB.executeUpdateEx(action, model.get_TrxName());
             }
-
-
         }
 
         return message;
