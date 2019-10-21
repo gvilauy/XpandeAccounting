@@ -851,6 +851,7 @@ public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
                     BigDecimal taxAmt = rs.getBigDecimal("amtsourcedr");
                     if ((taxAmt == null) || (taxAmt.compareTo(Env.ZERO) == 0)){
                         taxAmt = rs.getBigDecimal("amtsourcecr");
+                        if (taxAmt != null) taxAmt = taxAmt.negate();
                     }
                     if (taxAmt == null) taxAmt = Env.ZERO;
 
