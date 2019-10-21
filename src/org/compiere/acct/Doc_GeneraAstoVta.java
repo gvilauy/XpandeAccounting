@@ -251,32 +251,112 @@ public class Doc_GeneraAstoVta extends Doc {
                 }
                 else if (posVendor.getValue().equalsIgnoreCase("SCANNTECH")){
 
-                    // Obtengo info del medio de pago, ya sea del tipo credito o no.
-                    sql = " select z_stechcreditos_id from z_stechcreditos where value ='" + sumMP.getCodMedioPagoPOS() + "'";
-                    int IDMp = DB.getSQLValueEx(null, sql);
-                    if (IDMp > 0){
-                        sql = " select a.c_receivable_acct, a.c_bpartner_id, a.m_product_id, 'Y' as iscredito " +
-                                " from z_stechcreditos_acct a " +
-                                " where a.z_stechcreditos_id =" + IDMp +
-                                " and a.c_acctschema_id =" + this.generaAstoVta.getC_AcctSchema_ID() +
-                                " and a.c_currency_id =" + cCurrencyID;
+                    // Busco Identificador segun codigo del medio de pago
+                    int zMedioPagoID = 0, zMedioPagoIdentID = 0, zMPagoIdentProdID = 0;
+                    int accountID = 0, cBpartnerID = 0, mProductID = 0;
+                    boolean esDebito = true;
+
+                    // Primero como Tipo de Crédito.
+                    sql = " select z_mediopago_id, z_mediopagoident_id, z_mpagoidentprod_id" +
+                            " from z_stechcreditos where value ='" + sumMP.getCodMedioPagoPOS() + "'";
+                    pstmt = DB.prepareStatement(sql, null);
+                    rs = pstmt.executeQuery();
+
+                    if (rs.next()){
+                        zMedioPagoID = rs.getInt("z_mediopago_id");
+                        zMedioPagoIdentID = rs.getInt("z_mediopagoident_id");
+                        zMPagoIdentProdID = rs.getInt("z_mpagoidentprod_id");
                     }
-                    else{
-                        sql = " select z_stechmediopago_id from z_stechmediopago where value ='" + sumMP.getCodMedioPagoPOS() + "'";
-                        IDMp = DB.getSQLValueEx(null, sql);
-                        if (IDMp > 0){
-                            sql = " select a.c_receivable_acct, a.c_bpartner_id, a.m_product_id, 'Y' as iscredito " +
-                                    " from z_stechmediopago_acct a " +
-                                    " where a.z_stechmediopago_id =" + IDMp +
-                                    " and a.c_acctschema_id =" + this.generaAstoVta.getC_AcctSchema_ID() +
-                                    " and a.c_currency_id =" + cCurrencyID;
+                    DB.close(rs, pstmt);
+
+                    if ((zMedioPagoIdentID > 0) || (zMedioPagoID > 0)){
+                        if (zMedioPagoIdentID > 0){
+                            MZMedioPagoIdent pagoIdent = new MZMedioPagoIdent(getCtx(), zMedioPagoIdentID, null);
+                            cBpartnerID = pagoIdent.getC_BPartner_ID();
+                            if (zMPagoIdentProdID > 0){
+                                MZMPagoIdentProd pagoIdentProd = new MZMPagoIdentProd(getCtx(), zMPagoIdentProdID, null);
+                                mProductID = pagoIdentProd.getM_Product_ID();
+                            }
+                            // Cuenta contable del identificador si es que tengo
+                            sql = " select mp_recibidos_acct " +
+                                    " from z_mpagoident_acct " +
+                                    " where z_mediopagoident_id =" + zMedioPagoIdentID +
+                                    " and c_acctschema_id =" + this.generaAstoVta.getC_AcctSchema_ID() +
+                                    " and c_currency_id =" + cCurrencyID;
+                            accountID = DB.getSQLValueEx(null, sql);
                         }
-                        else{
-                            p_Error = "Falta parametrización en Configuracion de Scanntech para Cuenta Contable asociada a Medio de Pago : " + sumMP.getCodMedioPagoPOS();
+                        if (accountID <= 0){
+                            if (zMedioPagoID > 0){
+                                // Cuenta contable directo del medio de pago
+                                sql = " select mp_recibidos_acct " +
+                                        " from z_mediopago_acct " +
+                                        " where z_mediopago_id =" + zMedioPagoID +
+                                        " and c_acctschema_id =" + this.generaAstoVta.getC_AcctSchema_ID() +
+                                        " and c_currency_id =" + cCurrencyID;
+                                accountID = DB.getSQLValueEx(null, sql);
+                            }
+                        }
+                    }
+                    else {
+                        // Obtengo cuenta segun medio de pago
+                        sql = " select z_mediopago_id " +
+                                " from z_stechmediopago " +
+                                " where value ='" + sumMP.getCodMedioPagoPOS() + "'";
+                        zMedioPagoID = DB.getSQLValueEx(null, sql);
+
+                        if (zMedioPagoID > 0){
+                            // Cuenta contable directo del medio de pago
+                            sql = " select mp_recibidos_acct " +
+                                    " from z_mediopago_acct " +
+                                    " where z_mediopago_id =" + zMedioPagoID +
+                                    " and c_acctschema_id =" + this.generaAstoVta.getC_AcctSchema_ID() +
+                                    " and c_currency_id =" + cCurrencyID;
+                            accountID = DB.getSQLValueEx(null, sql);
+                        }
+                    }
+
+                    // Si no obtuve cuenta, aviso y salgo
+                    if (accountID <= 0){
+                        if (accountID <= 0){
+                            p_Error = "No se indica Cuenta Contable para Medio de Pago : " + sumMP.getCodMedioPagoPOS() + " - " + sumMP.getNomMedioPagoPOS();
                             log.log(Level.SEVERE, p_Error);
                             fact = null;
                             facts.add(fact);
                             return facts;
+                        }
+                    }
+                    if (esDebito){
+                        FactLine fl1 = fact.createLine(null, MAccount.get(getCtx(), accountID), cCurrencyID, amtMP, null);
+                        if (fl1 != null){
+                            fl1.setAD_Org_ID(this.generaAstoVta.getAD_Org_ID());
+                            if (cBpartnerID > 0){
+                                fl1.setC_BPartner_ID(cBpartnerID);
+                            }
+                            if (mProductID > 0){
+                                fl1.setM_Product_ID(mProductID);
+                            }
+                            if (currencyRate.compareTo(Env.ONE) > 0){
+                                fl1.set_ValueOfColumn("CurrencyRate", currencyRate);
+                                //fl1.setAmtAcctDr(fl1.getAmtSourceDr().multiply(currencyRate).setScale(2, RoundingMode.HALF_UP));
+                                fl1.setAmtAcctDr(sumMP.getAmtTotal1());
+                            }
+                        }
+                    }
+                    else{
+                        FactLine fl1 = fact.createLine(null, MAccount.get(getCtx(), accountID), cCurrencyID, null, amtMP);
+                        if (fl1 != null){
+                            fl1.setAD_Org_ID(this.generaAstoVta.getAD_Org_ID());
+                            if (cBpartnerID > 0){
+                                fl1.setC_BPartner_ID(cBpartnerID);
+                            }
+                            if (mProductID > 0){
+                                fl1.setM_Product_ID(mProductID);
+                            }
+                            if (currencyRate.compareTo(Env.ONE) > 0){
+                                fl1.set_ValueOfColumn("CurrencyRate", currencyRate);
+                                //fl1.setAmtAcctCr(fl1.getAmtSourceCr().multiply(currencyRate).setScale(2, RoundingMode.HALF_UP));
+                                fl1.setAmtAcctCr(sumMP.getAmtTotal1());
+                            }
                         }
                     }
                 }
