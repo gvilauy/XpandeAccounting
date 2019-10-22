@@ -114,6 +114,13 @@ public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
 
             // Obtengo literal del período según formato requerido por DGI
             MPeriod period = (MPeriod)this.getC_Period();
+            if ((period == null) || (period.get_ID() <= 0)){
+                Timestamp fechaPeriodo = this.getStartDate();
+                if (fechaPeriodo == null) fechaPeriodo = this.getStartDate2();
+                if (fechaPeriodo == null) fechaPeriodo = this.getStartDate3();
+                period = MPeriod.get(getCtx(), fechaPeriodo, this.getAD_Org_ID());
+            }
+
             MYear year = (MYear)period.getC_Year();
             String month = org.apache.commons.lang.StringUtils.leftPad(String.valueOf(period.getPeriodNo()), 2, "0");
             String literalPeriodo = String.valueOf(year.getYearAsInt()) + month;
