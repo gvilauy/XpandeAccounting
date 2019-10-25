@@ -174,12 +174,24 @@ public class Doc_GeneraAstoVta extends Doc {
                             if (accountID <= 0){
                                 if (zMedioPagoID > 0){
                                     // Cuenta contable directo del medio de pago
-                                    sql = " select mp_recibidos_acct " +
+                                    sql = " select mp_recibidos_acct, c_bpartner_id, m_product_id " +
                                             " from z_mediopago_acct " +
                                             " where z_mediopago_id =" + zMedioPagoID +
                                             " and c_acctschema_id =" + this.generaAstoVta.getC_AcctSchema_ID() +
                                             " and c_currency_id =" + cCurrencyID;
-                                    accountID = DB.getSQLValueEx(null, sql);
+                                    pstmt = DB.prepareStatement(sql, null);
+                                    rs = pstmt.executeQuery();
+
+                                    if (rs.next()){
+                                        accountID = rs.getInt("mp_recibidos_acct");
+                                        if (rs.getInt("c_bpartner_id") > 0){
+                                            cBpartnerID = rs.getInt("c_bpartner_id");
+                                        }
+                                        if (rs.getInt("m_product_id") > 0){
+                                            mProductID = rs.getInt("m_product_id");
+                                        }
+                                    }
+                                    DB.close(rs, pstmt);
                                 }
                             }
                         }
@@ -192,12 +204,24 @@ public class Doc_GeneraAstoVta extends Doc {
 
                             if (zMedioPagoID > 0){
                                 // Cuenta contable directo del medio de pago
-                                sql = " select mp_recibidos_acct " +
+                                sql = " select mp_recibidos_acct, c_bpartner_id, m_product_id " +
                                         " from z_mediopago_acct " +
                                         " where z_mediopago_id =" + zMedioPagoID +
                                         " and c_acctschema_id =" + this.generaAstoVta.getC_AcctSchema_ID() +
                                         " and c_currency_id =" + cCurrencyID;
-                                accountID = DB.getSQLValueEx(null, sql);
+                                pstmt = DB.prepareStatement(sql, null);
+                                rs = pstmt.executeQuery();
+
+                                if (rs.next()){
+                                    accountID = rs.getInt("mp_recibidos_acct");
+                                    if (rs.getInt("c_bpartner_id") > 0){
+                                        cBpartnerID = rs.getInt("c_bpartner_id");
+                                    }
+                                    if (rs.getInt("m_product_id") > 0){
+                                        mProductID = rs.getInt("m_product_id");
+                                    }
+                                }
+                                DB.close(rs, pstmt);
                             }
                         }
                     }
@@ -288,12 +312,24 @@ public class Doc_GeneraAstoVta extends Doc {
                         if (accountID <= 0){
                             if (zMedioPagoID > 0){
                                 // Cuenta contable directo del medio de pago
-                                sql = " select mp_recibidos_acct " +
+                                sql = " select mp_recibidos_acct, c_bpartner_id, m_product_id " +
                                         " from z_mediopago_acct " +
                                         " where z_mediopago_id =" + zMedioPagoID +
                                         " and c_acctschema_id =" + this.generaAstoVta.getC_AcctSchema_ID() +
                                         " and c_currency_id =" + cCurrencyID;
-                                accountID = DB.getSQLValueEx(null, sql);
+                                pstmt = DB.prepareStatement(sql, null);
+                                rs = pstmt.executeQuery();
+
+                                if (rs.next()){
+                                    accountID = rs.getInt("mp_recibidos_acct");
+                                    if (rs.getInt("c_bpartner_id") > 0){
+                                        cBpartnerID = rs.getInt("c_bpartner_id");
+                                    }
+                                    if (rs.getInt("m_product_id") > 0){
+                                        mProductID = rs.getInt("m_product_id");
+                                    }
+                                }
+                                DB.close(rs, pstmt);
                             }
                         }
                     }
@@ -306,12 +342,25 @@ public class Doc_GeneraAstoVta extends Doc {
 
                         if (zMedioPagoID > 0){
                             // Cuenta contable directo del medio de pago
-                            sql = " select mp_recibidos_acct " +
+                            sql = " select mp_recibidos_acct, c_bpartner_id, m_product_id " +
                                     " from z_mediopago_acct " +
                                     " where z_mediopago_id =" + zMedioPagoID +
                                     " and c_acctschema_id =" + this.generaAstoVta.getC_AcctSchema_ID() +
                                     " and c_currency_id =" + cCurrencyID;
-                            accountID = DB.getSQLValueEx(null, sql);
+                            pstmt = DB.prepareStatement(sql, null);
+                            rs = pstmt.executeQuery();
+
+                            if (rs.next()){
+                                accountID = rs.getInt("mp_recibidos_acct");
+                                if (rs.getInt("c_bpartner_id") > 0){
+                                    cBpartnerID = rs.getInt("c_bpartner_id");
+                                }
+                                if (rs.getInt("m_product_id") > 0){
+                                    mProductID = rs.getInt("m_product_id");
+                                }
+                            }
+                            DB.close(rs, pstmt);
+
                         }
                     }
 
