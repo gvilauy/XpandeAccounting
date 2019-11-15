@@ -222,6 +222,11 @@ public class Doc_FormEfectivo extends Doc {
         if (this.formEfectivo.getDifferenceAmt().compareTo(Env.ZERO) != 0){
 
             X_Z_RetailForEfe_Acct forEfeAcct = retailConfig.getFormEfectivoAcct(as.get_ID(), 142);
+
+            if (acctBalanceoMoneda1 == null){
+                acctBalanceoMoneda1 = MAccount.get(getCtx(), forEfeAcct.getP_Revenue_Acct());
+            }
+
             if ((forEfeAcct != null) && (forEfeAcct.get_ID() > 0)){
 
                 MAccount acctMoneda1 = MAccount.get(getCtx(), forEfeAcct.getP_Expense_Acct());
@@ -254,6 +259,10 @@ public class Doc_FormEfectivo extends Doc {
         if (this.formEfectivo.getDifferenceAmt2().compareTo(Env.ZERO) != 0){
 
             X_Z_RetailForEfe_Acct forEfeAcct = retailConfig.getFormEfectivoAcct(as.get_ID(), 100);
+            if (acctBalanceoMoneda2 == null){
+                acctBalanceoMoneda2 = MAccount.get(getCtx(), forEfeAcct.getP_Revenue_Acct());
+            }
+
             if ((forEfeAcct != null) && (forEfeAcct.get_ID() > 0)){
 
                 MAccount acctMoneda2 = MAccount.get(getCtx(), forEfeAcct.getP_Expense_Acct());
