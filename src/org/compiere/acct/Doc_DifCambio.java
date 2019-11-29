@@ -170,7 +170,8 @@ public class Doc_DifCambio extends Doc {
                 }
 
                 // CR - Cuenta diferencia de cambio ganada o perdida
-                FactLine f2 = fact.createLine(p_lines[i], accountDifCambio, as.getC_Currency_ID(), null, difCambioLin.getAmtAcctDrTo());
+                //FactLine f2 = fact.createLine(p_lines[i], accountDifCambio, as.getC_Currency_ID(), null, difCambioLin.getAmtAcctDrTo());
+                FactLine f2 = fact.createLine(p_lines[i], accountDifCambioGanada, as.getC_Currency_ID(), null, difCambioLin.getAmtAcctDrTo());
                 if (f2 != null){
                     f2.setAD_Org_ID(this.difCambio.getAD_Org_ID());
                 }
@@ -179,7 +180,8 @@ public class Doc_DifCambio extends Doc {
             else if (difCambioLin.getAmtAcctCrTo().compareTo(Env.ZERO) > 0){
 
                 // DR  - Cuenta diferencia de cambio perdida
-                FactLine f1 = fact.createLine(p_lines[i], accountDifCambio, as.getC_Currency_ID(), difCambioLin.getAmtAcctCrTo(), null);
+                //FactLine f1 = fact.createLine(p_lines[i], accountDifCambio, as.getC_Currency_ID(), difCambioLin.getAmtAcctCrTo(), null);
+                FactLine f1 = fact.createLine(p_lines[i], accountDifCambioPerdida, as.getC_Currency_ID(), difCambioLin.getAmtAcctCrTo(), null);
                 if (f1 != null){
                     f1.setAD_Org_ID(this.difCambio.getAD_Org_ID());
                 }
