@@ -5,6 +5,8 @@ import org.compiere.model.*;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.xpande.acct.model.MZAcctConfig;
+import org.xpande.financial.model.MZMPagoIdentProd;
+import org.xpande.financial.model.MZMedioPagoIdent;
 import org.xpande.retail.model.*;
 
 import java.math.BigDecimal;
@@ -94,138 +96,232 @@ public class Doc_AstoVtaRecMP extends Doc {
                         cCurrencyID = 100;
                     }
 
-                    // Si esta linea tiene modificada la tarjeta, hago asiento
-                    if (astoVtaRecMPLinST.getZ_SistecoTipoTarjeta_ID() > 0){
+                    int accountID = 0, cBpartnerID = 0, mProductID = 0;
 
-                        // DR - Cuenta contable asociada a la tarjeta de sisteco. Importe de este linea de detalle.
-                        sql = " select c_receivable_acct, c_bpartner_id, m_product_id " +
-                                " from z_sistecotarjeta_acct " +
-                                " where c_acctschema_id =" + as.get_ID() +
-                                " and z_sistecotipotarjeta_id =" + astoVtaRecMPLinST.getZ_SistecoTipoTarjeta_ID() +
-                                " and c_currency_id =" + cCurrencyID;
-                        int accountID = DB.getSQLValueEx(null, sql);
-                        if (accountID <= 0){
-                            p_Error = "Falta indicar cuenta contable para Tipo de Tarjeta con ID: " + astoVtaRecMPLinST.getZ_SistecoTipoTarjeta_ID();
-                            log.log(Level.SEVERE, p_Error);
-                            fact = null;
-                            facts.add(fact);
-                            return facts;
-                        }
-                        FactLine fl1 = fact.createLine(null, MAccount.get(getCtx(), accountID), cCurrencyID, astoVtaRecMPLinST.getTotalAmt(), null);
-                        if (fl1 != null){
-                            fl1.setAD_Org_ID(this.astoVtaRecMP.getAD_Org_ID());
+                    // Busco Identificador segun codigo del medio de pago
+                    int zMedioPagoID = 0, zMedioPagoIdentID = 0, zMPagoIdentProdID = 0;
 
-                            /*
-                            if (rs.getInt("c_bpartner_id") > 0){
-                                fl1.setC_BPartner_ID(rs.getInt("c_bpartner_id"));
-                            }
-                            if (rs.getInt("m_product_id") > 0){
-                                fl1.setM_Product_ID(rs.getInt("m_product_id"));
-                            }
-                            */
-                        }
+                    sql = " select z_mediopago_id, z_mediopagoident_id, z_mpagoidentprod_id " +
+                            " from z_sistecotipotarjeta " +
+                            " where z_sistecotipotarjeta_id =" + astoVtaRecMPLinST.getZ_SistecoTipoTarjeta_ID();
+                    pstmt = DB.prepareStatement(sql, null);
+                    rs = pstmt.executeQuery();
 
-                        // CR - Cuenta contable asociada al tipo de linea de sisteco. Importe de este linea de detalle.
-                        accountID = -1;
-                        sql = " select a.c_receivable_acct, c_bpartner_id, m_product_id " +
-                                " from z_sistecolinea_acct a " +
-                                " inner join z_sistecotipolineapazos b on a.z_sistecotipolineapazos_id = b.z_sistecotipolineapazos_id " +
-                                " where b.value ='" + astoVtaRecMPLinST.getST_TipoLinea() + "' " +
-                                " and a.c_acctschema_id =" + as.get_ID() +
-                                " and c_currency_id =" + cCurrencyID;
-
-                        accountID = DB.getSQLValueEx(null, sql);
-                        if (accountID <= 0){
-                            p_Error = "Falta indicar cuenta contable para Tipo de Linea : " + astoVtaRecMPLinST.getST_TipoLinea();
-                            log.log(Level.SEVERE, p_Error);
-                            fact = null;
-                            facts.add(fact);
-                            return facts;
-                        }
-                        FactLine fl2 = fact.createLine(null, MAccount.get(getCtx(), accountID), cCurrencyID, null, astoVtaRecMPLinST.getTotalAmt());
-                        if (fl2 != null){
-                            fl2.setAD_Org_ID(this.astoVtaRecMP.getAD_Org_ID());
-
-                            /*
-                            if (rs.getInt("c_bpartner_id") > 0){
-                                fl1.setC_BPartner_ID(rs.getInt("c_bpartner_id"));
-                            }
-                            if (rs.getInt("m_product_id") > 0){
-                                fl1.setM_Product_ID(rs.getInt("m_product_id"));
-                            }
-                            */
-                        }
-
+                    if (rs.next()){
+                        zMedioPagoID = rs.getInt("z_mediopago_id");
+                        zMedioPagoIdentID = rs.getInt("z_mediopagoident_id");
+                        zMPagoIdentProdID = rs.getInt("z_mpagoidentprod_id");
                     }
-                    else{
-                        // Si no tiene modificada la tarjeta, pero tiene modificado el medio de pago, hago asiento
-                        if (astoVtaRecMPLinST.getZ_SistecoMedioPago_ID() > 0){
+                    DB.close(rs, pstmt);
 
-                            // DR - Cuenta contable asociada a la tarjeta de sisteco. Importe de este linea de detalle.
-                            sql = " select c_receivable_acct, c_bpartner_id, m_product_id " +
-                                    " from z_sistecompago_acct " +
-                                    " where c_acctschema_id =" + as.get_ID() +
-                                    " and z_sistecomediopago_id =" + astoVtaRecMPLinST.getZ_SistecoMedioPago_ID() +
-                                    " and c_currency_id =" + cCurrencyID;
-
-                            int accountID = DB.getSQLValueEx(null, sql);
-                            if (accountID <= 0){
-                                p_Error = "Falta indicar cuenta contable para Medio de Pago con ID: " + astoVtaRecMPLinST.getZ_SistecoTipoTarjeta_ID();
-                                log.log(Level.SEVERE, p_Error);
-                                fact = null;
-                                facts.add(fact);
-                                return facts;
+                    if ((zMedioPagoIdentID > 0) || (zMedioPagoID > 0)){
+                        if (zMedioPagoIdentID > 0){
+                            MZMedioPagoIdent pagoIdent = new MZMedioPagoIdent(getCtx(), zMedioPagoIdentID, null);
+                            cBpartnerID = pagoIdent.getC_BPartner_ID();
+                            if (zMPagoIdentProdID > 0){
+                                MZMPagoIdentProd pagoIdentProd = new MZMPagoIdentProd(getCtx(), zMPagoIdentProdID, null);
+                                mProductID = pagoIdentProd.getM_Product_ID();
                             }
-                            FactLine fl1 = fact.createLine(null, MAccount.get(getCtx(), accountID), cCurrencyID, astoVtaRecMPLinST.getTotalAmt(), null);
-                            if (fl1 != null){
-                                fl1.setAD_Org_ID(this.astoVtaRecMP.getAD_Org_ID());
-
-                                /*
-                                if (rs.getInt("c_bpartner_id") > 0){
-                                    fl1.setC_BPartner_ID(rs.getInt("c_bpartner_id"));
-                                }
-                                if (rs.getInt("m_product_id") > 0){
-                                    fl1.setM_Product_ID(rs.getInt("m_product_id"));
-                                }
-
-                                 */
-                            }
-
-                            // CR - Cuenta contable asociada al tipo de linea de sisteco. Importe de este linea de detalle.
-                            accountID = -1;
-                            sql = " select a.c_receivable_acct, c_bpartner_id, m_product_id " +
-                                    " from z_sistecolinea_acct a " +
-                                    " inner join z_sistecotipolineapazos b on a.z_sistecotipolineapazos_id = b.z_sistecotipolineapazos_id " +
-                                    " where b.value ='" + astoVtaRecMPLinST.getST_TipoLinea() + "' " +
-                                    " and a.c_acctschema_id =" + as.get_ID() +
+                            // Cuenta contable del identificador si es que tengo
+                            sql = " select mp_recibidos_acct " +
+                                    " from z_mpagoident_acct " +
+                                    " where z_mediopagoident_id =" + zMedioPagoIdentID +
+                                    " and c_acctschema_id =" + as.get_ID() +
                                     " and c_currency_id =" + cCurrencyID;
-
                             accountID = DB.getSQLValueEx(null, sql);
-                            if (accountID <= 0){
-                                p_Error = "Falta indicar cuenta contable para Tipo de Linea : " + astoVtaRecMPLinST.getST_TipoLinea();
-                                log.log(Level.SEVERE, p_Error);
-                                fact = null;
-                                facts.add(fact);
-                                return facts;
-                            }
-                            FactLine fl2 = fact.createLine(null, MAccount.get(getCtx(), accountID), cCurrencyID, null, astoVtaRecMPLinST.getTotalAmt());
-                            if (fl2 != null){
-                                fl2.setAD_Org_ID(this.astoVtaRecMP.getAD_Org_ID());
+                        }
+                        if (accountID <= 0){
+                            if (zMedioPagoID > 0){
+                                // Cuenta contable directo del medio de pago
+                                sql = " select mp_recibidos_acct, c_bpartner_id, m_product_id " +
+                                        " from z_mediopago_acct " +
+                                        " where z_mediopago_id =" + zMedioPagoID +
+                                        " and c_acctschema_id =" + as.get_ID() +
+                                        " and c_currency_id =" + cCurrencyID;
+                                pstmt = DB.prepareStatement(sql, null);
+                                rs = pstmt.executeQuery();
 
-                                /*
+                                if (rs.next()){
+                                    accountID = rs.getInt("mp_recibidos_acct");
+                                    if (rs.getInt("c_bpartner_id") > 0){
+                                        cBpartnerID = rs.getInt("c_bpartner_id");
+                                    }
+                                    if (rs.getInt("m_product_id") > 0){
+                                        mProductID = rs.getInt("m_product_id");
+                                    }
+                                }
+                                DB.close(rs, pstmt);
+                            }
+                        }
+                    }
+                    else {
+                        // Obtengo cuenta segun medio de pago
+                        sql = " select z_mediopago_id " +
+                                " from z_sistecomediopago " +
+                                " where z_sistecomediopago_id =" + astoVtaRecMPLinST.getZ_SistecoMedioPago_ID();
+                        zMedioPagoID = DB.getSQLValueEx(null, sql);
+
+                        if (zMedioPagoID > 0){
+                            // Cuenta contable directo del medio de pago
+                            sql = " select mp_recibidos_acct, c_bpartner_id, m_product_id " +
+                                    " from z_mediopago_acct " +
+                                    " where z_mediopago_id =" + zMedioPagoID +
+                                    " and c_acctschema_id =" + as.get_ID() +
+                                    " and c_currency_id =" + cCurrencyID;
+                            pstmt = DB.prepareStatement(sql, null);
+                            rs = pstmt.executeQuery();
+
+                            if (rs.next()){
+                                accountID = rs.getInt("mp_recibidos_acct");
                                 if (rs.getInt("c_bpartner_id") > 0){
-                                    fl1.setC_BPartner_ID(rs.getInt("c_bpartner_id"));
+                                    cBpartnerID = rs.getInt("c_bpartner_id");
                                 }
                                 if (rs.getInt("m_product_id") > 0){
-                                    fl1.setM_Product_ID(rs.getInt("m_product_id"));
+                                    mProductID = rs.getInt("m_product_id");
                                 }
-
-                                 */
                             }
+                            DB.close(rs, pstmt);
+                        }
+                    }
+
+                    // Si no obtuve cuenta, aviso y salgo
+                    if (accountID <= 0){
+                        if (accountID <= 0){
+                            p_Error = "Falta indicar cuenta contable para Tipo de Tarjeta con ID: " + astoVtaRecMPLinST.getZ_SistecoTipoTarjeta_ID();                                log.log(Level.SEVERE, p_Error);
+                            fact = null;
+                            facts.add(fact);
+                            return facts;
+                        }
+                    }
+
+                    FactLine fl1 = fact.createLine(null, MAccount.get(getCtx(), accountID), cCurrencyID, astoVtaRecMPLinST.getTotalAmt(), null);
+                    if (fl1 != null){
+                        fl1.setAD_Org_ID(this.astoVtaRecMP.getAD_Org_ID());
+                        if (cBpartnerID > 0){
+                            fl1.setC_BPartner_ID(cBpartnerID);
+                        }
+                        if (mProductID > 0){
+                            fl1.setM_Product_ID(mProductID);
+                        }
+                    }
+
+
+
+                    // CR = Cuenta del medio de pago a ser reemplazado
+                    accountID = 0;
+                    cBpartnerID = 0;
+                    mProductID = 0;
+                    zMedioPagoID = 0;
+                    zMedioPagoIdentID = 0;
+                    zMPagoIdentProdID = 0;
+
+                    // Busco Identificador segun codigo del medio de pago
+                    sql = " select z_mediopago_id, z_mediopagoident_id, z_mpagoidentprod_id " +
+                            " from z_sistecotipotarjeta " +
+                            " where value ='" + astoVtaRecMPLinST.getST_CodigoMedioPago() + "'";
+                    pstmt = DB.prepareStatement(sql, null);
+                    rs = pstmt.executeQuery();
+
+                    if (rs.next()){
+                        zMedioPagoID = rs.getInt("z_mediopago_id");
+                        zMedioPagoIdentID = rs.getInt("z_mediopagoident_id");
+                        zMPagoIdentProdID = rs.getInt("z_mpagoidentprod_id");
+                    }
+                    DB.close(rs, pstmt);
+
+                    if ((zMedioPagoIdentID > 0) || (zMedioPagoID > 0)){
+                        if (zMedioPagoIdentID > 0){
+                            MZMedioPagoIdent pagoIdent = new MZMedioPagoIdent(getCtx(), zMedioPagoIdentID, null);
+                            cBpartnerID = pagoIdent.getC_BPartner_ID();
+                            if (zMPagoIdentProdID > 0){
+                                MZMPagoIdentProd pagoIdentProd = new MZMPagoIdentProd(getCtx(), zMPagoIdentProdID, null);
+                                mProductID = pagoIdentProd.getM_Product_ID();
+                            }
+                            // Cuenta contable del identificador si es que tengo
+                            sql = " select mp_recibidos_acct " +
+                                    " from z_mpagoident_acct " +
+                                    " where z_mediopagoident_id =" + zMedioPagoIdentID +
+                                    " and c_acctschema_id =" + as.get_ID() +
+                                    " and c_currency_id =" + cCurrencyID;
+                            accountID = DB.getSQLValueEx(null, sql);
+                        }
+                        if (accountID <= 0){
+                            if (zMedioPagoID > 0){
+                                // Cuenta contable directo del medio de pago
+                                sql = " select mp_recibidos_acct, c_bpartner_id, m_product_id " +
+                                        " from z_mediopago_acct " +
+                                        " where z_mediopago_id =" + zMedioPagoID +
+                                        " and c_acctschema_id =" + as.get_ID() +
+                                        " and c_currency_id =" + cCurrencyID;
+                                pstmt = DB.prepareStatement(sql, null);
+                                rs = pstmt.executeQuery();
+
+                                if (rs.next()){
+                                    accountID = rs.getInt("mp_recibidos_acct");
+                                    if (rs.getInt("c_bpartner_id") > 0){
+                                        cBpartnerID = rs.getInt("c_bpartner_id");
+                                    }
+                                    if (rs.getInt("m_product_id") > 0){
+                                        mProductID = rs.getInt("m_product_id");
+                                    }
+                                }
+                                DB.close(rs, pstmt);
+                            }
+                        }
+                    }
+                    else {
+                        // Obtengo cuenta segun medio de pago
+                        sql = " select z_mediopago_id " +
+                                " from z_sistecomediopago " +
+                                " where value ='" + astoVtaRecMPLinST.getST_CodigoMedioPago() + "'";
+                        zMedioPagoID = DB.getSQLValueEx(null, sql);
+
+                        if (zMedioPagoID > 0){
+                            // Cuenta contable directo del medio de pago
+                            sql = " select mp_recibidos_acct, c_bpartner_id, m_product_id " +
+                                    " from z_mediopago_acct " +
+                                    " where z_mediopago_id =" + zMedioPagoID +
+                                    " and c_acctschema_id =" + as.get_ID() +
+                                    " and c_currency_id =" + cCurrencyID;
+                            pstmt = DB.prepareStatement(sql, null);
+                            rs = pstmt.executeQuery();
+
+                            if (rs.next()){
+                                accountID = rs.getInt("mp_recibidos_acct");
+                                if (rs.getInt("c_bpartner_id") > 0){
+                                    cBpartnerID = rs.getInt("c_bpartner_id");
+                                }
+                                if (rs.getInt("m_product_id") > 0){
+                                    mProductID = rs.getInt("m_product_id");
+                                }
+                            }
+                            DB.close(rs, pstmt);
+                        }
+                    }
+
+                    // Si no obtuve cuenta, aviso y salgo
+                    if (accountID <= 0){
+                        if (accountID <= 0){
+                            p_Error = "No se indica Cuenta Contable para Medio de Pago : " + astoVtaRecMPLinST.getST_CodigoMedioPago() +
+                                    " - " + astoVtaRecMPLinST.getST_NombreMedioPago();
+                            log.log(Level.SEVERE, p_Error);
+                            fact = null;
+                            facts.add(fact);
+                            return facts;
+                        }
+                    }
+
+                    FactLine fl2 = fact.createLine(null, MAccount.get(getCtx(), accountID), cCurrencyID, null, astoVtaRecMPLinST.getTotalAmt());
+                    if (fl2 != null){
+                        fl2.setAD_Org_ID(this.astoVtaRecMP.getAD_Org_ID());
+                        if (cBpartnerID > 0){
+                            fl2.setC_BPartner_ID(cBpartnerID);
+                        }
+                        if (mProductID > 0){
+                            fl2.setM_Product_ID(mProductID);
                         }
                     }
                 }
-
             }
 
         }
