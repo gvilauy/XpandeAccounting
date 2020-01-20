@@ -527,6 +527,9 @@ public class Doc_Pago extends Doc {
             // Cuenta contable asociada a la cuenta bancaria si hay, y sino tengo cuenta bancaria, entonces cuenta del medio de pago.
             for (int i = 0; i < p_lines.length; i++)
             {
+
+                int mProductID = 0;
+
                 BigDecimal amt = p_lines[i].getAmtSource();
 
                 MZPagoMedioPago pagoMedioPago = new MZPagoMedioPago(getCtx(), p_lines[i].get_ID(), this.getTrxName());
@@ -548,6 +551,11 @@ public class Doc_Pago extends Doc {
 
                     if (pagoMedioPago.getZ_MedioPagoIdent_ID() > 0){
                         accountID = AccountUtils.getMedioPagoIdentValidCombinationID(getCtx(), Doc.ACCTYPE_MP_Recibidos, pagoMedioPago.getZ_MedioPagoIdent_ID(), pagoMedioPago.getC_Currency_ID(), as, null);
+
+                        // Obtengo producto del identificador si es que tiene uno asociado.
+                        MZMedioPagoIdent medioPagoIdent = (MZMedioPagoIdent) pagoMedioPago.getZ_MedioPagoIdent();
+                        mProductID = medioPagoIdent.getLastProductID();
+
                     }
 
                     if (accountID <= 0) {
@@ -576,6 +584,10 @@ public class Doc_Pago extends Doc {
                 FactLine fl1 = fact.createLine(p_lines[i], MAccount.get(getCtx(), accountID), getC_Currency_ID(), amt, null);
                 if (fl1 != null){
                     fl1.setAD_Org_ID(this.pago.getAD_Org_ID());
+
+                    if (mProductID > 0){
+                        fl1.setM_Product_ID(mProductID);
+                    }
                 }
 
                 // Detalle de asiento
