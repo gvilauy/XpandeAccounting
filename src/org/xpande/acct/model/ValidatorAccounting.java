@@ -178,6 +178,8 @@ public class ValidatorAccounting implements ModelValidator {
                 }
             }
 
+            // Valido que si se indica
+
         }
 
         return message;

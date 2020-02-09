@@ -814,7 +814,7 @@ public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
 
             sql = " select gl.account_id, g.dateacct, g.gl_journal_id, g.c_doctype_id, g.documentno, " +
                     " g.datedoc, gl.c_bpartner_id, gl.c_currency_id, doc.docbasetype, doc.issotrx, " +
-                    " gl.c_validcombination_id, gl.amtsourcedr, gl.amtsourcecr, " +
+                    " gl.c_validcombination_id, gl.amtsourcedr, gl.amtsourcecr, gl.c_tax_id, " +
                     " bp.c_taxgroup_id, bp.taxid, bp.value, bp.name " +
                     " from gl_journal g " +
                     " inner join gl_journalline gl on g.gl_journal_id = gl.gl_journal_id " +
@@ -872,7 +872,11 @@ public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
                     linea.setC_Currency_ID(rs.getInt("c_currency_id"));
                     linea.setC_DocType_ID(rs.getInt("c_doctype_id"));
                     //linea.setC_Invoice_ID(rs.getInt("c_invoice_id"));
-                    //linea.setC_Tax_ID(rs.getInt("c_tax_id"));
+
+                    if (rs.getInt("c_tax_id") > 0){
+                        linea.setC_Tax_ID(rs.getInt("c_tax_id"));
+                    }
+
                     linea.setCurrencyRate(Env.ONE);
                     linea.setDateAcct(rs.getTimestamp("dateacct"));
                     linea.setDateDoc(rs.getTimestamp("datedoc"));
@@ -917,7 +921,16 @@ public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
 
                     if (!hayError){
 
-                        MZAcctConfigRubroDGI configRubroDGI = MZAcctConfigRubroDGI.getByAcct(getCtx(), linea.getC_ElementValue_ID(), false, null);
+                        MZAcctConfigRubroDGI configRubroDGI = null;
+
+                        // Obtengo por rubro por impuesto o por cuenta en caso de no tenerlo.
+                        if (linea.getC_Tax_ID() > 0){
+                            configRubroDGI = MZAcctConfigRubroDGI.getByTax(getCtx(), linea.getC_Tax_ID(), isSOTrx , null);
+                        }
+                        else {
+                            configRubroDGI = MZAcctConfigRubroDGI.getByAcct(getCtx(), linea.getC_ElementValue_ID(), isSOTrx, null);
+                        }
+
                         if ((configRubroDGI != null) && (configRubroDGI.get_ID() > 0)){
                             linea.setZ_AcctConfigRubroDGI_ID(configRubroDGI.get_ID());
                             linea.saveEx();
