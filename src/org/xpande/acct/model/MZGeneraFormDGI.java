@@ -464,6 +464,7 @@ public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
                     " inner join c_invoicetax invt on inv.c_invoice_id = invt.c_invoice_id " +
                     " inner join c_bpartner bp on inv.c_bpartner_id = bp.c_bpartner_id " +
                     " inner join c_tax tax on invt.c_tax_id = tax.c_tax_id " +
+                    " inner join c_taxgroup taxgrp on bp.c_taxgroup_id = taxgrp.c_taxgroup_id " +
                     " left outer join c_tax_acct tacct on tax.c_tax_id = tacct.c_tax_id " +
                     " left outer join c_validcombination vc on tacct.t_credit_acct = vc.c_validcombination_id " +
                     " left outer join c_validcombination vcVta on tacct.t_due_acct = vcVta.c_validcombination_id " +
@@ -472,6 +473,7 @@ public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
                     " and inv.c_doctypetarget_id != " + docInternoID +
                     " and inv.AsientoManualInvoice ='N' " +
                     " and inv.dateacct between ? and ? " +
+                    " and taxgrp.value <>'OTRO' " +
                     " order by invt.c_tax_id, inv.dateacct";
 
         	pstmt = DB.prepareStatement(sql, get_TrxName());
