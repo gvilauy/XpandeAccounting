@@ -677,6 +677,7 @@ public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
                     " left outer join c_validcombination vcVta on tacct.t_due_acct = vcVta.c_validcombination_id " +
                     " where a.ad_org_id =" + this.getAD_Org_ID() +
                     " and a.datetrx between ? and ? " +
+                    " and ((cfe.st_tipocfe <> '101') or (cfe.st_tipocfe = '101' and cfe.st_tipodocumentoreceptor <> '0')) " +
                     " order by a.c_taxcategory_id, a.datetrx ";
 
         	pstmt = DB.prepareStatement(sql, get_TrxName());
