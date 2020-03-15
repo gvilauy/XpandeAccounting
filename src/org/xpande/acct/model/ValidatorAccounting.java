@@ -304,6 +304,18 @@ public class ValidatorAccounting implements ModelValidator {
                 return "No se puede Completar este Documento, ya que tiene lineas con montos en CERO al mismo tiempo en el Debe y en el Haber.";
             }
 
+            // Valido que no haya cuentas contables asociadas a impuestos que no tengan el valir deol impuesto en dicha linea.
+            sql = " select count(*) as contador " +
+                    " from gl_journalline gl " +
+                    " inner join c_elementvalue ev on gl.account_id = ev.c_elementvalue_id " +
+                    " where gl.gl_journal_id =" + model.get_ID() +
+                    " and gl.c_tax_id is null " +
+                    " and ev.istaxaccount='Y' ";
+            contador = DB.getSQLValueEx(model.get_TrxName(), sql);
+            if (contador > 0){
+                return "No se puede Completar este Documento, ya que tiene lineas con cuentas contables que requieren un valor para IMPUESTO";
+            }
+
         }
 
         return message;
