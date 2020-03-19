@@ -89,6 +89,10 @@ public class CopiarAsiento extends SvrProcess {
                     journalLineDest.setCurrencyRate(currencyRate);
                 }
 
+                if (journalLineOrigen.get_ValueAsInt("C_Tax_ID") > 0){
+                    journalLineDest.set_ValueOfColumn("C_Tax_ID", journalLineOrigen.get_ValueAsInt("C_Tax_ID"));
+                }
+
                 journalLineDest.saveEx();
 
                 // El metodo MJournalLine.beforeSave(), sobreescribe el producto y socio de negocio de la linea con el producto y socio
