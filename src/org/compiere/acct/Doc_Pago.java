@@ -6,6 +6,7 @@ import org.compiere.util.Env;
 import org.xpande.acct.model.MZAcctFactDet;
 import org.xpande.acct.model.X_Z_AcctFactDet;
 import org.xpande.acct.utils.AccountUtils;
+import org.xpande.acct.utils.InfoMultiCurrency;
 import org.xpande.comercial.utils.AcctUtils;
 import org.xpande.financial.model.*;
 
@@ -200,6 +201,7 @@ public class Doc_Pago extends Doc {
                 if (this.pago.isReciboAnticipo()) montoAnticipos = Env.ZERO;
 
                 // DR : Monto total del recibo - Cuenta Acreedores del Socio de Negocio
+                /*
                 int acctAcreedID = getValidCombination_ID (Doc.ACCTTYPE_V_Liability, as);
                 if (acctAcreedID <= 0){
                     p_Error = "Falta parametrizar Cuenta Contable para CxP del Proveedor en moneda de este Documento.";
@@ -218,6 +220,61 @@ public class Doc_Pago extends Doc {
                 if (fl2 != null){
                     fl2.setAD_Org_ID(this.pago.getAD_Org_ID());
                 }
+                */
+                HashMap<Integer, InfoMultiCurrency> hashPartnerCR = new HashMap<Integer, InfoMultiCurrency>();
+                MZPago pago = (MZPago) getPO();
+                List<MZPagoLin> pagoLinList = pago.getSelectedLines();
+                for (MZPagoLin pagoLin: pagoLinList){
+                    // Sumarizo por moneda para contabilizacion CR por cuenta de Socio de Negocio y Moneda.
+                    if (!hashPartnerCR.containsKey(pagoLin.getC_Currency_ID())){
+                        hashPartnerCR.put(pagoLin.getC_Currency_ID(), new InfoMultiCurrency());
+                        hashPartnerCR.get(pagoLin.getC_Currency_ID()).cuurencyID = pagoLin.getC_Currency_ID();
+                    }
+                    hashPartnerCR.get(pagoLin.getC_Currency_ID()).amtSource = hashPartnerCR.get(pagoLin.getC_Currency_ID()).amtSource.add(pagoLin.getAmtAllocation());
+                    hashPartnerCR.get(pagoLin.getC_Currency_ID()).amtAcct = hashPartnerCR.get(pagoLin.getC_Currency_ID()).amtAcct.add(pagoLin.getAmtAllocationMT());
+                }
+                // DR : Cuenta Acreedores del Socio de Negocio según moneda
+                for (HashMap.Entry<Integer, InfoMultiCurrency> entry : hashPartnerCR.entrySet()){
+
+                    if (entry.getValue().cuurencyID != pago.getC_Currency_ID()){
+                        this.setIsMultiCurrency(true);
+                    }
+
+                    this.setC_Currency_ID(entry.getValue().cuurencyID);
+
+                    int acctAcreedID = getValidCombination_ID (Doc.ACCTTYPE_V_Liability, as);
+                    if (acctAcreedID <= 0){
+                        MCurrency currency = new MCurrency(getCtx(), this.getC_Currency_ID(), null);
+                        p_Error = "Falta parametrizar Cuenta Contable para CxP del Proveedor en moneda: " + currency.getISO_Code();
+                        log.log(Level.SEVERE, p_Error);
+                        fact = null;
+                        facts.add(fact);
+                        return facts;
+                    }
+                    FactLine fl2 = null;
+                    if (!pago.isExtornarAcct()){
+                        if (getC_Currency_ID() == as.getC_Currency_ID()){
+                            fl2 = fact.createLine(null, MAccount.get(getCtx(), acctAcreedID), getC_Currency_ID(), entry.getValue().amtSource.add(montoAnticipos), null);
+                        }
+                        else {
+                            fl2 = fact.createLine(null, MAccount.get(getCtx(), acctAcreedID), getC_Currency_ID(), entry.getValue().amtSource, null);
+                        }
+
+                    }
+                    else{
+                        if (getC_Currency_ID() == as.getC_Currency_ID()){
+                            fl2 = fact.createLine(null, MAccount.get(getCtx(), acctAcreedID), getC_Currency_ID(), null, entry.getValue().amtSource.add(montoAnticipos));
+                        }
+                        else{
+                            fl2 = fact.createLine(null, MAccount.get(getCtx(), acctAcreedID), getC_Currency_ID(), null, entry.getValue().amtSource);
+                        }
+
+                    }
+                    if (fl2 != null){
+                        fl2.setAD_Org_ID(this.pago.getAD_Org_ID());
+                    }
+                }
+                this.setC_Currency_ID(pago.getC_Currency_ID());
 
                 HashMap<Integer, Integer> hashRepItemsCharge = new HashMap<Integer, Integer>();
                 String sql = "";
@@ -481,8 +538,8 @@ public class Doc_Pago extends Doc {
                             hashRepItemsCharge.put(medioPagoReplaceID, medioPagoReplaceID);
                         }
                     }
-                }
 
+                }
 
                 // Si tengo importe de anticipos afectados en este recibo, hago el asiento correspondiente
                 if ((!this.pago.isReciboAnticipo()) && (this.pago.getAmtAnticipo() != null) && (this.pago.getAmtAnticipo().compareTo(Env.ZERO) != 0)){
