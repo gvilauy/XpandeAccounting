@@ -6,8 +6,7 @@ import org.compiere.util.Env;
 import org.xpande.acct.model.MZAcctFactDet;
 import org.xpande.acct.model.X_Z_AcctFactDet;
 import org.xpande.acct.utils.AccountUtils;
-import org.xpande.acct.utils.InfoMultiCurrency;
-import org.xpande.comercial.utils.AcctUtils;
+import org.xpande.financial.utils.InfoMultiCurrency;
 import org.xpande.financial.model.*;
 
 import java.math.BigDecimal;
