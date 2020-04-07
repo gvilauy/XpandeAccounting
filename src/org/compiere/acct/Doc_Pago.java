@@ -232,6 +232,16 @@ public class Doc_Pago extends Doc {
                     hashPartnerCR.get(pagoLin.getC_Currency_ID()).amtSource = hashPartnerCR.get(pagoLin.getC_Currency_ID()).amtSource.add(pagoLin.getAmtAllocation());
                     hashPartnerCR.get(pagoLin.getC_Currency_ID()).amtAcct = hashPartnerCR.get(pagoLin.getC_Currency_ID()).amtAcct.add(pagoLin.getAmtAllocationMT());
                 }
+
+                // Resto resguardos en la moneda correspondiente
+                List<MZPagoResguardo> pagoResguardoList = pago.getResguardos();
+                for (MZPagoResguardo pagoResguardo: pagoResguardoList){
+                    if (hashPartnerCR.containsKey(pagoResguardo.getC_Currency_ID())){
+                        hashPartnerCR.get(pagoResguardo.getC_Currency_ID()).amtSource = hashPartnerCR.get(pagoResguardo.getC_Currency_ID()).amtSource.subtract(pagoResguardo.getAmtAllocation());
+                        hashPartnerCR.get(pagoResguardo.getC_Currency_ID()).amtAcct = hashPartnerCR.get(pagoResguardo.getC_Currency_ID()).amtAcct.subtract(pagoResguardo.getAmtAllocationMT());
+                    }
+                }
+
                 // DR : Cuenta Acreedores del Socio de Negocio según moneda
                 for (HashMap.Entry<Integer, InfoMultiCurrency> entry : hashPartnerCR.entrySet()){
 
