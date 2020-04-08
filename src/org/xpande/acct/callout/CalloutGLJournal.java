@@ -322,13 +322,17 @@ public class CalloutGLJournal extends CalloutEngine
 		}
 
 		// Xpande. Gabriel Vila. 07/02/2020.
-		// Seteo flag de cuenta requiere o no impuesto
+		// Seteo flag de cuenta requiere o no impuesto y/o retención
 		if (colName.equalsIgnoreCase("Account_ID")){
 			int elementValueID = (Integer) value;
 			MElementValue elementValue = new MElementValue(ctx, elementValueID, null);
 			if ((elementValue != null) && (elementValue.get_ID() > 0)){
+
 				boolean isTaxAccount = elementValue.get_ValueAsBoolean("IsTaxAccount");
 				mTab.setValue("IsTaxAccount", isTaxAccount);
+
+				boolean isRetencionAcct = elementValue.get_ValueAsBoolean("IsRetencionAcct");
+				mTab.setValue("IsRetencionAcct", isRetencionAcct);
 			}
 		}
 		// Fin Xpande

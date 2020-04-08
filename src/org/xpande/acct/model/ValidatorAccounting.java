@@ -316,6 +316,18 @@ public class ValidatorAccounting implements ModelValidator {
                 return "No se puede Completar este Documento, ya que tiene lineas con cuentas contables que requieren un valor para IMPUESTO";
             }
 
+            // Valido que no haya cuentas contables asociadas a Retenciones que no tengan el valor de la retencion en su linea
+            sql = " select count(*) as contador " +
+                    " from gl_journalline gl " +
+                    " inner join c_elementvalue ev on gl.account_id = ev.c_elementvalue_id " +
+                    " where gl.gl_journal_id =" + model.get_ID() +
+                    " and gl.z_retencionsocio_id is null " +
+                    " and ev.IsRetencionAcct='Y' ";
+            contador = DB.getSQLValueEx(model.get_TrxName(), sql);
+            if (contador > 0){
+                return "No se puede Completar este Documento, ya que tiene lineas con cuentas contables que requieren un valor para RETENCION";
+            }
+
         }
 
         return message;
