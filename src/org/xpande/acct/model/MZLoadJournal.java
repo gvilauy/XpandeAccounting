@@ -255,6 +255,30 @@ public class MZLoadJournal extends X_Z_LoadJournal implements DocAction, DocOpti
 			return DocAction.STATUS_Invalid;
 		}
 
+		// Valido que no haya cuentas contables asociadas a impuestos que no tengan el valor del impuesto en dicha linea.
+		String sql = " select count(a.*) as contador " +
+				" from Z_LoadJournalFile a " +
+				" inner join c_elementvalue ev on a.c_elementvalue_id = ev.c_elementvalue_id " +
+				" where a.z_loadjournal_id =" + this.get_ID() +
+				" and a.c_tax_id is null " +
+				" and ev.istaxaccount='Y' ";
+		int contador = DB.getSQLValueEx(get_TrxName(), sql);
+		if (contador > 0){
+			return "No se puede Completar este Documento, ya que tiene lineas con cuentas contables que requieren un valor para IMPUESTO";
+		}
+
+		// Valido que no haya cuentas contables asociadas a Retenciones que no tengan el valor de la retencion en su linea
+		sql = " select count(a.*) as contador " +
+				" from Z_LoadJournalFile a " +
+				" inner join c_elementvalue ev on a.c_elementvalue_id = ev.c_elementvalue_id " +
+				" where a.z_loadjournal_id =" + this.get_ID() +
+				" and a.z_retencionsocio_id is null " +
+				" and ev.IsRetencionAcct='Y' ";
+		contador = DB.getSQLValueEx(get_TrxName(), sql);
+		if (contador > 0){
+			return "No se puede Completar este Documento, ya que tiene lineas con cuentas contables que requieren un valor para RETENCION";
+		}
+
 		MAcctSchema schema = (MAcctSchema) this.getC_AcctSchema();
 
 		int adOrgIDAux = 0, cDocTypeIDAux = 0;
@@ -340,6 +364,13 @@ public class MZLoadJournal extends X_Z_LoadJournal implements DocAction, DocOpti
 			if (loadJournalFile.getM_Product_ID() > 0){
 				journalLine.setM_Product_ID(loadJournalFile.getM_Product_ID());
 			}
+			if (loadJournalFile.getC_Tax_ID() > 0){
+				journalLine.set_ValueOfColumn("C_Tax_ID", loadJournalFile.getC_Tax_ID());
+			}
+			if (loadJournalFile.getZ_RetencionSocio_ID() > 0){
+				journalLine.set_ValueOfColumn("Z_RetencionSocio_ID", loadJournalFile.getZ_RetencionSocio_ID());
+			}
+
 			if (loadJournalFile.getDueDate() != null){
 				journalLine.set_ValueOfColumn("DueDate", loadJournalFile.getDueDate());
 			}

@@ -33,7 +33,7 @@ public class X_Z_LoadJournalFile extends PO implements I_Z_LoadJournalFile, I_Pe
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20190411L;
+	private static final long serialVersionUID = 20200416L;
 
     /** Standard Constructor */
     public X_Z_LoadJournalFile (Properties ctx, int Z_LoadJournalFile_ID, String trxName)
@@ -373,6 +373,34 @@ public class X_Z_LoadJournalFile extends PO implements I_Z_LoadJournalFile, I_Pe
 	public String getCodigoProducto () 
 	{
 		return (String)get_Value(COLUMNNAME_CodigoProducto);
+	}
+
+	public I_C_Tax getC_Tax() throws RuntimeException
+    {
+		return (I_C_Tax)MTable.get(getCtx(), I_C_Tax.Table_Name)
+			.getPO(getC_Tax_ID(), get_TrxName());	}
+
+	/** Set Tax.
+		@param C_Tax_ID 
+		Tax identifier
+	  */
+	public void setC_Tax_ID (int C_Tax_ID)
+	{
+		if (C_Tax_ID < 1) 
+			set_Value (COLUMNNAME_C_Tax_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Tax_ID, Integer.valueOf(C_Tax_ID));
+	}
+
+	/** Get Tax.
+		@return Tax identifier
+	  */
+	public int getC_Tax_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Tax_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Account Date.
@@ -760,6 +788,26 @@ public class X_Z_LoadJournalFile extends PO implements I_Z_LoadJournalFile, I_Pe
 	public int getZ_LoadJournal_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Z_LoadJournal_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Z_RetencionSocio ID.
+		@param Z_RetencionSocio_ID Z_RetencionSocio ID	  */
+	public void setZ_RetencionSocio_ID (int Z_RetencionSocio_ID)
+	{
+		if (Z_RetencionSocio_ID < 1) 
+			set_Value (COLUMNNAME_Z_RetencionSocio_ID, null);
+		else 
+			set_Value (COLUMNNAME_Z_RetencionSocio_ID, Integer.valueOf(Z_RetencionSocio_ID));
+	}
+
+	/** Get Z_RetencionSocio ID.
+		@return Z_RetencionSocio ID	  */
+	public int getZ_RetencionSocio_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_RetencionSocio_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

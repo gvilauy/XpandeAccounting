@@ -56,7 +56,7 @@ public interface I_Z_LoadJournalFile
 	/** Set Organization.
 	  * Organizational entity within client
 	  */
-	public void setAD_Org_ID(int AD_Org_ID);
+	public void setAD_Org_ID (int AD_Org_ID);
 
 	/** Get Organization.
 	  * Organizational entity within client
@@ -69,7 +69,7 @@ public interface I_Z_LoadJournalFile
 	/** Set Trx Organization.
 	  * Performing or initiating organization
 	  */
-	public void setAD_OrgTrx_ID(int AD_OrgTrx_ID);
+	public void setAD_OrgTrx_ID (int AD_OrgTrx_ID);
 
 	/** Get Trx Organization.
 	  * Performing or initiating organization
@@ -82,7 +82,7 @@ public interface I_Z_LoadJournalFile
 	/** Set Accounted Credit.
 	  * Accounted Credit Amount
 	  */
-	public void setAmtAcctCr(BigDecimal AmtAcctCr);
+	public void setAmtAcctCr (BigDecimal AmtAcctCr);
 
 	/** Get Accounted Credit.
 	  * Accounted Credit Amount
@@ -95,7 +95,7 @@ public interface I_Z_LoadJournalFile
 	/** Set Accounted Debit.
 	  * Accounted Debit Amount
 	  */
-	public void setAmtAcctDr(BigDecimal AmtAcctDr);
+	public void setAmtAcctDr (BigDecimal AmtAcctDr);
 
 	/** Get Accounted Debit.
 	  * Accounted Debit Amount
@@ -108,7 +108,7 @@ public interface I_Z_LoadJournalFile
 	/** Set Source Credit.
 	  * Source Credit Amount
 	  */
-	public void setAmtSourceCr(BigDecimal AmtSourceCr);
+	public void setAmtSourceCr (BigDecimal AmtSourceCr);
 
 	/** Get Source Credit.
 	  * Source Credit Amount
@@ -121,7 +121,7 @@ public interface I_Z_LoadJournalFile
 	/** Set Source Debit.
 	  * Source Debit Amount
 	  */
-	public void setAmtSourceDr(BigDecimal AmtSourceDr);
+	public void setAmtSourceDr (BigDecimal AmtSourceDr);
 
 	/** Get Source Debit.
 	  * Source Debit Amount
@@ -134,7 +134,7 @@ public interface I_Z_LoadJournalFile
 	/** Set Activity.
 	  * Business Activity
 	  */
-	public void setC_Activity_ID(int C_Activity_ID);
+	public void setC_Activity_ID (int C_Activity_ID);
 
 	/** Get Activity.
 	  * Business Activity
@@ -149,7 +149,7 @@ public interface I_Z_LoadJournalFile
 	/** Set Business Partner .
 	  * Identifies a Business Partner
 	  */
-	public void setC_BPartner_ID(int C_BPartner_ID);
+	public void setC_BPartner_ID (int C_BPartner_ID);
 
 	/** Get Business Partner .
 	  * Identifies a Business Partner
@@ -164,7 +164,7 @@ public interface I_Z_LoadJournalFile
 	/** Set Currency.
 	  * The Currency for this record
 	  */
-	public void setC_Currency_ID(int C_Currency_ID);
+	public void setC_Currency_ID (int C_Currency_ID);
 
 	/** Get Currency.
 	  * The Currency for this record
@@ -179,7 +179,7 @@ public interface I_Z_LoadJournalFile
 	/** Set Target Document Type.
 	  * Target document type for conversing documents
 	  */
-	public void setC_DocTypeTarget_ID(int C_DocTypeTarget_ID);
+	public void setC_DocTypeTarget_ID (int C_DocTypeTarget_ID);
 
 	/** Get Target Document Type.
 	  * Target document type for conversing documents
@@ -194,7 +194,7 @@ public interface I_Z_LoadJournalFile
 	/** Set Account Element.
 	  * Account Element
 	  */
-	public void setC_ElementValue_ID(int C_ElementValue_ID);
+	public void setC_ElementValue_ID (int C_ElementValue_ID);
 
 	/** Get Account Element.
 	  * Account Element
@@ -209,7 +209,7 @@ public interface I_Z_LoadJournalFile
 	/** Set CodigoCCosto.
 	  * Codigo de centro de costo
 	  */
-	public void setCodigoCCosto(String CodigoCCosto);
+	public void setCodigoCCosto (String CodigoCCosto);
 
 	/** Get CodigoCCosto.
 	  * Codigo de centro de costo
@@ -222,7 +222,7 @@ public interface I_Z_LoadJournalFile
 	/** Set CodigoCuenta.
 	  * Codigo de cuenta contable
 	  */
-	public void setCodigoCuenta(String CodigoCuenta);
+	public void setCodigoCuenta (String CodigoCuenta);
 
 	/** Get CodigoCuenta.
 	  * Codigo de cuenta contable
@@ -235,7 +235,7 @@ public interface I_Z_LoadJournalFile
 	/** Set CodigoProducto.
 	  * Código de Producto
 	  */
-	public void setCodigoProducto(String CodigoProducto);
+	public void setCodigoProducto (String CodigoProducto);
 
 	/** Get CodigoProducto.
 	  * Código de Producto
@@ -258,13 +258,28 @@ public interface I_Z_LoadJournalFile
 	  */
 	public int getCreatedBy();
 
+    /** Column name C_Tax_ID */
+    public static final String COLUMNNAME_C_Tax_ID = "C_Tax_ID";
+
+	/** Set Tax.
+	  * Tax identifier
+	  */
+	public void setC_Tax_ID (int C_Tax_ID);
+
+	/** Get Tax.
+	  * Tax identifier
+	  */
+	public int getC_Tax_ID();
+
+	public I_C_Tax getC_Tax() throws RuntimeException;
+
     /** Column name DateAcct */
     public static final String COLUMNNAME_DateAcct = "DateAcct";
 
 	/** Set Account Date.
 	  * Accounting Date
 	  */
-	public void setDateAcct(Timestamp DateAcct);
+	public void setDateAcct (Timestamp DateAcct);
 
 	/** Get Account Date.
 	  * Accounting Date
@@ -277,7 +292,7 @@ public interface I_Z_LoadJournalFile
 	/** Set Description.
 	  * Optional short description of the record
 	  */
-	public void setDescription(String Description);
+	public void setDescription (String Description);
 
 	/** Get Description.
 	  * Optional short description of the record
@@ -290,7 +305,7 @@ public interface I_Z_LoadJournalFile
 	/** Set Due Date.
 	  * Date when the payment is due
 	  */
-	public void setDueDate(Timestamp DueDate);
+	public void setDueDate (Timestamp DueDate);
 
 	/** Get Due Date.
 	  * Date when the payment is due
@@ -301,7 +316,7 @@ public interface I_Z_LoadJournalFile
     public static final String COLUMNNAME_ErrorMsg = "ErrorMsg";
 
 	/** Set Error Msg	  */
-	public void setErrorMsg(String ErrorMsg);
+	public void setErrorMsg (String ErrorMsg);
 
 	/** Get Error Msg	  */
 	public String getErrorMsg();
@@ -312,7 +327,7 @@ public interface I_Z_LoadJournalFile
 	/** Set FechaAcctCadena.
 	  * Fecha contable en formato string
 	  */
-	public void setFechaAcctCadena(String FechaAcctCadena);
+	public void setFechaAcctCadena (String FechaAcctCadena);
 
 	/** Get FechaAcctCadena.
 	  * Fecha contable en formato string
@@ -323,7 +338,7 @@ public interface I_Z_LoadJournalFile
     public static final String COLUMNNAME_FileLineText = "FileLineText";
 
 	/** Set FileLineText	  */
-	public void setFileLineText(String FileLineText);
+	public void setFileLineText (String FileLineText);
 
 	/** Get FileLineText	  */
 	public String getFileLineText();
@@ -334,7 +349,7 @@ public interface I_Z_LoadJournalFile
 	/** Set Imported.
 	  * Has this import been processed
 	  */
-	public void setI_IsImported(boolean I_IsImported);
+	public void setI_IsImported (boolean I_IsImported);
 
 	/** Get Imported.
 	  * Has this import been processed
@@ -347,7 +362,7 @@ public interface I_Z_LoadJournalFile
 	/** Set Active.
 	  * The record is active in the system
 	  */
-	public void setIsActive(boolean IsActive);
+	public void setIsActive (boolean IsActive);
 
 	/** Get Active.
 	  * The record is active in the system
@@ -360,7 +375,7 @@ public interface I_Z_LoadJournalFile
 	/** Set Confirmed.
 	  * Assignment is confirmed
 	  */
-	public void setIsConfirmed(boolean IsConfirmed);
+	public void setIsConfirmed (boolean IsConfirmed);
 
 	/** Get Confirmed.
 	  * Assignment is confirmed
@@ -373,7 +388,7 @@ public interface I_Z_LoadJournalFile
 	/** Set IsOmitted.
 	  * Omitida si o no
 	  */
-	public void setIsOmitted(boolean IsOmitted);
+	public void setIsOmitted (boolean IsOmitted);
 
 	/** Get IsOmitted.
 	  * Omitida si o no
@@ -384,7 +399,7 @@ public interface I_Z_LoadJournalFile
     public static final String COLUMNNAME_LineNumber = "LineNumber";
 
 	/** Set LineNumber	  */
-	public void setLineNumber(int LineNumber);
+	public void setLineNumber (int LineNumber);
 
 	/** Get LineNumber	  */
 	public int getLineNumber();
@@ -395,7 +410,7 @@ public interface I_Z_LoadJournalFile
 	/** Set Product.
 	  * Product, Service, Item
 	  */
-	public void setM_Product_ID(int M_Product_ID);
+	public void setM_Product_ID (int M_Product_ID);
 
 	/** Get Product.
 	  * Product, Service, Item
@@ -410,7 +425,7 @@ public interface I_Z_LoadJournalFile
 	/** Set Multiply Rate.
 	  * Rate to multiple the source by to calculate the target.
 	  */
-	public void setMultiplyRate(BigDecimal MultiplyRate);
+	public void setMultiplyRate (BigDecimal MultiplyRate);
 
 	/** Get Multiply Rate.
 	  * Rate to multiple the source by to calculate the target.
@@ -423,7 +438,7 @@ public interface I_Z_LoadJournalFile
 	/** Set NombreCuenta.
 	  * Nombre de Cuenta Contable
 	  */
-	public void setNombreCuenta(String NombreCuenta);
+	public void setNombreCuenta (String NombreCuenta);
 
 	/** Get NombreCuenta.
 	  * Nombre de Cuenta Contable
@@ -436,7 +451,7 @@ public interface I_Z_LoadJournalFile
 	/** Set Processed.
 	  * The document has been processed
 	  */
-	public void setProcessed(boolean Processed);
+	public void setProcessed (boolean Processed);
 
 	/** Get Processed.
 	  * The document has been processed
@@ -449,7 +464,7 @@ public interface I_Z_LoadJournalFile
 	/** Set Quantity.
 	  * The Quantity Entered is based on the selected UoM
 	  */
-	public void setQtyEntered(BigDecimal QtyEntered);
+	public void setQtyEntered (BigDecimal QtyEntered);
 
 	/** Get Quantity.
 	  * The Quantity Entered is based on the selected UoM
@@ -462,7 +477,7 @@ public interface I_Z_LoadJournalFile
 	/** Set Tax ID.
 	  * Tax Identification
 	  */
-	public void setTaxID(String TaxID);
+	public void setTaxID (String TaxID);
 
 	/** Get Tax ID.
 	  * Tax Identification
@@ -491,7 +506,7 @@ public interface I_Z_LoadJournalFile
 	/** Set Immutable Universally Unique Identifier.
 	  * Immutable Universally Unique Identifier
 	  */
-	public void setUUID(String UUID);
+	public void setUUID (String UUID);
 
 	/** Get Immutable Universally Unique Identifier.
 	  * Immutable Universally Unique Identifier
@@ -504,7 +519,7 @@ public interface I_Z_LoadJournalFile
 	/** Set VencCadena.
 	  * Fecha de vencimiento en formato cadena de texto
 	  */
-	public void setVencCadena(String VencCadena);
+	public void setVencCadena (String VencCadena);
 
 	/** Get VencCadena.
 	  * Fecha de vencimiento en formato cadena de texto
@@ -515,7 +530,7 @@ public interface I_Z_LoadJournalFile
     public static final String COLUMNNAME_Z_LoadJournalFile_ID = "Z_LoadJournalFile_ID";
 
 	/** Set Z_LoadJournalFile ID	  */
-	public void setZ_LoadJournalFile_ID(int Z_LoadJournalFile_ID);
+	public void setZ_LoadJournalFile_ID (int Z_LoadJournalFile_ID);
 
 	/** Get Z_LoadJournalFile ID	  */
 	public int getZ_LoadJournalFile_ID();
@@ -524,10 +539,19 @@ public interface I_Z_LoadJournalFile
     public static final String COLUMNNAME_Z_LoadJournal_ID = "Z_LoadJournal_ID";
 
 	/** Set Z_LoadJournal ID	  */
-	public void setZ_LoadJournal_ID(int Z_LoadJournal_ID);
+	public void setZ_LoadJournal_ID (int Z_LoadJournal_ID);
 
 	/** Get Z_LoadJournal ID	  */
 	public int getZ_LoadJournal_ID();
 
 	public I_Z_LoadJournal getZ_LoadJournal() throws RuntimeException;
+
+    /** Column name Z_RetencionSocio_ID */
+    public static final String COLUMNNAME_Z_RetencionSocio_ID = "Z_RetencionSocio_ID";
+
+	/** Set Z_RetencionSocio ID	  */
+	public void setZ_RetencionSocio_ID (int Z_RetencionSocio_ID);
+
+	/** Get Z_RetencionSocio ID	  */
+	public int getZ_RetencionSocio_ID();
 }
