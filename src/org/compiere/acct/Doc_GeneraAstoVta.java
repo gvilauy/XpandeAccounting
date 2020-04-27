@@ -94,6 +94,14 @@ public class Doc_GeneraAstoVta extends Doc {
             List<MZGeneraAstoVtaSumMP> sumMPList = this.generaAstoVta.getLineasMediosPago();
             for (MZGeneraAstoVtaSumMP sumMP: sumMPList){
 
+                // Si este medio de pago tiene un identificador y el mismo esta configurado para que no se contabilice, no lo hago.
+                if (sumMP.getZ_MedioPagoIdent_ID() > 0){
+                    MZMedioPagoIdent medioPagoIdent = new MZMedioPagoIdent(getCtx(), sumMP.getZ_MedioPagoIdent_ID(), null);
+                    if (!medioPagoIdent.isContabilizar()){
+                        continue;
+                    }
+                }
+
                 int cCurrencyID = sumMP.getC_Currency_ID();
                 BigDecimal amtMP = sumMP.getAmtTotal1();
                 BigDecimal currencyRate = Env.ONE;
