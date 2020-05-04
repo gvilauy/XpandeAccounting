@@ -6,6 +6,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.xpande.acct.model.MZAcctConfig;
 import org.xpande.financial.model.MZMPagoIdentProd;
+import org.xpande.financial.model.MZMedioPago;
 import org.xpande.financial.model.MZMedioPagoIdent;
 import org.xpande.financial.model.MZPago;
 import org.xpande.retail.model.*;
@@ -99,6 +100,15 @@ public class Doc_GeneraAstoVta extends Doc {
                     MZMedioPagoIdent medioPagoIdent = new MZMedioPagoIdent(getCtx(), sumMP.getZ_MedioPagoIdent_ID(), null);
                     if (!medioPagoIdent.isContabilizar()){
                         continue;
+                    }
+                }
+                else{
+                    // Si no tengo identificador, pero tengo medio de pago y el mismo esta marcado para que no se contabilice, no lo hago.
+                    if (sumMP.getZ_MedioPago_ID() > 0){
+                        MZMedioPago medioPago = new MZMedioPago(getCtx(), sumMP.getZ_MedioPago_ID(), null);
+                        if (!medioPago.isContabilizar()){
+                            continue;
+                        }
                     }
                 }
 
