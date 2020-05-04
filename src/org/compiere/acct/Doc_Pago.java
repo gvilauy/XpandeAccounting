@@ -240,6 +240,10 @@ public class Doc_Pago extends Doc {
                         hashPartnerCR.get(pagoResguardo.getC_Currency_ID()).amtSource = hashPartnerCR.get(pagoResguardo.getC_Currency_ID()).amtSource.subtract(pagoResguardo.getAmtAllocation());
                         hashPartnerCR.get(pagoResguardo.getC_Currency_ID()).amtAcct = hashPartnerCR.get(pagoResguardo.getC_Currency_ID()).amtAcct.subtract(pagoResguardo.getAmtAllocationMT());
                     }
+                    else{
+                        hashPartnerCR.get(100).amtSource = hashPartnerCR.get(100).amtSource.subtract(pagoResguardo.getAmtAllocationMT());
+                        hashPartnerCR.get(100).amtAcct = hashPartnerCR.get(100).amtAcct.subtract(pagoResguardo.getAmtAllocationMT());
+                    }
                 }
 
                 // DR : Cuenta Acreedores del Socio de Negocio según moneda
