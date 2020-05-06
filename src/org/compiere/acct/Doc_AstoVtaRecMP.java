@@ -216,9 +216,11 @@ public class Doc_AstoVtaRecMP extends Doc {
                     zMPagoIdentProdID = 0;
 
                     // Busco Identificador segun codigo del medio de pago
+                    String codMPagoAux = astoVtaRecMPLinST.getST_TipoTarjetaCredito();
+                    if (codMPagoAux == null) codMPagoAux = astoVtaRecMPLinST.getST_CodigoMedioPago();
                     sql = " select z_mediopago_id, z_mediopagoident_id, z_mpagoidentprod_id " +
                             " from z_sistecotipotarjeta " +
-                            " where value ='" + astoVtaRecMPLinST.getST_CodigoMedioPago() + "'";
+                            " where value ='" + codMPagoAux + "'";
                     pstmt = DB.prepareStatement(sql, null);
                     rs = pstmt.executeQuery();
 
