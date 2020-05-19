@@ -302,6 +302,12 @@ public class Doc_Pago extends Doc {
                     String nroMedioPago = "";
                     MBank bank = null;
 
+                    // Si el medio de pago esta configurado como no emisible, entonces no muevo cuentas de Emision.
+                    MZMedioPago medioPagoAux = (MZMedioPago) medioPagoItem.getZ_MedioPago();
+                    if (!medioPagoAux.isTieneEmision()){
+                        continue;
+                    }
+
                     // Seteo numero de medio de pago
                     if (medioPagoItem != null){
                         if (medioPagoItem.getC_BankAccount_ID() > 0){

@@ -48,7 +48,7 @@ public interface I_Z_InvoiceAstoManual
 	/** Set Account.
 	  * Account used
 	  */
-	public void setAccount_ID(int Account_ID);
+	public void setAccount_ID (int Account_ID);
 
 	/** Get Account.
 	  * Account used
@@ -71,7 +71,7 @@ public interface I_Z_InvoiceAstoManual
 	/** Set Organization.
 	  * Organizational entity within client
 	  */
-	public void setAD_Org_ID(int AD_Org_ID);
+	public void setAD_Org_ID (int AD_Org_ID);
 
 	/** Get Organization.
 	  * Organizational entity within client
@@ -84,7 +84,7 @@ public interface I_Z_InvoiceAstoManual
 	/** Set Accounted Credit.
 	  * Accounted Credit Amount
 	  */
-	public void setAmtAcctCr(BigDecimal AmtAcctCr);
+	public void setAmtAcctCr (BigDecimal AmtAcctCr);
 
 	/** Get Accounted Credit.
 	  * Accounted Credit Amount
@@ -97,7 +97,7 @@ public interface I_Z_InvoiceAstoManual
 	/** Set Accounted Debit.
 	  * Accounted Debit Amount
 	  */
-	public void setAmtAcctDr(BigDecimal AmtAcctDr);
+	public void setAmtAcctDr (BigDecimal AmtAcctDr);
 
 	/** Get Accounted Debit.
 	  * Accounted Debit Amount
@@ -110,7 +110,7 @@ public interface I_Z_InvoiceAstoManual
 	/** Set Source Credit.
 	  * Source Credit Amount
 	  */
-	public void setAmtSourceCr(BigDecimal AmtSourceCr);
+	public void setAmtSourceCr (BigDecimal AmtSourceCr);
 
 	/** Get Source Credit.
 	  * Source Credit Amount
@@ -123,7 +123,7 @@ public interface I_Z_InvoiceAstoManual
 	/** Set Source Debit.
 	  * Source Debit Amount
 	  */
-	public void setAmtSourceDr(BigDecimal AmtSourceDr);
+	public void setAmtSourceDr (BigDecimal AmtSourceDr);
 
 	/** Get Source Debit.
 	  * Source Debit Amount
@@ -136,7 +136,7 @@ public interface I_Z_InvoiceAstoManual
 	/** Set Activity.
 	  * Business Activity
 	  */
-	public void setC_Activity_ID(int C_Activity_ID);
+	public void setC_Activity_ID (int C_Activity_ID);
 
 	/** Get Activity.
 	  * Business Activity
@@ -151,7 +151,7 @@ public interface I_Z_InvoiceAstoManual
 	/** Set Business Partner .
 	  * Identifies a Business Partner
 	  */
-	public void setC_BPartner_ID(int C_BPartner_ID);
+	public void setC_BPartner_ID (int C_BPartner_ID);
 
 	/** Get Business Partner .
 	  * Identifies a Business Partner
@@ -166,7 +166,7 @@ public interface I_Z_InvoiceAstoManual
 	/** Set Currency Type.
 	  * Currency Conversion Rate Type
 	  */
-	public void setC_ConversionType_ID(int C_ConversionType_ID);
+	public void setC_ConversionType_ID (int C_ConversionType_ID);
 
 	/** Get Currency Type.
 	  * Currency Conversion Rate Type
@@ -181,7 +181,7 @@ public interface I_Z_InvoiceAstoManual
 	/** Set Currency.
 	  * The Currency for this record
 	  */
-	public void setC_Currency_ID(int C_Currency_ID);
+	public void setC_Currency_ID (int C_Currency_ID);
 
 	/** Get Currency.
 	  * The Currency for this record
@@ -196,7 +196,7 @@ public interface I_Z_InvoiceAstoManual
 	/** Set Invoice.
 	  * Invoice Identifier
 	  */
-	public void setC_Invoice_ID(int C_Invoice_ID);
+	public void setC_Invoice_ID (int C_Invoice_ID);
 
 	/** Get Invoice.
 	  * Invoice Identifier
@@ -227,7 +227,7 @@ public interface I_Z_InvoiceAstoManual
 	/** Set Tax.
 	  * Tax identifier
 	  */
-	public void setC_Tax_ID(int C_Tax_ID);
+	public void setC_Tax_ID (int C_Tax_ID);
 
 	/** Get Tax.
 	  * Tax identifier
@@ -242,7 +242,7 @@ public interface I_Z_InvoiceAstoManual
 	/** Set UOM.
 	  * Unit of Measure
 	  */
-	public void setC_UOM_ID(int C_UOM_ID);
+	public void setC_UOM_ID (int C_UOM_ID);
 
 	/** Get UOM.
 	  * Unit of Measure
@@ -257,7 +257,7 @@ public interface I_Z_InvoiceAstoManual
 	/** Set Rate.
 	  * Currency Conversion Rate
 	  */
-	public void setCurrencyRate(BigDecimal CurrencyRate);
+	public void setCurrencyRate (BigDecimal CurrencyRate);
 
 	/** Get Rate.
 	  * Currency Conversion Rate
@@ -270,7 +270,7 @@ public interface I_Z_InvoiceAstoManual
 	/** Set Combination.
 	  * Valid Account Combination
 	  */
-	public void setC_ValidCombination_ID(int C_ValidCombination_ID);
+	public void setC_ValidCombination_ID (int C_ValidCombination_ID);
 
 	/** Get Combination.
 	  * Valid Account Combination
@@ -285,7 +285,7 @@ public interface I_Z_InvoiceAstoManual
 	/** Set Account Date.
 	  * Accounting Date
 	  */
-	public void setDateAcct(Timestamp DateAcct);
+	public void setDateAcct (Timestamp DateAcct);
 
 	/** Get Account Date.
 	  * Accounting Date
@@ -298,7 +298,7 @@ public interface I_Z_InvoiceAstoManual
 	/** Set Description.
 	  * Optional short description of the record
 	  */
-	public void setDescription(String Description);
+	public void setDescription (String Description);
 
 	/** Get Description.
 	  * Optional short description of the record
@@ -311,7 +311,7 @@ public interface I_Z_InvoiceAstoManual
 	/** Set Active.
 	  * The record is active in the system
 	  */
-	public void setIsActive(boolean IsActive);
+	public void setIsActive (boolean IsActive);
 
 	/** Get Active.
 	  * The record is active in the system
@@ -324,7 +324,7 @@ public interface I_Z_InvoiceAstoManual
 	/** Set Product.
 	  * Product, Service, Item
 	  */
-	public void setM_Product_ID(int M_Product_ID);
+	public void setM_Product_ID (int M_Product_ID);
 
 	/** Get Product.
 	  * Product, Service, Item
@@ -339,7 +339,7 @@ public interface I_Z_InvoiceAstoManual
 	/** Set Quantity.
 	  * Quantity
 	  */
-	public void setQty(BigDecimal Qty);
+	public void setQty (BigDecimal Qty);
 
 	/** Get Quantity.
 	  * Quantity
@@ -368,7 +368,7 @@ public interface I_Z_InvoiceAstoManual
 	/** Set Immutable Universally Unique Identifier.
 	  * Immutable Universally Unique Identifier
 	  */
-	public void setUUID(String UUID);
+	public void setUUID (String UUID);
 
 	/** Get Immutable Universally Unique Identifier.
 	  * Immutable Universally Unique Identifier
@@ -379,8 +379,17 @@ public interface I_Z_InvoiceAstoManual
     public static final String COLUMNNAME_Z_InvoiceAstoManual_ID = "Z_InvoiceAstoManual_ID";
 
 	/** Set Z_InvoiceAstoManual ID	  */
-	public void setZ_InvoiceAstoManual_ID(int Z_InvoiceAstoManual_ID);
+	public void setZ_InvoiceAstoManual_ID (int Z_InvoiceAstoManual_ID);
 
 	/** Get Z_InvoiceAstoManual ID	  */
 	public int getZ_InvoiceAstoManual_ID();
+
+    /** Column name Z_RetencionSocio_ID */
+    public static final String COLUMNNAME_Z_RetencionSocio_ID = "Z_RetencionSocio_ID";
+
+	/** Set Z_RetencionSocio ID	  */
+	public void setZ_RetencionSocio_ID (int Z_RetencionSocio_ID);
+
+	/** Get Z_RetencionSocio ID	  */
+	public int getZ_RetencionSocio_ID();
 }

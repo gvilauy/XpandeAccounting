@@ -33,7 +33,7 @@ public class X_Z_InvoiceAstoManual extends PO implements I_Z_InvoiceAstoManual, 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20190510L;
+	private static final long serialVersionUID = 20200518L;
 
     /** Standard Constructor */
     public X_Z_InvoiceAstoManual (Properties ctx, int Z_InvoiceAstoManual_ID, String trxName)
@@ -549,6 +549,26 @@ public class X_Z_InvoiceAstoManual extends PO implements I_Z_InvoiceAstoManual, 
 	public int getZ_InvoiceAstoManual_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Z_InvoiceAstoManual_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Z_RetencionSocio ID.
+		@param Z_RetencionSocio_ID Z_RetencionSocio ID	  */
+	public void setZ_RetencionSocio_ID (int Z_RetencionSocio_ID)
+	{
+		if (Z_RetencionSocio_ID < 1) 
+			set_Value (COLUMNNAME_Z_RetencionSocio_ID, null);
+		else 
+			set_Value (COLUMNNAME_Z_RetencionSocio_ID, Integer.valueOf(Z_RetencionSocio_ID));
+	}
+
+	/** Get Z_RetencionSocio ID.
+		@return Z_RetencionSocio ID	  */
+	public int getZ_RetencionSocio_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_RetencionSocio_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
