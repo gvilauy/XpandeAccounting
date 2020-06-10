@@ -8,6 +8,8 @@ import org.xpande.comercial.model.MZComercialConfig;
 import org.xpande.core.utils.CurrencyUtils;
 import org.xpande.core.utils.DateUtils;
 import org.xpande.financial.model.*;
+import org.xpande.retail.model.MZPosVendor;
+import org.xpande.retail.model.MZPosVendorOrg;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -649,7 +651,39 @@ public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
      * Xpande. Created by Gabriel Vila on 12/10/18.
      * @return
      */
-    private String getPOSDocuments2181() {
+    private String getPOSDocuments2181(){
+
+        String message = null;
+
+        try{
+
+            MZPosVendorOrg posVendorOrg = MZPosVendor.getByOrg(getCtx(), this.getAD_Org_ID(), null);
+            if ((posVendorOrg == null) || (posVendorOrg.get_ID() <= 0)){
+                return "No se pudo obtener el Proveedor de POS para esta organización.";
+            }
+
+            MZPosVendor posVendor = (MZPosVendor) posVendorOrg.getZ_PosVendor();
+
+            if (posVendor.getName().equalsIgnoreCase("SISTECO")){
+                message = this.getPOSDocuments2181_Sisteco();
+            }
+            else if (posVendor.getName().equalsIgnoreCase("SCANNTECH")){
+                message = this.getPOSDocuments2181_Scanntech();
+            }
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+
+        return message;
+    }
+
+    /***
+     * Obtiene y carga información de ventas originadas por el POS Sisteco para la generación del formatio 2/181 de DGI.
+     * Xpande. Created by Gabriel Vila on 12/10/18.
+     * @return
+     */
+    private String getPOSDocuments2181_Sisteco() {
 
         String message = null;
 
@@ -792,6 +826,160 @@ public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
         finally {
             DB.close(rs, pstmt);
         	rs = null; pstmt = null;
+        }
+
+        return message;
+    }
+
+    /***
+     * Obtiene y carga información de ventas originadas por el POS Scanntech para la generación del formatio 2/181 de DGI.
+     * Xpande. Created by Gabriel Vila on 6/9/20.
+     * @return
+     */
+    private String getPOSDocuments2181_Scanntech() {
+
+        String message = null;
+
+        String sql = "";
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try{
+
+            MAcctSchema as = (MAcctSchema) this.getC_AcctSchema();
+
+            sql = " select a.z_stechvtactacte_id as c_invoice_id, sdgi.c_doctype_id as c_doctypetarget_id, " +
+                    " (coalesce(a.sc_seriecfe,'') || a.sc_numerooperacion) as documentnoref, a.datetrx as dateinvoiced, " +
+                    " bp.c_bpartner_id, a.c_currency_id, tax.c_tax_id, bp.c_taxgroup_id, " +
+                    " coalesce(bp.taxid, a.sc_rucfactura) as taxid , bp.value, bp.name, " +
+                    " vc.account_id, vcVta.account_id as account_vta_id, sum(v.sc_montoiva) " +
+                    " from z_stechvtactacte a " +
+                    " inner join zv_scanntech_detvtas v on a.z_stech_tk_mov_id = v.z_stech_tk_mov_id " +
+                    " left outer join c_bpartner bp on a.sc_rucfactura = bp.taxid " +
+                    " left outer join z_cfe_configdocdgi dgi on cast(a.sc_tipocfe as character varying(10))= dgi.codigodgi " +
+                    " left outer join z_cfe_configdocsend sdgi on dgi.z_cfe_configdocdgi_id = sdgi.z_cfe_configdocdgi_id " +
+                    " left outer join c_tax tax on (v.c_taxcategory_id = tax.c_taxcategory_id and tax.isdefault='Y') " +
+                    " left outer join c_tax_acct tacct on tax.c_tax_id = tacct.c_tax_id " +
+                    " left outer join c_validcombination vc on tacct.t_credit_acct = vc.c_validcombination_id " +
+                    " left outer join c_validcombination vcVta on tacct.t_due_acct = vcVta.c_validcombination_id " +
+                    " where a.ad_org_id =" + this.getAD_Org_ID() +
+                    " and a.datetrx between ? and ? " +
+                    " and ((a.sc_tipocfe <> '101') or (a.sc_tipocfe = '101' and a.sc_rucfactura is not null)) " +
+                    " group by 1,2,3,4,5,6,7,8,9,10,11,12,13 " +
+                    " order by 1,2,3,4,5,6,7,8,9,10,11,12,13 ";
+
+            pstmt = DB.prepareStatement(sql, get_TrxName());
+            pstmt.setTimestamp(1, this.getStartDate());
+            pstmt.setTimestamp(2, this.getEndDate());
+
+            rs = pstmt.executeQuery();
+
+            while(rs.next()){
+
+                boolean isSOTrx = true;
+
+                String nroIdentificacion = rs.getString("taxid");
+
+                if ((nroIdentificacion == null) || (nroIdentificacion.trim().equalsIgnoreCase(""))){
+
+                    MZGeneraFormDGIError dgiError = new MZGeneraFormDGIError(getCtx(), 0, get_TrxName());
+                    dgiError.setZ_GeneraFormDGI_ID(this.get_ID());
+                    dgiError.setErrorMsg("POS - Socio de Negocio NO tiene NUMERO DE IDENTIFICACIÓN : " + rs.getString("value") +
+                            " - " + rs.getString("name"));
+                    dgiError.saveEx();
+                }
+                else{
+
+                    if (rs.getInt("c_bpartner_id") <= 0){
+
+                        MZGeneraFormDGIError dgiError = new MZGeneraFormDGIError(getCtx(), 0, get_TrxName());
+                        dgiError.setZ_GeneraFormDGI_ID(this.get_ID());
+                        dgiError.setErrorMsg("POS - No existe un Socio de Negocio definido con NUMERO DE IDENTIFICACIÓN : " + nroIdentificacion);
+                        dgiError.saveEx();
+                    }
+                    else{
+                        MZGeneraFormDGILin linea = new MZGeneraFormDGILin(getCtx(), 0, get_TrxName());
+                        linea.setZ_GeneraFormDGI_ID(this.get_ID());
+                        linea.setAmtDocument(rs.getBigDecimal("taxamt"));
+                        linea.setAmtDocumentMT(linea.getAmtDocument());
+                        linea.setC_BPartner_ID(rs.getInt("c_bpartner_id"));
+                        linea.setC_Currency_ID(rs.getInt("c_currency_id"));
+                        linea.setC_DocType_ID(rs.getInt("c_doctypetarget_id"));
+                        linea.setC_Invoice_ID(rs.getInt("c_invoice_id"));
+                        linea.setC_Tax_ID(rs.getInt("c_tax_id"));
+                        linea.setCurrencyRate(Env.ONE);
+                        linea.setDateDoc(rs.getTimestamp("dateinvoiced"));
+                        linea.setDateAcct(rs.getTimestamp("dateinvoiced"));
+                        linea.setDocumentNoRef(rs.getString("documentnoref"));
+                        linea.setTaxID(nroIdentificacion);
+                        linea.setC_TaxGroup_ID(rs.getInt("c_taxgroup_id"));
+
+                        // Periodo del comprobante
+                        MPeriod periodInv = MPeriod.get(getCtx(), linea.getDateAcct(), this.getAD_Org_ID());
+                        if ((periodInv == null) || (periodInv.get_ID() <= 0)){
+                            MZGeneraFormDGIError dgiError = new MZGeneraFormDGIError(getCtx(), 0, get_TrxName());
+                            dgiError.setZ_GeneraFormDGI_ID(this.get_ID());
+                            dgiError.setErrorMsg("POS - Falta Período Contable para fecha : " + linea.getDateAcct().toString());
+                            dgiError.saveEx();
+                        }
+                        else{
+                            linea.setC_Period_ID(periodInv.get_ID());
+
+                            int accountID = rs.getInt("account_id");
+                            if (isSOTrx){
+                                accountID = rs.getInt("account_vta_id");
+                            }
+
+                            if (accountID > 0){
+                                linea.setC_ElementValue_ID(accountID);
+                            }
+
+                            if (linea.getC_Currency_ID() != as.getC_Currency_ID()){
+                                BigDecimal rate = CurrencyUtils.getCurrencyRateToAcctSchemaCurrency(getCtx(), this.getAD_Client_ID(), 0, linea.getC_Currency_ID(),
+                                        as.getC_Currency_ID(), 114, rs.getTimestamp("dateacct"), null);
+
+                                if (rate == null){
+
+                                    MZGeneraFormDGIError dgiError = new MZGeneraFormDGIError(getCtx(), 0, get_TrxName());
+                                    dgiError.setZ_GeneraFormDGI_ID(this.get_ID());
+                                    dgiError.setErrorMsg("POS - Falta tasa de Cambio para moneda : " + linea.getC_Currency_ID() + ", fecha : " + linea.getDateAcct().toString());
+                                    dgiError.saveEx();
+                                }
+                                else{
+                                    linea.setCurrencyRate(rate);
+                                    linea.setAmtDocumentMT(linea.getAmtDocument().multiply(linea.getCurrencyRate()).setScale(2, RoundingMode.HALF_UP));
+                                }
+                            }
+
+                            MZAcctConfigRubroDGI configRubroDGI = MZAcctConfigRubroDGI.getByTax(getCtx(), linea.getC_Tax_ID(), isSOTrx, null);
+                            if ((configRubroDGI != null) && (configRubroDGI.get_ID() > 0)){
+                                linea.setZ_AcctConfigRubroDGI_ID(configRubroDGI.get_ID());
+                                linea.saveEx();
+                            }
+                            else{
+
+                                MTax tax = new MTax(getCtx(), rs.getInt("c_tax_id"), null);
+
+                                MZGeneraFormDGIError dgiError = new MZGeneraFormDGIError(getCtx(), 0, get_TrxName());
+                                dgiError.setZ_GeneraFormDGI_ID(this.get_ID());
+                                dgiError.setErrorMsg("POS - Impuesto NO TIENE Rubro de DGI Asociado : " + tax.getName() + " - Documento : " + rs.getString("documentnoref"));
+                                dgiError.saveEx();
+                            }
+
+                        }
+
+                    }
+                }
+
+            }
+
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+        finally {
+            DB.close(rs, pstmt);
+            rs = null; pstmt = null;
         }
 
         return message;
