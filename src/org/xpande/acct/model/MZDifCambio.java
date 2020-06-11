@@ -237,7 +237,18 @@ public class MZDifCambio extends X_Z_DifCambio implements DocAction, DocOptions 
 			approveIt();
 		log.info(toString());
 		//
-		
+
+		// Guardo historial de diferencia de cambio aplicada a registros contables.
+		MSequence sequence = MSequence.get(getCtx(), I_Z_AcctFactDifCam.Table_Name, get_TrxName());
+		String action = " insert into Z_AcctFactDifCam (Z_AcctFactDifCam_ID, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, " +
+				"Z_DifCambio_ID, DateTrx, CurrencyRate, Fact_Acct_ID) ";
+		String sql = " select nextid(" + sequence.get_ID() + ",'N'), a.ad_client_id, a.ad_org_id, a.isactive, a.created, a.createdby, a.updated, a.updatedby, " +
+				" a.Z_DifCambio_ID, a.DateDoc, round(a.CurrencyRate, 3), b.fact_acct_id " +
+				" from z_difcambio a " +
+				" inner join Z_DifCambioDet b on a.z_difcambio_id = b.z_difcambio_id " +
+				" where a.z_difcambio_id =" + this.get_ID();
+		DB.executeUpdateEx(action + sql, get_TrxName());
+
 		//	User Validation
 		String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
 		if (valid != null)
@@ -358,6 +369,10 @@ public class MZDifCambio extends X_Z_DifCambio implements DocAction, DocOptions 
 
 		// Elimino asientos contables
 		MFactAcct.deleteEx(this.get_Table_ID(), this.get_ID(), get_TrxName());
+
+		// Elimino historial de esta diferencia de cambio en reigtros contables
+		String action = " delete from Z_AcctFactDifCam where z_difcambio_id =" + this.get_ID();
+		DB.executeUpdateEx(action, get_TrxName());
 
 		// After reActivate
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_REACTIVATE);
@@ -547,8 +562,15 @@ public class MZDifCambio extends X_Z_DifCambio implements DocAction, DocOptions 
 					difCambioDet.setC_BPartner_ID(rs.getInt("c_bpartner_id"));
 				}
 
-				// Redondeo tasa de cambio
 				BigDecimal rate = rs.getBigDecimal("currencyrate");
+
+				// Busco tasa de cambio en proceso anterior de diferencia de cambio para este registro contable.
+				MZAcctFactDifCam factDifCam = MZAcctFactDifCam.getLastByFactID(getCtx(), rs.getInt("fact_acct_id"), this.getStartDate(), null);
+				if ((factDifCam != null) && (factDifCam.get_ID() > 0)){
+					rate = factDifCam.getCurrencyRate();
+				}
+
+				// Redondeo tasa de cambio
 				if ((rate == null) || (rate.compareTo(Env.ZERO) == 0)){
 					// Obtengo tasa de cambio para ese dia
 					rate = CurrencyUtils.getCurrencyRate(getCtx(), this.getAD_Client_ID(), 0, this.getC_Currency_ID(), acctSchema.getC_Currency_ID(),
@@ -563,7 +585,6 @@ public class MZDifCambio extends X_Z_DifCambio implements DocAction, DocOptions 
 					}
 				}
 				difCambioDet.setMultiplyRate(rate.setScale(3, RoundingMode.HALF_UP));
-
 
 				// Diferencia debitos-creditos MO
 				BigDecimal difSourceDR = Env.ZERO, difSourceCR = Env.ZERO;
