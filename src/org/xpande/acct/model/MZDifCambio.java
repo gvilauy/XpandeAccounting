@@ -238,6 +238,7 @@ public class MZDifCambio extends X_Z_DifCambio implements DocAction, DocOptions 
 		log.info(toString());
 		//
 
+		/*
 		// Guardo historial de diferencia de cambio aplicada a registros contables.
 		MSequence sequence = MSequence.get(getCtx(), I_Z_AcctFactDifCam.Table_Name, get_TrxName());
 		String action = " insert into Z_AcctFactDifCam (Z_AcctFactDifCam_ID, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, " +
@@ -248,6 +249,7 @@ public class MZDifCambio extends X_Z_DifCambio implements DocAction, DocOptions 
 				" inner join Z_DifCambioDet b on a.z_difcambio_id = b.z_difcambio_id " +
 				" where a.z_difcambio_id =" + this.get_ID();
 		DB.executeUpdateEx(action + sql, get_TrxName());
+		*/
 
 		//	User Validation
 		String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
@@ -370,9 +372,11 @@ public class MZDifCambio extends X_Z_DifCambio implements DocAction, DocOptions 
 		// Elimino asientos contables
 		MFactAcct.deleteEx(this.get_Table_ID(), this.get_ID(), get_TrxName());
 
+		/*
 		// Elimino historial de esta diferencia de cambio en reigtros contables
 		String action = " delete from Z_AcctFactDifCam where z_difcambio_id =" + this.get_ID();
 		DB.executeUpdateEx(action, get_TrxName());
+		*/
 
 		// After reActivate
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_REACTIVATE);
@@ -532,7 +536,7 @@ public class MZDifCambio extends X_Z_DifCambio implements DocAction, DocOptions 
 					" and fa.ad_org_id =" + this.getAD_Org_ID() +
 					" and fa.c_acctschema_id =" + this.getC_AcctSchema_ID() +
 					" and fa.c_currency_id =" + this.getC_Currency_ID() +
-					" and fa.dateacct <='" + this.getDateDoc() + "' " +
+					" and fa.dateacct between '" + this.getStartDate() + "' and '" + this.getDateDoc() + "' " +
 					" and fa.ad_table_id !=" + this.get_Table_ID() +
 					" and ev.AccountType IN ('A','L') " +
 					" and ev.isforeigncurrency ='Y' " +
@@ -564,11 +568,13 @@ public class MZDifCambio extends X_Z_DifCambio implements DocAction, DocOptions 
 
 				BigDecimal rate = rs.getBigDecimal("currencyrate");
 
+				/*
 				// Busco tasa de cambio en proceso anterior de diferencia de cambio para este registro contable.
 				MZAcctFactDifCam factDifCam = MZAcctFactDifCam.getLastByFactID(getCtx(), rs.getInt("fact_acct_id"), this.getStartDate(), null);
 				if ((factDifCam != null) && (factDifCam.get_ID() > 0)){
 					rate = factDifCam.getCurrencyRate();
 				}
+				*/
 
 				// Redondeo tasa de cambio
 				if ((rate == null) || (rate.compareTo(Env.ZERO) == 0)){
