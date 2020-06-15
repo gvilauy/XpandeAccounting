@@ -426,7 +426,8 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 					whereClause +
 					" and ev.issummary='N' " +
 					" group by f.account_id " +
-					" order by ev.value ";
+					" order by f.account_id ";
+
 
 			pstmt = DB.prepareStatement(sql, get_TrxName());
 			rs = pstmt.executeQuery();
@@ -442,6 +443,9 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 				cierreLin.setCodigoCuenta(elementValue.getValue());
 				cierreLin.setAmtAcctDr(rs.getBigDecimal("sumdr"));
 				cierreLin.setAmtAcctCr(rs.getBigDecimal("sumcr"));
+				cierreLin.setDifferenceAmt(Env.ZERO);
+				cierreLin.setAmtAcctDrTo(Env.ZERO);
+				cierreLin.setAmtAcctCrTo(Env.ZERO);
 
 				// Si es cierre de cuentas diferenciales
 				if (docType.getDocBaseType().equalsIgnoreCase("CJD")){
