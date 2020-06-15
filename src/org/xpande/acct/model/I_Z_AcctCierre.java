@@ -161,6 +161,19 @@ public interface I_Z_AcctCierre
 	  */
 	public String getDocAction();
 
+    /** Column name DocBaseType */
+    public static final String COLUMNNAME_DocBaseType = "DocBaseType";
+
+	/** Set Document BaseType.
+	  * Logical type of document
+	  */
+	public void setDocBaseType (String DocBaseType);
+
+	/** Get Document BaseType.
+	  * Logical type of document
+	  */
+	public String getDocBaseType();
+
     /** Column name DocStatus */
     public static final String COLUMNNAME_DocStatus = "DocStatus";
 
@@ -269,6 +282,45 @@ public interface I_Z_AcctCierre
 
 	/** Get Process Now	  */
 	public boolean isProcessing();
+
+    /** Column name TotalAcctCr */
+    public static final String COLUMNNAME_TotalAcctCr = "TotalAcctCr";
+
+	/** Set TotalAcctCr.
+	  * Total créditos en moneda del esquema contable
+	  */
+	public void setTotalAcctCr (BigDecimal TotalAcctCr);
+
+	/** Get TotalAcctCr.
+	  * Total créditos en moneda del esquema contable
+	  */
+	public BigDecimal getTotalAcctCr();
+
+    /** Column name TotalAcctDr */
+    public static final String COLUMNNAME_TotalAcctDr = "TotalAcctDr";
+
+	/** Set TotalAcctDr.
+	  * Total débitos en moneda del esquema contable
+	  */
+	public void setTotalAcctDr (BigDecimal TotalAcctDr);
+
+	/** Get TotalAcctDr.
+	  * Total débitos en moneda del esquema contable
+	  */
+	public BigDecimal getTotalAcctDr();
+
+    /** Column name TotalAmt */
+    public static final String COLUMNNAME_TotalAmt = "TotalAmt";
+
+	/** Set Total Amount.
+	  * Total Amount
+	  */
+	public void setTotalAmt (BigDecimal TotalAmt);
+
+	/** Get Total Amount.
+	  * Total Amount
+	  */
+	public BigDecimal getTotalAmt();
 
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";

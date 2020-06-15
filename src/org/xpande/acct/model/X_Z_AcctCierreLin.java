@@ -32,7 +32,7 @@ public class X_Z_AcctCierreLin extends PO implements I_Z_AcctCierreLin, I_Persis
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20200613L;
+	private static final long serialVersionUID = 20200615L;
 
     /** Standard Constructor */
     public X_Z_AcctCierreLin (Properties ctx, int Z_AcctCierreLin_ID, String trxName)
@@ -44,8 +44,14 @@ public class X_Z_AcctCierreLin extends PO implements I_Z_AcctCierreLin, I_Persis
 			setAmtAcctCrTo (Env.ZERO);
 			setAmtAcctDr (Env.ZERO);
 			setAmtAcctDrTo (Env.ZERO);
+			setAmtSourceCr (Env.ZERO);
+			setAmtSourceCrTo (Env.ZERO);
+			setAmtSourceDr (Env.ZERO);
+			setAmtSourceDrTo (Env.ZERO);
+			setC_Currency_ID (0);
 			setC_ElementValue_ID (0);
 			setCodigoCuenta (null);
+			setDiffAmtSource (Env.ZERO);
 			setDifferenceAmt (Env.ZERO);
 			setZ_AcctCierre_ID (0);
 			setZ_AcctCierreLin_ID (0);
@@ -160,6 +166,114 @@ public class X_Z_AcctCierreLin extends PO implements I_Z_AcctCierreLin, I_Persis
 		return bd;
 	}
 
+	/** Set Source Credit.
+		@param AmtSourceCr 
+		Source Credit Amount
+	  */
+	public void setAmtSourceCr (BigDecimal AmtSourceCr)
+	{
+		set_Value (COLUMNNAME_AmtSourceCr, AmtSourceCr);
+	}
+
+	/** Get Source Credit.
+		@return Source Credit Amount
+	  */
+	public BigDecimal getAmtSourceCr () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AmtSourceCr);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
+	/** Set AmtSourceCrTo.
+		@param AmtSourceCrTo 
+		Monto crédito destino en moneda origen
+	  */
+	public void setAmtSourceCrTo (BigDecimal AmtSourceCrTo)
+	{
+		set_Value (COLUMNNAME_AmtSourceCrTo, AmtSourceCrTo);
+	}
+
+	/** Get AmtSourceCrTo.
+		@return Monto crédito destino en moneda origen
+	  */
+	public BigDecimal getAmtSourceCrTo () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AmtSourceCrTo);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
+	/** Set Source Debit.
+		@param AmtSourceDr 
+		Source Debit Amount
+	  */
+	public void setAmtSourceDr (BigDecimal AmtSourceDr)
+	{
+		set_Value (COLUMNNAME_AmtSourceDr, AmtSourceDr);
+	}
+
+	/** Get Source Debit.
+		@return Source Debit Amount
+	  */
+	public BigDecimal getAmtSourceDr () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AmtSourceDr);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
+	/** Set AmtSourceDrTo.
+		@param AmtSourceDrTo 
+		Monto débito destino en moneda origen
+	  */
+	public void setAmtSourceDrTo (BigDecimal AmtSourceDrTo)
+	{
+		set_Value (COLUMNNAME_AmtSourceDrTo, AmtSourceDrTo);
+	}
+
+	/** Get AmtSourceDrTo.
+		@return Monto débito destino en moneda origen
+	  */
+	public BigDecimal getAmtSourceDrTo () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AmtSourceDrTo);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
+	public I_C_Currency getC_Currency() throws RuntimeException
+    {
+		return (I_C_Currency)MTable.get(getCtx(), I_C_Currency.Table_Name)
+			.getPO(getC_Currency_ID(), get_TrxName());	}
+
+	/** Set Currency.
+		@param C_Currency_ID 
+		The Currency for this record
+	  */
+	public void setC_Currency_ID (int C_Currency_ID)
+	{
+		if (C_Currency_ID < 1) 
+			set_Value (COLUMNNAME_C_Currency_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Currency_ID, Integer.valueOf(C_Currency_ID));
+	}
+
+	/** Get Currency.
+		@return The Currency for this record
+	  */
+	public int getC_Currency_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	public I_C_ElementValue getC_ElementValue() throws RuntimeException
     {
 		return (I_C_ElementValue)MTable.get(getCtx(), I_C_ElementValue.Table_Name)
@@ -203,6 +317,26 @@ public class X_Z_AcctCierreLin extends PO implements I_Z_AcctCierreLin, I_Persis
 	public String getCodigoCuenta () 
 	{
 		return (String)get_Value(COLUMNNAME_CodigoCuenta);
+	}
+
+	/** Set DiffAmtSource.
+		@param DiffAmtSource 
+		Diferencia de monto fuente
+	  */
+	public void setDiffAmtSource (BigDecimal DiffAmtSource)
+	{
+		set_Value (COLUMNNAME_DiffAmtSource, DiffAmtSource);
+	}
+
+	/** Get DiffAmtSource.
+		@return Diferencia de monto fuente
+	  */
+	public BigDecimal getDiffAmtSource () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_DiffAmtSource);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
 	}
 
 	/** Set Difference.

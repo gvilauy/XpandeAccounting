@@ -33,7 +33,7 @@ public class X_Z_AcctCierre extends PO implements I_Z_AcctCierre, I_Persistent
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20200613L;
+	private static final long serialVersionUID = 20200615L;
 
     /** Standard Constructor */
     public X_Z_AcctCierre (Properties ctx, int Z_AcctCierre_ID, String trxName)
@@ -48,6 +48,7 @@ public class X_Z_AcctCierre extends PO implements I_Z_AcctCierre, I_Persistent
 // @#Date@
 			setDocAction (null);
 // CO
+			setDocBaseType (null);
 			setDocStatus (null);
 // DR
 			setDocumentNo (null);
@@ -246,6 +247,166 @@ public class X_Z_AcctCierre extends PO implements I_Z_AcctCierre, I_Persistent
 		return (String)get_Value(COLUMNNAME_DocAction);
 	}
 
+	/** DocBaseType AD_Reference_ID=183 */
+	public static final int DOCBASETYPE_AD_Reference_ID=183;
+	/** GL Journal = GLJ */
+	public static final String DOCBASETYPE_GLJournal = "GLJ";
+	/** GL Document = GLD */
+	public static final String DOCBASETYPE_GLDocument = "GLD";
+	/** AP Invoice = API */
+	public static final String DOCBASETYPE_APInvoice = "API";
+	/** AP Payment = APP */
+	public static final String DOCBASETYPE_APPayment = "APP";
+	/** AR Invoice = ARI */
+	public static final String DOCBASETYPE_ARInvoice = "ARI";
+	/** AR Receipt = ARR */
+	public static final String DOCBASETYPE_ARReceipt = "ARR";
+	/** Sales Order = SOO */
+	public static final String DOCBASETYPE_SalesOrder = "SOO";
+	/** AR Pro Forma Invoice = ARF */
+	public static final String DOCBASETYPE_ARProFormaInvoice = "ARF";
+	/** Material Delivery = MMS */
+	public static final String DOCBASETYPE_MaterialDelivery = "MMS";
+	/** Material Receipt = MMR */
+	public static final String DOCBASETYPE_MaterialReceipt = "MMR";
+	/** Material Movement = MMM */
+	public static final String DOCBASETYPE_MaterialMovement = "MMM";
+	/** Purchase Order = POO */
+	public static final String DOCBASETYPE_PurchaseOrder = "POO";
+	/** Purchase Requisition = POR */
+	public static final String DOCBASETYPE_PurchaseRequisition = "POR";
+	/** Material Physical Inventory = MMI */
+	public static final String DOCBASETYPE_MaterialPhysicalInventory = "MMI";
+	/** AP Credit Memo = APC */
+	public static final String DOCBASETYPE_APCreditMemo = "APC";
+	/** AR Credit Memo = ARC */
+	public static final String DOCBASETYPE_ARCreditMemo = "ARC";
+	/** Bank Statement = CMB */
+	public static final String DOCBASETYPE_BankStatement = "CMB";
+	/** Cash Journal = CMC */
+	public static final String DOCBASETYPE_CashJournal = "CMC";
+	/** Payment Allocation = CMA */
+	public static final String DOCBASETYPE_PaymentAllocation = "CMA";
+	/** Material Production = MMP */
+	public static final String DOCBASETYPE_MaterialProduction = "MMP";
+	/** Match Invoice = MXI */
+	public static final String DOCBASETYPE_MatchInvoice = "MXI";
+	/** Match PO = MXP */
+	public static final String DOCBASETYPE_MatchPO = "MXP";
+	/** Project Issue = PJI */
+	public static final String DOCBASETYPE_ProjectIssue = "PJI";
+	/** Maintenance Order = MOF */
+	public static final String DOCBASETYPE_MaintenanceOrder = "MOF";
+	/** Manufacturing Order = MOP */
+	public static final String DOCBASETYPE_ManufacturingOrder = "MOP";
+	/** Quality Order = MQO */
+	public static final String DOCBASETYPE_QualityOrder = "MQO";
+	/** Payroll = HRP */
+	public static final String DOCBASETYPE_Payroll = "HRP";
+	/** Distribution Order = DOO */
+	public static final String DOCBASETYPE_DistributionOrder = "DOO";
+	/** Manufacturing Cost Collector = MCC */
+	public static final String DOCBASETYPE_ManufacturingCostCollector = "MCC";
+	/** Warehouse Management Order = WMO */
+	public static final String DOCBASETYPE_WarehouseManagementOrder = "WMO";
+	/** Manufacturing Planned Order = MPO */
+	public static final String DOCBASETYPE_ManufacturingPlannedOrder = "MPO";
+	/** AP Payment Selection = APS */
+	public static final String DOCBASETYPE_APPaymentSelection = "APS";
+	/** Sales Commission = SOC */
+	public static final String DOCBASETYPE_SalesCommission = "SOC";
+	/** Fixed Assets Addition = FAA */
+	public static final String DOCBASETYPE_FixedAssetsAddition = "FAA";
+	/** Fixed Assets Disposal = FAD */
+	public static final String DOCBASETYPE_FixedAssetsDisposal = "FAD";
+	/** Fixed Assets Depreciation = FDP */
+	public static final String DOCBASETYPE_FixedAssetsDepreciation = "FDP";
+	/** PLV Precios de Proveedor = PLV */
+	public static final String DOCBASETYPE_PLVPreciosDeProveedor = "PLV";
+	/** Retail Confirmacion Etiquetas = RCE */
+	public static final String DOCBASETYPE_RetailConfirmacionEtiquetas = "RCE";
+	/** PVP Actualizacion Precios de Venta = PVP */
+	public static final String DOCBASETYPE_PVPActualizacionPreciosDeVenta = "PVP";
+	/** RCP Retail Comunicacion POS = RCP */
+	public static final String DOCBASETYPE_RCPRetailComunicacionPOS = "RCP";
+	/** RGU Emision de Resguardos = RGU */
+	public static final String DOCBASETYPE_RGUEmisionDeResguardos = "RGU";
+	/** RGC Emision de Contra-Resguardos = RGC */
+	public static final String DOCBASETYPE_RGCEmisionDeContra_Resguardos = "RGC";
+	/** OPG Generacion de Ordenes de Pago = OPG */
+	public static final String DOCBASETYPE_OPGGeneracionDeOrdenesDePago = "OPG";
+	/** OOP Ordenes de Pago = OOP */
+	public static final String DOCBASETYPE_OOPOrdenesDePago = "OOP";
+	/** EMP Emision Medio Pago = EMP */
+	public static final String DOCBASETYPE_EMPEmisionMedioPago = "EMP";
+	/** RMP Reemplazo Medio de Pago = RMP */
+	public static final String DOCBASETYPE_RMPReemplazoMedioDePago = "RMP";
+	/** NCG Generacion de Notas de Cŕedito = NCG */
+	public static final String DOCBASETYPE_NCGGeneracionDeNotasDeCŕedito = "NCG";
+	/** ODV Orden de Devolución a Proveedor = ODV */
+	public static final String DOCBASETYPE_ODVOrdenDeDevoluciónAProveedor = "ODV";
+	/** OFP Oferta Periódica Retail = OFP */
+	public static final String DOCBASETYPE_OFPOfertaPeriódicaRetail = "OFP";
+	/** PPD Pago Proveedor = PPD */
+	public static final String DOCBASETYPE_PPDPagoProveedor = "PPD";
+	/** PPR Recibo de Pagos Emitidos = PPR */
+	public static final String DOCBASETYPE_PPRReciboDePagosEmitidos = "PPR";
+	/** PPA Anticipo a Proveedor = PPA */
+	public static final String DOCBASETYPE_PPAAnticipoAProveedor = "PPA";
+	/** RDI Remito Diferencia Factura = RDI */
+	public static final String DOCBASETYPE_RDIRemitoDiferenciaFactura = "RDI";
+	/** RDC Remito Diferencia Cantidad = RDC */
+	public static final String DOCBASETYPE_RDCRemitoDiferenciaCantidad = "RDC";
+	/** CCD Cobranza a Cliente = CCD */
+	public static final String DOCBASETYPE_CCDCobranzaACliente = "CCD";
+	/** GEN General = GEN */
+	public static final String DOCBASETYPE_GENGeneral = "GEN";
+	/** CII Carga Inicial Invoices = CII */
+	public static final String DOCBASETYPE_CIICargaInicialInvoices = "CII";
+	/** TSP Transferencia Saldo a Pagar = TSP */
+	public static final String DOCBASETYPE_TSPTransferenciaSaldoAPagar = "TSP";
+	/** CIM Carga Inicial Medios de Pago = CIM */
+	public static final String DOCBASETYPE_CIMCargaInicialMediosDePago = "CIM";
+	/** CIJ Carga Inicial Asientos Contables = CIJ */
+	public static final String DOCBASETYPE_CIJCargaInicialAsientosContables = "CIJ";
+	/** AVG Generacion de Asientos de Venta POS = AVG */
+	public static final String DOCBASETYPE_AVGGeneracionDeAsientosDeVentaPOS = "AVG";
+	/** DFC Diferencia de Cambio = DFC */
+	public static final String DOCBASETYPE_DFCDiferenciaDeCambio = "DFC";
+	/** FME Formulario Movimiento Efectivo = FME */
+	public static final String DOCBASETYPE_FMEFormularioMovimientoEfectivo = "FME";
+	/** DPT Deposito Medio Pago Tercero = DPT */
+	public static final String DOCBASETYPE_DPTDepositoMedioPagoTercero = "DPT";
+	/** AVR Asiento de Reclasificación de Medios de Pago = AVR */
+	public static final String DOCBASETYPE_AVRAsientoDeReclasificaciónDeMediosDePago = "AVR";
+	/** CEX Carga Extractos Bancarios = CEX */
+	public static final String DOCBASETYPE_CEXCargaExtractosBancarios = "CEX";
+	/** CIP Carga Inicial de Pagoa / Cobros = CIP */
+	public static final String DOCBASETYPE_CIPCargaInicialDePagoaCobros = "CIP";
+	/** CSC Carga Scanntech Comprobantes = CSC */
+	public static final String DOCBASETYPE_CSCCargaScanntechComprobantes = "CSC";
+	/** CJD Cierre de Cuentas Diferenciales = CJD */
+	public static final String DOCBASETYPE_CJDCierreDeCuentasDiferenciales = "CJD";
+	/** CJI Cierre de Cuentas Integrales = CJI */
+	public static final String DOCBASETYPE_CJICierreDeCuentasIntegrales = "CJI";
+	/** Set Document BaseType.
+		@param DocBaseType 
+		Logical type of document
+	  */
+	public void setDocBaseType (String DocBaseType)
+	{
+
+		set_Value (COLUMNNAME_DocBaseType, DocBaseType);
+	}
+
+	/** Get Document BaseType.
+		@return Logical type of document
+	  */
+	public String getDocBaseType () 
+	{
+		return (String)get_Value(COLUMNNAME_DocBaseType);
+	}
+
 	/** DocStatus AD_Reference_ID=131 */
 	public static final int DOCSTATUS_AD_Reference_ID=131;
 	/** Drafted = DR */
@@ -432,6 +593,66 @@ public class X_Z_AcctCierre extends PO implements I_Z_AcctCierre, I_Persistent
 			return "Y".equals(oo);
 		}
 		return false;
+	}
+
+	/** Set TotalAcctCr.
+		@param TotalAcctCr 
+		Total créditos en moneda del esquema contable
+	  */
+	public void setTotalAcctCr (BigDecimal TotalAcctCr)
+	{
+		set_Value (COLUMNNAME_TotalAcctCr, TotalAcctCr);
+	}
+
+	/** Get TotalAcctCr.
+		@return Total créditos en moneda del esquema contable
+	  */
+	public BigDecimal getTotalAcctCr () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_TotalAcctCr);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
+	/** Set TotalAcctDr.
+		@param TotalAcctDr 
+		Total débitos en moneda del esquema contable
+	  */
+	public void setTotalAcctDr (BigDecimal TotalAcctDr)
+	{
+		set_Value (COLUMNNAME_TotalAcctDr, TotalAcctDr);
+	}
+
+	/** Get TotalAcctDr.
+		@return Total débitos en moneda del esquema contable
+	  */
+	public BigDecimal getTotalAcctDr () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_TotalAcctDr);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
+	/** Set Total Amount.
+		@param TotalAmt 
+		Total Amount
+	  */
+	public void setTotalAmt (BigDecimal TotalAmt)
+	{
+		set_Value (COLUMNNAME_TotalAmt, TotalAmt);
+	}
+
+	/** Get Total Amount.
+		@return Total Amount
+	  */
+	public BigDecimal getTotalAmt () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_TotalAmt);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
 	}
 
 	/** Set Immutable Universally Unique Identifier.

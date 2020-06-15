@@ -115,6 +115,73 @@ public interface I_Z_AcctCierreLin
 	  */
 	public BigDecimal getAmtAcctDrTo();
 
+    /** Column name AmtSourceCr */
+    public static final String COLUMNNAME_AmtSourceCr = "AmtSourceCr";
+
+	/** Set Source Credit.
+	  * Source Credit Amount
+	  */
+	public void setAmtSourceCr (BigDecimal AmtSourceCr);
+
+	/** Get Source Credit.
+	  * Source Credit Amount
+	  */
+	public BigDecimal getAmtSourceCr();
+
+    /** Column name AmtSourceCrTo */
+    public static final String COLUMNNAME_AmtSourceCrTo = "AmtSourceCrTo";
+
+	/** Set AmtSourceCrTo.
+	  * Monto crédito destino en moneda origen
+	  */
+	public void setAmtSourceCrTo (BigDecimal AmtSourceCrTo);
+
+	/** Get AmtSourceCrTo.
+	  * Monto crédito destino en moneda origen
+	  */
+	public BigDecimal getAmtSourceCrTo();
+
+    /** Column name AmtSourceDr */
+    public static final String COLUMNNAME_AmtSourceDr = "AmtSourceDr";
+
+	/** Set Source Debit.
+	  * Source Debit Amount
+	  */
+	public void setAmtSourceDr (BigDecimal AmtSourceDr);
+
+	/** Get Source Debit.
+	  * Source Debit Amount
+	  */
+	public BigDecimal getAmtSourceDr();
+
+    /** Column name AmtSourceDrTo */
+    public static final String COLUMNNAME_AmtSourceDrTo = "AmtSourceDrTo";
+
+	/** Set AmtSourceDrTo.
+	  * Monto débito destino en moneda origen
+	  */
+	public void setAmtSourceDrTo (BigDecimal AmtSourceDrTo);
+
+	/** Get AmtSourceDrTo.
+	  * Monto débito destino en moneda origen
+	  */
+	public BigDecimal getAmtSourceDrTo();
+
+    /** Column name C_Currency_ID */
+    public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
+
+	/** Set Currency.
+	  * The Currency for this record
+	  */
+	public void setC_Currency_ID (int C_Currency_ID);
+
+	/** Get Currency.
+	  * The Currency for this record
+	  */
+	public int getC_Currency_ID();
+
+	public I_C_Currency getC_Currency() throws RuntimeException;
+
     /** Column name C_ElementValue_ID */
     public static final String COLUMNNAME_C_ElementValue_ID = "C_ElementValue_ID";
 
@@ -158,6 +225,19 @@ public interface I_Z_AcctCierreLin
 	  * User who created this records
 	  */
 	public int getCreatedBy();
+
+    /** Column name DiffAmtSource */
+    public static final String COLUMNNAME_DiffAmtSource = "DiffAmtSource";
+
+	/** Set DiffAmtSource.
+	  * Diferencia de monto fuente
+	  */
+	public void setDiffAmtSource (BigDecimal DiffAmtSource);
+
+	/** Get DiffAmtSource.
+	  * Diferencia de monto fuente
+	  */
+	public BigDecimal getDiffAmtSource();
 
     /** Column name DifferenceAmt */
     public static final String COLUMNNAME_DifferenceAmt = "DifferenceAmt";
