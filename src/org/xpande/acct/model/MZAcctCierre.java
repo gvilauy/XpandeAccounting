@@ -21,6 +21,7 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -427,7 +428,7 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 			DB.executeUpdateEx(action, get_TrxName());
 
 			// Actualizo monto de Resultado del Ejercicio para cierre de cuentas integrales
-			if (docType.getDocBaseType().equalsIgnoreCase("CJI")){
+			if (docType.getDocBaseType().equalsIgnoreCase("CJD")){
 
 				action = " update z_acctcierre set totalamt = totalacctdr - totalacctcr " +
 						" where z_acctcierre_id =" + this.get_ID();
@@ -462,7 +463,7 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 					" where f.ad_client_id =" + this.getAD_Client_ID() +
 					" and f.ad_org_id =" + this.getAD_Org_ID() +
 					" and f.c_acctschema_id =" + this.getC_AcctSchema_ID() +
-					" and f.dateacct <='" + this.getDateAcct() + "' " +
+					" and f.dateacct between '" + this.getStartDate() + "' and '" + this.getDateAcct() + "' " +
 					" and ev.accounttype in ('E','R') " +
 					" and ev.issummary='N' " +
 					" group by f.account_id " +
@@ -544,6 +545,9 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 		ResultSet rs = null;
 
 		try{
+
+			MAcctSchema acctSchema = ((MAcctSchema) this.getC_AcctSchema());
+
 			sql = " select f.account_id, f.c_currency_id, " +
 					" sum(round(f.amtsourcedr,2)) as sumsourcedr, sum(round(f.amtsourcecr,2)) as sumsourcecr, " +
 					" sum(round(f.amtacctdr,2)) as sumdr, sum(round(f.amtacctcr,2)) as sumcr " +
@@ -552,7 +556,7 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 					" where f.ad_client_id =" + this.getAD_Client_ID() +
 					" and f.ad_org_id =" + this.getAD_Org_ID() +
 					" and f.c_acctschema_id =" + this.getC_AcctSchema_ID() +
-					" and f.dateacct <='" + this.getDateAcct() + "' " +
+					" and f.dateacct between '" + this.getStartDate() + "' and '" + this.getDateAcct() + "' " +
 					" and ev.accounttype in ('A','L','O') " +
 					" and ev.issummary='N' " +
 					" group by f.account_id, f.c_currency_id " +
@@ -564,29 +568,52 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 			while (rs.next()){
 
 				MElementValue elementValue = new MElementValue(getCtx(), rs.getInt("account_id"), null);
+				if (elementValue.getC_Currency_ID() <= 0){
+					elementValue.setC_Currency_ID(acctSchema.getC_Currency_ID());
+				}
 
-				MZAcctCierreLin cierreLin = new MZAcctCierreLin(getCtx(), 0, get_TrxName());
-				cierreLin.setAD_Org_ID(this.getAD_Org_ID());
-				cierreLin.setZ_AcctCierre_ID(this.get_ID());
-				cierreLin.setC_ElementValue_ID(elementValue.get_ID());
-				cierreLin.setCodigoCuenta(elementValue.getValue());
-				cierreLin.setC_Currency_ID(rs.getInt("c_currency_id"));
-				cierreLin.setAmtAcctDr(rs.getBigDecimal("sumdr"));
-				cierreLin.setAmtAcctCr(rs.getBigDecimal("sumcr"));
-				cierreLin.setAmtSourceDr(rs.getBigDecimal("sumsourcedr"));
-				cierreLin.setAmtSourceCr(rs.getBigDecimal("sumsourcecr"));
-				cierreLin.setDifferenceAmt(Env.ZERO);
-				cierreLin.setAmtAcctDrTo(Env.ZERO);
-				cierreLin.setAmtAcctCrTo(Env.ZERO);
-				cierreLin.setDiffAmtSource(Env.ZERO);
-				cierreLin.setAmtSourceDrTo(Env.ZERO);
-				cierreLin.setAmtSourceCrTo(Env.ZERO);
+				boolean newLinea = true;
+				MZAcctCierreLin cierreLin = this.getLineByAccount(elementValue.get_ID());
+				if ((cierreLin == null) || (cierreLin.get_ID() <= 0)){
+					cierreLin = new MZAcctCierreLin(getCtx(), 0, get_TrxName());
+				}
+				else {
+					newLinea = false;
+				}
+
+				if (newLinea){
+					cierreLin.setAD_Org_ID(this.getAD_Org_ID());
+					cierreLin.setZ_AcctCierre_ID(this.get_ID());
+					cierreLin.setC_ElementValue_ID(elementValue.get_ID());
+					cierreLin.setCodigoCuenta(elementValue.getValue());
+					cierreLin.setC_Currency_ID(elementValue.getC_Currency_ID());
+					cierreLin.setAmtAcctDr(rs.getBigDecimal("sumdr"));
+					cierreLin.setAmtAcctCr(rs.getBigDecimal("sumcr"));
+					cierreLin.setAmtSourceDr(Env.ZERO);
+					cierreLin.setAmtSourceCr(Env.ZERO);
+					cierreLin.setDifferenceAmt(Env.ZERO);
+					cierreLin.setAmtAcctDrTo(Env.ZERO);
+					cierreLin.setAmtAcctCrTo(Env.ZERO);
+					cierreLin.setDiffAmtSource(Env.ZERO);
+					cierreLin.setAmtSourceDrTo(Env.ZERO);
+					cierreLin.setAmtSourceCrTo(Env.ZERO);
+				}
 
 				if ((elementValue.getAccountType().equalsIgnoreCase("A"))
 						|| (elementValue.getAccountType().equalsIgnoreCase("O"))){
 
-					cierreLin.setDifferenceAmt(cierreLin.getAmtAcctCr().subtract(cierreLin.getAmtAcctDr()));
-					cierreLin.setDiffAmtSource(cierreLin.getAmtSourceCr().subtract(cierreLin.getAmtSourceDr()));
+					if (newLinea){
+						cierreLin.setDifferenceAmt(cierreLin.getAmtAcctCr().subtract(cierreLin.getAmtAcctDr()));
+					}
+					else {
+						cierreLin.setDifferenceAmt(cierreLin.getDifferenceAmt().add(cierreLin.getAmtAcctCr().subtract(cierreLin.getAmtAcctDr())));
+					}
+
+					if (elementValue.getC_Currency_ID() == rs.getInt("c_currency_id")){
+						cierreLin.setAmtSourceDr(rs.getBigDecimal("sumsourcedr"));
+						cierreLin.setAmtSourceCr(rs.getBigDecimal("sumsourcecr"));
+						cierreLin.setDiffAmtSource(cierreLin.getAmtSourceCr().subtract(cierreLin.getAmtSourceDr()));
+					}
 
 					// Acct
 					if (cierreLin.getDifferenceAmt().compareTo(Env.ZERO) < 0){
@@ -606,8 +633,18 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 				}
 				else if (elementValue.getAccountType().equalsIgnoreCase("L")){
 
-					cierreLin.setDifferenceAmt(cierreLin.getAmtAcctDr().subtract(cierreLin.getAmtAcctCr()));
-					cierreLin.setDiffAmtSource(cierreLin.getAmtSourceCr().subtract(cierreLin.getAmtSourceCr()));
+					if (newLinea){
+						cierreLin.setDifferenceAmt(cierreLin.getAmtAcctDr().subtract(cierreLin.getAmtAcctCr()));
+					}
+					else {
+						cierreLin.setDifferenceAmt(cierreLin.getDifferenceAmt().add(cierreLin.getAmtAcctDr().subtract(cierreLin.getAmtAcctCr())));
+					}
+
+					if (elementValue.getC_Currency_ID() == rs.getInt("c_currency_id")) {
+						cierreLin.setAmtSourceDr(rs.getBigDecimal("sumsourcedr"));
+						cierreLin.setAmtSourceCr(rs.getBigDecimal("sumsourcecr"));
+						cierreLin.setDiffAmtSource(cierreLin.getAmtSourceCr().subtract(cierreLin.getAmtSourceCr()));
+					}
 
 					// Acct
 					if (cierreLin.getDifferenceAmt().compareTo(Env.ZERO) < 0){
@@ -638,5 +675,35 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 			rs = null; pstmt = null;
 		}
 
+	}
+
+	/***
+	 * Obtiene y retorna linea de este documento según ID de cuenta contable recibido.
+	 * Xpande. Created by Gabriel Vila on 6/17/20.
+	 * @param cElementValueID
+	 * @return
+	 */
+	private MZAcctCierreLin getLineByAccount(int cElementValueID) {
+
+		String whereClause = X_Z_AcctCierreLin.COLUMNNAME_Z_AcctCierre_ID + " =" + this.get_ID() +
+				" AND " + X_Z_AcctCierreLin.COLUMNNAME_C_ElementValue_ID + " =" + cElementValueID;
+
+		MZAcctCierreLin model = new Query(getCtx(), I_Z_AcctCierreLin.Table_Name, whereClause, get_TrxName()).first();
+
+		return model;
+	}
+
+	/***
+	 * Obtiene y retorna lineas de este documento.
+	 * Xpande. Created by Gabriel Vila on 6/17/20.
+	 * @return
+	 */
+	public List<MZAcctCierreLin> getLines() {
+
+		String whereClause = X_Z_AcctCierreLin.COLUMNNAME_Z_AcctCierre_ID + " =" + this.get_ID();
+
+		List<MZAcctCierreLin> lines = new Query(getCtx(), I_Z_AcctCierreLin.Table_Name, whereClause, get_TrxName()).list();
+
+		return lines;
 	}
 }

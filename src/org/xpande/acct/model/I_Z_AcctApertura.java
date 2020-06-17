@@ -21,17 +21,17 @@ import java.sql.Timestamp;
 import org.compiere.model.*;
 import org.compiere.util.KeyNamePair;
 
-/** Generated Interface for Z_AcctCierre
+/** Generated Interface for Z_AcctApertura
  *  @author Adempiere (generated) 
  *  @version Release 3.9.0
  */
-public interface I_Z_AcctCierre 
+public interface I_Z_AcctApertura 
 {
 
-    /** TableName=Z_AcctCierre */
-    public static final String Table_Name = "Z_AcctCierre";
+    /** TableName=Z_AcctApertura */
+    public static final String Table_Name = "Z_AcctApertura";
 
-    /** AD_Table_ID=1000351 */
+    /** AD_Table_ID=1000353 */
     public static final int Table_ID = MTable.getTable_ID(Table_Name);
 
     KeyNamePair Model = new KeyNamePair(Table_ID, Table_Name);
@@ -161,19 +161,6 @@ public interface I_Z_AcctCierre
 	  */
 	public String getDocAction();
 
-    /** Column name DocBaseType */
-    public static final String COLUMNNAME_DocBaseType = "DocBaseType";
-
-	/** Set Document BaseType.
-	  * Logical type of document
-	  */
-	public void setDocBaseType (String DocBaseType);
-
-	/** Get Document BaseType.
-	  * Logical type of document
-	  */
-	public String getDocBaseType();
-
     /** Column name DocStatus */
     public static final String COLUMNNAME_DocStatus = "DocStatus";
 
@@ -239,15 +226,6 @@ public interface I_Z_AcctCierre
 	  */
 	public boolean isPosted();
 
-    /** Column name ProcessButton */
-    public static final String COLUMNNAME_ProcessButton = "ProcessButton";
-
-	/** Set ProcessButton	  */
-	public void setProcessButton (String ProcessButton);
-
-	/** Get ProcessButton	  */
-	public String getProcessButton();
-
     /** Column name Processed */
     public static final String COLUMNNAME_Processed = "Processed";
 
@@ -282,45 +260,6 @@ public interface I_Z_AcctCierre
 
 	/** Get Process Now	  */
 	public boolean isProcessing();
-
-    /** Column name StartDate */
-    public static final String COLUMNNAME_StartDate = "StartDate";
-
-	/** Set Start Date.
-	  * First effective day (inclusive)
-	  */
-	public void setStartDate (Timestamp StartDate);
-
-	/** Get Start Date.
-	  * First effective day (inclusive)
-	  */
-	public Timestamp getStartDate();
-
-    /** Column name TotalAcctCr */
-    public static final String COLUMNNAME_TotalAcctCr = "TotalAcctCr";
-
-	/** Set TotalAcctCr.
-	  * Total créditos en moneda del esquema contable
-	  */
-	public void setTotalAcctCr (BigDecimal TotalAcctCr);
-
-	/** Get TotalAcctCr.
-	  * Total créditos en moneda del esquema contable
-	  */
-	public BigDecimal getTotalAcctCr();
-
-    /** Column name TotalAcctDr */
-    public static final String COLUMNNAME_TotalAcctDr = "TotalAcctDr";
-
-	/** Set TotalAcctDr.
-	  * Total débitos en moneda del esquema contable
-	  */
-	public void setTotalAcctDr (BigDecimal TotalAcctDr);
-
-	/** Get TotalAcctDr.
-	  * Total débitos en moneda del esquema contable
-	  */
-	public BigDecimal getTotalAcctDr();
 
     /** Column name TotalAmt */
     public static final String COLUMNNAME_TotalAmt = "TotalAmt";
@@ -372,15 +311,4 @@ public interface I_Z_AcctCierre
 
 	/** Get Z_AcctApertura ID	  */
 	public int getZ_AcctApertura_ID();
-
-	public I_Z_AcctApertura getZ_AcctApertura() throws RuntimeException;
-
-    /** Column name Z_AcctCierre_ID */
-    public static final String COLUMNNAME_Z_AcctCierre_ID = "Z_AcctCierre_ID";
-
-	/** Set Z_AcctCierre ID	  */
-	public void setZ_AcctCierre_ID (int Z_AcctCierre_ID);
-
-	/** Get Z_AcctCierre ID	  */
-	public int getZ_AcctCierre_ID();
 }
