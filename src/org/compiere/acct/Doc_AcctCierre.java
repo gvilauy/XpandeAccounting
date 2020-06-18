@@ -7,12 +7,6 @@ import org.compiere.model.MElementValue;
 import org.compiere.util.Env;
 import org.xpande.acct.model.MZAcctCierre;
 import org.xpande.acct.model.MZAcctCierreLin;
-import org.xpande.acct.model.MZAcctFactDet;
-import org.xpande.financial.model.MZResguardoSocio;
-import org.xpande.financial.model.MZResguardoSocioRet;
-import org.xpande.financial.model.MZRetencionSocio;
-import org.xpande.financial.model.MZRetencionSocioAcct;
-
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.ArrayList;
@@ -75,7 +69,13 @@ public class Doc_AcctCierre extends Doc {
 
         // Para cierre de cuentas diferenciales, el total es el resultado del ejercicio
         if (this.acctCierre.getDocBaseType().equalsIgnoreCase("CJD")){
-            retValue = retValue.add(this.acctCierre.getTotalAmt());
+            if (this.acctCierre.getTotalAmt().compareTo(Env.ZERO) > 0){
+                retValue = retValue.subtract(this.acctCierre.getTotalAmt());
+            }
+            else{
+                retValue = retValue.add(this.acctCierre.getTotalAmt().negate());
+            }
+
             sb.append(this.acctCierre.getTotalAmt());
         }
 

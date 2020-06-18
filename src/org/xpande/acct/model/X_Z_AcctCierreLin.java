@@ -32,7 +32,7 @@ public class X_Z_AcctCierreLin extends PO implements I_Z_AcctCierreLin, I_Persis
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20200615L;
+	private static final long serialVersionUID = 20200617L;
 
     /** Standard Constructor */
     public X_Z_AcctCierreLin (Properties ctx, int Z_AcctCierreLin_ID, String trxName)
@@ -317,6 +317,26 @@ public class X_Z_AcctCierreLin extends PO implements I_Z_AcctCierreLin, I_Persis
 	public String getCodigoCuenta () 
 	{
 		return (String)get_Value(COLUMNNAME_CodigoCuenta);
+	}
+
+	/** Set Rate.
+		@param CurrencyRate 
+		Currency Conversion Rate
+	  */
+	public void setCurrencyRate (BigDecimal CurrencyRate)
+	{
+		set_Value (COLUMNNAME_CurrencyRate, CurrencyRate);
+	}
+
+	/** Get Rate.
+		@return Currency Conversion Rate
+	  */
+	public BigDecimal getCurrencyRate () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_CurrencyRate);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
 	}
 
 	/** Set DiffAmtSource.

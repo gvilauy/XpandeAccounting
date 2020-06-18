@@ -226,6 +226,19 @@ public interface I_Z_AcctCierreLin
 	  */
 	public int getCreatedBy();
 
+    /** Column name CurrencyRate */
+    public static final String COLUMNNAME_CurrencyRate = "CurrencyRate";
+
+	/** Set Rate.
+	  * Currency Conversion Rate
+	  */
+	public void setCurrencyRate (BigDecimal CurrencyRate);
+
+	/** Get Rate.
+	  * Currency Conversion Rate
+	  */
+	public BigDecimal getCurrencyRate();
+
     /** Column name DiffAmtSource */
     public static final String COLUMNNAME_DiffAmtSource = "DiffAmtSource";
 

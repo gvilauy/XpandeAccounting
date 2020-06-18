@@ -18,9 +18,11 @@ package org.xpande.acct.model;
 
 import java.io.File;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 
@@ -31,6 +33,7 @@ import org.compiere.process.DocOptions;
 import org.compiere.process.DocumentEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.xpande.core.utils.CurrencyUtils;
 
 /** Generated Model for Z_AcctCierre
  *  @author Adempiere (generated) 
@@ -546,10 +549,11 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 
 		try{
 
+			HashMap<Integer, BigDecimal> hashRates = new HashMap<Integer, BigDecimal>();
+
 			MAcctSchema acctSchema = ((MAcctSchema) this.getC_AcctSchema());
 
-			sql = " select f.account_id, f.c_currency_id, " +
-					" sum(round(f.amtsourcedr,2)) as sumsourcedr, sum(round(f.amtsourcecr,2)) as sumsourcecr, " +
+			sql = " select f.account_id, " +
 					" sum(round(f.amtacctdr,2)) as sumdr, sum(round(f.amtacctcr,2)) as sumcr " +
 					" from fact_acct f " +
 					" inner join c_elementvalue ev on f.account_id = ev.c_elementvalue_id " +
@@ -559,8 +563,8 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 					" and f.dateacct between '" + this.getStartDate() + "' and '" + this.getDateAcct() + "' " +
 					" and ev.accounttype in ('A','L','O') " +
 					" and ev.issummary='N' " +
-					" group by f.account_id, f.c_currency_id " +
-					" order by f.account_id, f.c_currency_id ";
+					" group by f.account_id " +
+					" order by f.account_id ";
 
 			pstmt = DB.prepareStatement(sql, get_TrxName());
 			rs = pstmt.executeQuery();
@@ -572,48 +576,48 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 					elementValue.setC_Currency_ID(acctSchema.getC_Currency_ID());
 				}
 
-				boolean newLinea = true;
-				MZAcctCierreLin cierreLin = this.getLineByAccount(elementValue.get_ID());
-				if ((cierreLin == null) || (cierreLin.get_ID() <= 0)){
-					cierreLin = new MZAcctCierreLin(getCtx(), 0, get_TrxName());
-				}
-				else {
-					newLinea = false;
+				// Tasa de cambio para moneda distinta a moneda del esquema contable y fecha = fecha de cierre.
+				BigDecimal currencyRate = Env.ONE;
+				if (elementValue.getC_Currency_ID() != acctSchema.getC_Currency_ID()){
+					if (hashRates.containsKey(elementValue.getC_Currency_ID())){
+						currencyRate = hashRates.get(elementValue.getC_Currency_ID());
+					}
+					else {
+						currencyRate = CurrencyUtils.getCurrencyRate(getCtx(), this.getAD_Client_ID(), 0, elementValue.getC_Currency_ID(),
+								acctSchema.getC_Currency_ID(), 114, this.getDateAcct(), null);
+						if ((currencyRate == null) || (currencyRate.compareTo(Env.ZERO) == 0)){
+							MCurrency currency = (MCurrency) elementValue.getC_Currency();
+							throw new AdempiereException("No se pudo obtener tasa de cambio para fecha de cierre y moneda : " + currency.getISO_Code());
+						}
+						currencyRate = currencyRate.setScale(3, RoundingMode.HALF_UP);
+						hashRates.put(elementValue.getC_Currency_ID(), currencyRate);
+					}
 				}
 
-				if (newLinea){
-					cierreLin.setAD_Org_ID(this.getAD_Org_ID());
-					cierreLin.setZ_AcctCierre_ID(this.get_ID());
-					cierreLin.setC_ElementValue_ID(elementValue.get_ID());
-					cierreLin.setCodigoCuenta(elementValue.getValue());
-					cierreLin.setC_Currency_ID(elementValue.getC_Currency_ID());
-					cierreLin.setAmtAcctDr(rs.getBigDecimal("sumdr"));
-					cierreLin.setAmtAcctCr(rs.getBigDecimal("sumcr"));
-					cierreLin.setAmtSourceDr(Env.ZERO);
-					cierreLin.setAmtSourceCr(Env.ZERO);
-					cierreLin.setDifferenceAmt(Env.ZERO);
-					cierreLin.setAmtAcctDrTo(Env.ZERO);
-					cierreLin.setAmtAcctCrTo(Env.ZERO);
-					cierreLin.setDiffAmtSource(Env.ZERO);
-					cierreLin.setAmtSourceDrTo(Env.ZERO);
-					cierreLin.setAmtSourceCrTo(Env.ZERO);
-				}
+				MZAcctCierreLin cierreLin = new MZAcctCierreLin(getCtx(), 0, get_TrxName());
+
+				cierreLin.setAD_Org_ID(this.getAD_Org_ID());
+				cierreLin.setZ_AcctCierre_ID(this.get_ID());
+				cierreLin.setC_ElementValue_ID(elementValue.get_ID());
+				cierreLin.setCodigoCuenta(elementValue.getValue());
+				cierreLin.setC_Currency_ID(elementValue.getC_Currency_ID());
+				cierreLin.setAmtAcctDr(rs.getBigDecimal("sumdr"));
+				cierreLin.setAmtAcctCr(rs.getBigDecimal("sumcr"));
+				cierreLin.setCurrencyRate(currencyRate);
+				cierreLin.setAmtSourceDr(cierreLin.getAmtAcctDr().divide(currencyRate, 2, RoundingMode.HALF_UP));
+				cierreLin.setAmtSourceCr(cierreLin.getAmtAcctCr().divide(currencyRate, 2, RoundingMode.HALF_UP));
+				cierreLin.setDifferenceAmt(Env.ZERO);
+				cierreLin.setAmtAcctDrTo(Env.ZERO);
+				cierreLin.setAmtAcctCrTo(Env.ZERO);
+				cierreLin.setDiffAmtSource(Env.ZERO);
+				cierreLin.setAmtSourceDrTo(Env.ZERO);
+				cierreLin.setAmtSourceCrTo(Env.ZERO);
 
 				if ((elementValue.getAccountType().equalsIgnoreCase("A"))
 						|| (elementValue.getAccountType().equalsIgnoreCase("O"))){
 
-					if (newLinea){
-						cierreLin.setDifferenceAmt(cierreLin.getAmtAcctCr().subtract(cierreLin.getAmtAcctDr()));
-					}
-					else {
-						cierreLin.setDifferenceAmt(cierreLin.getDifferenceAmt().add(cierreLin.getAmtAcctCr().subtract(cierreLin.getAmtAcctDr())));
-					}
-
-					if (elementValue.getC_Currency_ID() == rs.getInt("c_currency_id")){
-						cierreLin.setAmtSourceDr(rs.getBigDecimal("sumsourcedr"));
-						cierreLin.setAmtSourceCr(rs.getBigDecimal("sumsourcecr"));
-						cierreLin.setDiffAmtSource(cierreLin.getAmtSourceCr().subtract(cierreLin.getAmtSourceDr()));
-					}
+					cierreLin.setDifferenceAmt(cierreLin.getAmtAcctCr().subtract(cierreLin.getAmtAcctDr()));
+					cierreLin.setDiffAmtSource(cierreLin.getAmtSourceCr().subtract(cierreLin.getAmtSourceDr()));
 
 					// Acct
 					if (cierreLin.getDifferenceAmt().compareTo(Env.ZERO) < 0){
@@ -633,18 +637,8 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 				}
 				else if (elementValue.getAccountType().equalsIgnoreCase("L")){
 
-					if (newLinea){
-						cierreLin.setDifferenceAmt(cierreLin.getAmtAcctDr().subtract(cierreLin.getAmtAcctCr()));
-					}
-					else {
-						cierreLin.setDifferenceAmt(cierreLin.getDifferenceAmt().add(cierreLin.getAmtAcctDr().subtract(cierreLin.getAmtAcctCr())));
-					}
-
-					if (elementValue.getC_Currency_ID() == rs.getInt("c_currency_id")) {
-						cierreLin.setAmtSourceDr(rs.getBigDecimal("sumsourcedr"));
-						cierreLin.setAmtSourceCr(rs.getBigDecimal("sumsourcecr"));
-						cierreLin.setDiffAmtSource(cierreLin.getAmtSourceCr().subtract(cierreLin.getAmtSourceCr()));
-					}
+					cierreLin.setDifferenceAmt(cierreLin.getAmtAcctDr().subtract(cierreLin.getAmtAcctCr()));
+					cierreLin.setDiffAmtSource(cierreLin.getAmtSourceCr().subtract(cierreLin.getAmtSourceCr()));
 
 					// Acct
 					if (cierreLin.getDifferenceAmt().compareTo(Env.ZERO) < 0){
@@ -663,7 +657,6 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 					}
 
 				}
-
 				cierreLin.saveEx();
 			}
 		}
