@@ -110,14 +110,17 @@ public class Doc_AcctApertura extends Doc{
 
             FactLine fl1 = null;
             if (amtDR.compareTo(Env.ZERO) != 0){
-                fact.createLine (p_lines[i], acctLin, getC_Currency_ID(), amtDR, null);
+                fl1 = fact.createLine (p_lines[i], acctLin, getC_Currency_ID(), amtDR, null);
             }
             else if (amtCR.compareTo(Env.ZERO) != 0){
-                fact.createLine (p_lines[i], acctLin, getC_Currency_ID(), null, amtCR);
+                fl1 = fact.createLine (p_lines[i], acctLin, getC_Currency_ID(), null, amtCR);
             }
 
             if (fl1 != null){
                 fl1.setAD_Org_ID(this.acctApertura.getAD_Org_ID());
+                fl1.setAmtAcctDr(acctAperturaLin.getAmtAcctDr());
+                fl1.setAmtAcctCr(acctAperturaLin.getAmtAcctCr());
+                fl1.saveEx();
             }
         }
 

@@ -346,26 +346,26 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 		// Elimino asientos contables
 		MFactAcct.deleteEx(this.get_Table_ID(), this.get_ID(), get_TrxName());
 
-		/*
-		// Si tengo asiento de reclasificación de medios de pago asociado a este asiento de venta
-		if (this.getZ_AstoVtaRecMP_ID() > 0){
-			// Elimino asiento de reclasificación
-			MZAstoVtaRecMP astoVtaRecMP = (MZAstoVtaRecMP) this.getZ_AstoVtaRecMP();
-			if (!astoVtaRecMP.processIt(DocumentEngine.ACTION_ReActivate)){
-				if (astoVtaRecMP.getProcessMsg() != null){
-					m_processMsg = astoVtaRecMP.getProcessMsg();
+
+		// Si tengo asiento de Apertura de Saldos asociado a este cierre
+		if (this.getZ_AcctApertura_ID() > 0){
+			// Elimino asiento de Apertura de Saldos
+			MZAcctApertura acctApertura = (MZAcctApertura) this.getZ_AcctApertura();
+			if (!acctApertura.processIt(DocumentEngine.ACTION_ReActivate)){
+				if (acctApertura.getProcessMsg() != null){
+					m_processMsg = acctApertura.getProcessMsg();
 				}
 				else {
-					m_processMsg = "No se pudo reactivar el asiento de reclasificación asociado a este asiento de venta.";
+					m_processMsg = "No se pudo reactivar el asiento de Apertura asociado a este asiento de cierre.";
 				}
 				return false;
 			}
-			astoVtaRecMP.deleteEx(true);
+			acctApertura.deleteEx(true);
 
-			action = " update z_generaastovta set z_astovtarecmp_id = null where z_generaastovta_id =" + this.get_ID();
+			action = " update z_acctcierre set z_acctapertura_id = null where z_acctcierre_id =" + this.get_ID();
 			DB.executeUpdateEx(action, get_TrxName());
 		}
-		 */
+
 
 		// After reActivate
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_REACTIVATE);
@@ -706,7 +706,7 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 				else if (elementValue.getAccountType().equalsIgnoreCase("L")){
 
 					cierreLin.setDifferenceAmt(amtAcctDR.subtract(amtAcctCR));
-					cierreLin.setDiffAmtSource(amtSourceCR.subtract(amtSourceCR));
+					cierreLin.setDiffAmtSource(amtSourceDR.subtract(amtSourceCR));
 
 					// Acct
 					if (cierreLin.getDifferenceAmt().compareTo(Env.ZERO) < 0){
@@ -811,11 +811,17 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 				aperturaLin.setC_ElementValue_ID(cierreLin.getC_ElementValue_ID());
 				aperturaLin.setCodigoCuenta(cierreLin.getCodigoCuenta());
 				aperturaLin.setC_Currency_ID(cierreLin.getC_Currency_ID());
-				aperturaLin.setAmtAcctDr(cierreLin.getAmtAcctDrTo());
-				aperturaLin.setAmtAcctCr(cierreLin.getAmtAcctCrTo());
+
+				// Doy vuelta el asiento
+				aperturaLin.setAmtAcctDr(cierreLin.getAmtAcctCrTo());
+				aperturaLin.setAmtAcctCr(cierreLin.getAmtAcctDrTo());
+
 				aperturaLin.setCurrencyRate(cierreLin.getCurrencyRate());
-				aperturaLin.setAmtSourceDr(cierreLin.getAmtSourceDrTo());
-				aperturaLin.setAmtSourceCr(cierreLin.getAmtSourceCrTo());
+
+				// Doy vuelta el asiento
+				aperturaLin.setAmtSourceDr(cierreLin.getAmtSourceCrTo());
+				aperturaLin.setAmtSourceCr(cierreLin.getAmtSourceDrTo());
+
 				aperturaLin.saveEx();
 			}
 
@@ -827,6 +833,9 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 				return message;
 			}
 			acctApertura.saveEx();
+
+			this.setZ_AcctApertura_ID(acctApertura.get_ID());
+
 		}
 		catch (Exception e){
 		    throw new AdempiereException(e);
