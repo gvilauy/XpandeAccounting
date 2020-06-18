@@ -20,6 +20,7 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.Properties;
 import org.compiere.model.*;
 import org.compiere.process.DocAction;
@@ -385,5 +386,19 @@ public class MZAcctApertura extends X_Z_AcctApertura implements DocAction, DocOp
       StringBuffer sb = new StringBuffer ("MZAcctApertura[")
         .append(getSummary()).append("]");
       return sb.toString();
+    }
+
+	/***
+	 * Obtiene y retorna lineas de este documento.
+	 * Xpande. Created by Gabriel Vila on 6/18/20.
+	 * @return
+	 */
+	public List<MZAcctAperturaLin> getLines() {
+
+		String whereClause = X_Z_AcctAperturaLin.COLUMNNAME_Z_AcctApertura_ID + " =" + this.get_ID();
+
+		List<MZAcctAperturaLin> lines = new Query(getCtx(), I_Z_AcctAperturaLin.Table_Name, whereClause, get_TrxName()).list();
+
+		return lines;
     }
 }

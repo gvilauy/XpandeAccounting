@@ -22,6 +22,7 @@ import java.math.RoundingMode;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
@@ -34,6 +35,8 @@ import org.compiere.process.DocumentEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.xpande.core.utils.CurrencyUtils;
+import org.xpande.core.utils.DateUtils;
+import org.xpande.retail.model.MZAstoVtaRecMP;
 
 /** Generated Model for Z_AcctCierre
  *  @author Adempiere (generated) 
@@ -233,7 +236,14 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 			approveIt();
 		log.info(toString());
 		//
-		
+
+		// Genero documento de apertura cuando se trata de cierre de cuentas integrales.
+		if (this.getDocBaseType().equalsIgnoreCase("CJI")){
+			m_processMsg = this.setAsientoAperturaIntegrales();
+			if (m_processMsg != null)
+				return DocAction.STATUS_Invalid;
+		}
+
 		//	User Validation
 		String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
 		if (valid != null)
@@ -248,7 +258,7 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 		setDocAction(DOCACTION_Close);
 		return DocAction.STATUS_Completed;
 	}	//	completeIt
-	
+
 	/**
 	 * 	Set the definite document number after completed
 	 */
@@ -321,11 +331,53 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 	 */
 	public boolean reActivateIt()
 	{
+		String action = "";
+
 		log.info("reActivateIt - " + toString());
-		setProcessed(false);
-		if (reverseCorrectIt())
-			return true;
-		return false;
+
+		// Before reActivate
+		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_BEFORE_REACTIVATE);
+		if (m_processMsg != null)
+			return false;
+
+		// Control de período contable
+		MPeriod.testPeriodOpen(getCtx(), this.getDateAcct(), this.getC_DocType_ID(), this.getAD_Org_ID());
+
+		// Elimino asientos contables
+		MFactAcct.deleteEx(this.get_Table_ID(), this.get_ID(), get_TrxName());
+
+		/*
+		// Si tengo asiento de reclasificación de medios de pago asociado a este asiento de venta
+		if (this.getZ_AstoVtaRecMP_ID() > 0){
+			// Elimino asiento de reclasificación
+			MZAstoVtaRecMP astoVtaRecMP = (MZAstoVtaRecMP) this.getZ_AstoVtaRecMP();
+			if (!astoVtaRecMP.processIt(DocumentEngine.ACTION_ReActivate)){
+				if (astoVtaRecMP.getProcessMsg() != null){
+					m_processMsg = astoVtaRecMP.getProcessMsg();
+				}
+				else {
+					m_processMsg = "No se pudo reactivar el asiento de reclasificación asociado a este asiento de venta.";
+				}
+				return false;
+			}
+			astoVtaRecMP.deleteEx(true);
+
+			action = " update z_generaastovta set z_astovtarecmp_id = null where z_generaastovta_id =" + this.get_ID();
+			DB.executeUpdateEx(action, get_TrxName());
+		}
+		 */
+
+		// After reActivate
+		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_REACTIVATE);
+		if (m_processMsg != null)
+			return false;
+
+		this.setProcessed(false);
+		this.setPosted(false);
+		this.setDocStatus(DOCSTATUS_InProgress);
+		this.setDocAction(DOCACTION_Complete);
+
+		return true;
 	}	//	reActivateIt
 	
 	
@@ -480,14 +532,17 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 
 				MElementValue elementValue = new MElementValue(getCtx(), rs.getInt("account_id"), null);
 
+				BigDecimal amtAcctDR = rs.getBigDecimal("sumdr");
+				BigDecimal amtAcctCR = rs.getBigDecimal("sumcr");
+
 				MZAcctCierreLin cierreLin = new MZAcctCierreLin(getCtx(), 0, get_TrxName());
 				cierreLin.setAD_Org_ID(this.getAD_Org_ID());
 				cierreLin.setZ_AcctCierre_ID(this.get_ID());
 				cierreLin.setC_ElementValue_ID(elementValue.get_ID());
 				cierreLin.setCodigoCuenta(elementValue.getValue());
 				cierreLin.setC_Currency_ID(acctSchema.getC_Currency_ID());
-				cierreLin.setAmtAcctDr(rs.getBigDecimal("sumdr"));
-				cierreLin.setAmtAcctCr(rs.getBigDecimal("sumcr"));
+				cierreLin.setAmtAcctDr(Env.ZERO);
+				cierreLin.setAmtAcctCr(Env.ZERO);
 				cierreLin.setAmtSourceDr(Env.ZERO);
 				cierreLin.setAmtSourceCr(Env.ZERO);
 				cierreLin.setDifferenceAmt(Env.ZERO);
@@ -499,26 +554,30 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 
 				if (elementValue.getAccountType().equalsIgnoreCase("R")){
 
-					cierreLin.setDifferenceAmt(cierreLin.getAmtAcctCr().subtract(cierreLin.getAmtAcctDr()));
+					cierreLin.setDifferenceAmt(amtAcctCR.subtract(amtAcctDR));
 
 					// Acct
 					if (cierreLin.getDifferenceAmt().compareTo(Env.ZERO) < 0){
-						cierreLin.setAmtAcctDrTo(cierreLin.getDifferenceAmt().negate());
+						cierreLin.setAmtAcctDr(cierreLin.getDifferenceAmt().negate());
+						cierreLin.setAmtAcctCrTo(cierreLin.getDifferenceAmt().negate());
 					}
 					else {
+						cierreLin.setAmtAcctCr(cierreLin.getDifferenceAmt());
 						cierreLin.setAmtAcctDrTo(cierreLin.getDifferenceAmt());
 					}
 
 				}
 				else if (elementValue.getAccountType().equalsIgnoreCase("E")){
 
-					cierreLin.setDifferenceAmt(cierreLin.getAmtAcctDr().subtract(cierreLin.getAmtAcctCr()));
+					cierreLin.setDifferenceAmt(amtAcctDR.subtract(amtAcctCR));
 
 					// Acct
 					if (cierreLin.getDifferenceAmt().compareTo(Env.ZERO) < 0){
-						cierreLin.setAmtAcctCrTo(cierreLin.getDifferenceAmt().negate());
+						cierreLin.setAmtAcctCr(cierreLin.getDifferenceAmt().negate());
+						cierreLin.setAmtAcctDrTo(cierreLin.getDifferenceAmt().negate());
 					}
 					else{
+						cierreLin.setAmtAcctDr(cierreLin.getDifferenceAmt());
 						cierreLin.setAmtAcctCrTo(cierreLin.getDifferenceAmt());
 					}
 				}
@@ -594,6 +653,11 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 					}
 				}
 
+				BigDecimal amtAcctDR = rs.getBigDecimal("sumdr");
+				BigDecimal amtAcctCR = rs.getBigDecimal("sumcr");
+				BigDecimal amtSourceDR = amtAcctDR.divide(currencyRate, 2, RoundingMode.HALF_UP);
+				BigDecimal amtSourceCR = amtAcctCR.divide(currencyRate, 2, RoundingMode.HALF_UP);
+
 				MZAcctCierreLin cierreLin = new MZAcctCierreLin(getCtx(), 0, get_TrxName());
 
 				cierreLin.setAD_Org_ID(this.getAD_Org_ID());
@@ -601,11 +665,11 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 				cierreLin.setC_ElementValue_ID(elementValue.get_ID());
 				cierreLin.setCodigoCuenta(elementValue.getValue());
 				cierreLin.setC_Currency_ID(elementValue.getC_Currency_ID());
-				cierreLin.setAmtAcctDr(rs.getBigDecimal("sumdr"));
-				cierreLin.setAmtAcctCr(rs.getBigDecimal("sumcr"));
+				cierreLin.setAmtAcctDr(Env.ZERO);
+				cierreLin.setAmtAcctCr(Env.ZERO);
 				cierreLin.setCurrencyRate(currencyRate);
-				cierreLin.setAmtSourceDr(cierreLin.getAmtAcctDr().divide(currencyRate, 2, RoundingMode.HALF_UP));
-				cierreLin.setAmtSourceCr(cierreLin.getAmtAcctCr().divide(currencyRate, 2, RoundingMode.HALF_UP));
+				cierreLin.setAmtSourceDr(Env.ZERO);
+				cierreLin.setAmtSourceCr(Env.ZERO);
 				cierreLin.setDifferenceAmt(Env.ZERO);
 				cierreLin.setAmtAcctDrTo(Env.ZERO);
 				cierreLin.setAmtAcctCrTo(Env.ZERO);
@@ -616,43 +680,51 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 				if ((elementValue.getAccountType().equalsIgnoreCase("A"))
 						|| (elementValue.getAccountType().equalsIgnoreCase("O"))){
 
-					cierreLin.setDifferenceAmt(cierreLin.getAmtAcctCr().subtract(cierreLin.getAmtAcctDr()));
-					cierreLin.setDiffAmtSource(cierreLin.getAmtSourceCr().subtract(cierreLin.getAmtSourceDr()));
+					cierreLin.setDifferenceAmt(amtAcctCR.subtract(amtAcctDR));
+					cierreLin.setDiffAmtSource(amtSourceCR.subtract(amtSourceDR));
 
 					// Acct
 					if (cierreLin.getDifferenceAmt().compareTo(Env.ZERO) < 0){
-						cierreLin.setAmtAcctDrTo(cierreLin.getDifferenceAmt().negate());
+						cierreLin.setAmtAcctDr(cierreLin.getDifferenceAmt().negate());
+						cierreLin.setAmtAcctCrTo(cierreLin.getDifferenceAmt().negate());
 					}
 					else {
+						cierreLin.setAmtAcctCr(cierreLin.getDifferenceAmt());
 						cierreLin.setAmtAcctDrTo(cierreLin.getDifferenceAmt());
 					}
 
 					// Source
 					if (cierreLin.getDiffAmtSource().compareTo(Env.ZERO) < 0){
-						cierreLin.setAmtSourceDrTo(cierreLin.getDiffAmtSource().negate());
+						cierreLin.setAmtSourceDr(cierreLin.getDiffAmtSource().negate());
+						cierreLin.setAmtSourceCrTo(cierreLin.getDiffAmtSource().negate());
 					}
 					else {
+						cierreLin.setAmtSourceCr(cierreLin.getDiffAmtSource());
 						cierreLin.setAmtSourceDrTo(cierreLin.getDiffAmtSource());
 					}
 				}
 				else if (elementValue.getAccountType().equalsIgnoreCase("L")){
 
-					cierreLin.setDifferenceAmt(cierreLin.getAmtAcctDr().subtract(cierreLin.getAmtAcctCr()));
-					cierreLin.setDiffAmtSource(cierreLin.getAmtSourceCr().subtract(cierreLin.getAmtSourceCr()));
+					cierreLin.setDifferenceAmt(amtAcctDR.subtract(amtAcctCR));
+					cierreLin.setDiffAmtSource(amtSourceCR.subtract(amtSourceCR));
 
 					// Acct
 					if (cierreLin.getDifferenceAmt().compareTo(Env.ZERO) < 0){
-						cierreLin.setAmtAcctCrTo(cierreLin.getDifferenceAmt().negate());
+						cierreLin.setAmtAcctCr(cierreLin.getDifferenceAmt().negate());
+						cierreLin.setAmtAcctDrTo(cierreLin.getDifferenceAmt().negate());
 					}
 					else{
+						cierreLin.setAmtAcctDr(cierreLin.getDifferenceAmt());
 						cierreLin.setAmtAcctCrTo(cierreLin.getDifferenceAmt());
 					}
 
 					// Source
 					if (cierreLin.getDiffAmtSource().compareTo(Env.ZERO) < 0){
-						cierreLin.setAmtSourceCrTo(cierreLin.getDiffAmtSource().negate());
+						cierreLin.setAmtSourceCr(cierreLin.getDiffAmtSource().negate());
+						cierreLin.setAmtSourceDrTo(cierreLin.getDiffAmtSource().negate());
 					}
 					else{
+						cierreLin.setAmtSourceDr(cierreLin.getDiffAmtSource());
 						cierreLin.setAmtSourceCrTo(cierreLin.getDiffAmtSource());
 					}
 
@@ -699,4 +771,69 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 
 		return lines;
 	}
+
+	/***
+	 * Genero y completo documento de Apertura de Saldos Contables asociado a cierre de cuentas integrales.
+	 * Xpande. Created by Gabriel Vila on 6/18/20.
+	 * @return
+	 */
+	private String setAsientoAperturaIntegrales() {
+
+		String message = null;
+
+		try{
+
+			MDocType[] docTypes = MDocType.getOfDocBaseType(getCtx(), "AJI");
+			if (docTypes.length <= 0){
+				return "No se pudo obtener Documento para Asiento de Saldos Contables (AJI)";
+			}
+			MDocType docType = docTypes[0];
+
+			Date dateFechaAux = new Date(this.getDateAcct().getTime());
+			dateFechaAux =  DateUtils.addDays(dateFechaAux, 1);
+			Timestamp dateAcct = new Timestamp(dateFechaAux.getTime());
+
+			MZAcctApertura acctApertura = new MZAcctApertura(getCtx(), 0, get_TrxName());
+			acctApertura.setAD_Org_ID(this.getAD_Org_ID());
+			acctApertura.setC_DocType_ID(docType.get_ID());
+			acctApertura.setDateDoc(this.getDateDoc());
+			acctApertura.setDateAcct(dateAcct);
+			acctApertura.setC_AcctSchema_ID(this.getC_AcctSchema_ID());
+			acctApertura.setDescription("Generada Automaticamente desde Cierre de Saldos Contables número :" + this.getDocumentNo());
+			acctApertura.saveEx();
+
+			// Lineas
+			List<MZAcctCierreLin> cierreLinList = this.getLines();
+			for (MZAcctCierreLin cierreLin: cierreLinList){
+				MZAcctAperturaLin aperturaLin = new MZAcctAperturaLin(getCtx(), 0, get_TrxName());
+				aperturaLin.setZ_AcctApertura_ID(acctApertura.get_ID());
+				aperturaLin.setAD_Org_ID(this.getAD_Org_ID());
+				aperturaLin.setC_ElementValue_ID(cierreLin.getC_ElementValue_ID());
+				aperturaLin.setCodigoCuenta(cierreLin.getCodigoCuenta());
+				aperturaLin.setC_Currency_ID(cierreLin.getC_Currency_ID());
+				aperturaLin.setAmtAcctDr(cierreLin.getAmtAcctDrTo());
+				aperturaLin.setAmtAcctCr(cierreLin.getAmtAcctCrTo());
+				aperturaLin.setCurrencyRate(cierreLin.getCurrencyRate());
+				aperturaLin.setAmtSourceDr(cierreLin.getAmtSourceDrTo());
+				aperturaLin.setAmtSourceCr(cierreLin.getAmtSourceCrTo());
+				aperturaLin.saveEx();
+			}
+
+			if (!acctApertura.processIt(DocAction.ACTION_Complete)){
+				message = "No se pudo completar documento de Apertura de Saldos Contables";
+				if (acctApertura.getProcessMsg() != null){
+					message += " - " + acctApertura.getProcessMsg();
+				}
+				return message;
+			}
+			acctApertura.saveEx();
+		}
+		catch (Exception e){
+		    throw new AdempiereException(e);
+		}
+
+		return message;
+	}
+
+
 }
