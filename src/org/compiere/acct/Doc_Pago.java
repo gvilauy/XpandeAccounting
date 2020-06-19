@@ -56,6 +56,14 @@ public class Doc_Pago extends Doc {
         this.docType = (MDocType) pago.getC_DocType();
         setDocumentType(docType.getDocBaseType());
 
+        // Seteo grupo de socio de negocio en caso de tenerlo
+        MBPartner partner = (MBPartner) this.pago.getC_BPartner();
+        if ((partner != null) && (partner.get_ID() > 0)){
+            if (partner.getC_BP_Group_ID() > 0){
+                this.cBPGroupID = partner.getC_BP_Group_ID();
+            }
+        }
+
         //	Lineas del documento.
         p_lines = loadLines();
 
