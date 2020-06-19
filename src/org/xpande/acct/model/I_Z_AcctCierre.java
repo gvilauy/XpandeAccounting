@@ -226,6 +226,19 @@ public interface I_Z_AcctCierre
 	  */
 	public boolean isApproved();
 
+    /** Column name IsBPartner */
+    public static final String COLUMNNAME_IsBPartner = "IsBPartner";
+
+	/** Set IsBPartner.
+	  * Si es o no un socio de negocio
+	  */
+	public void setIsBPartner (boolean IsBPartner);
+
+	/** Get IsBPartner.
+	  * Si es o no un socio de negocio
+	  */
+	public boolean isBPartner();
+
     /** Column name Posted */
     public static final String COLUMNNAME_Posted = "Posted";
 

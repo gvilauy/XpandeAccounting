@@ -213,6 +213,19 @@ public interface I_Z_AcctApertura
 	  */
 	public boolean isApproved();
 
+    /** Column name IsBPartner */
+    public static final String COLUMNNAME_IsBPartner = "IsBPartner";
+
+	/** Set IsBPartner.
+	  * Si es o no un socio de negocio
+	  */
+	public void setIsBPartner (boolean IsBPartner);
+
+	/** Get IsBPartner.
+	  * Si es o no un socio de negocio
+	  */
+	public boolean isBPartner();
+
     /** Column name Posted */
     public static final String COLUMNNAME_Posted = "Posted";
 
@@ -260,6 +273,19 @@ public interface I_Z_AcctApertura
 
 	/** Get Process Now	  */
 	public boolean isProcessing();
+
+    /** Column name StartDate */
+    public static final String COLUMNNAME_StartDate = "StartDate";
+
+	/** Set Start Date.
+	  * First effective day (inclusive)
+	  */
+	public void setStartDate (Timestamp StartDate);
+
+	/** Get Start Date.
+	  * First effective day (inclusive)
+	  */
+	public Timestamp getStartDate();
 
     /** Column name TotalAmt */
     public static final String COLUMNNAME_TotalAmt = "TotalAmt";

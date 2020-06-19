@@ -612,18 +612,36 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 
 			MAcctSchema acctSchema = ((MAcctSchema) this.getC_AcctSchema());
 
-			sql = " select f.account_id, " +
-					" sum(round(f.amtacctdr,2)) as sumdr, sum(round(f.amtacctcr,2)) as sumcr " +
-					" from fact_acct f " +
-					" inner join c_elementvalue ev on f.account_id = ev.c_elementvalue_id " +
-					" where f.ad_client_id =" + this.getAD_Client_ID() +
-					" and f.ad_org_id =" + this.getAD_Org_ID() +
-					" and f.c_acctschema_id =" + this.getC_AcctSchema_ID() +
-					" and f.dateacct between '" + this.getStartDate() + "' and '" + this.getDateAcct() + "' " +
-					" and ev.accounttype in ('A','L','O') " +
-					" and ev.issummary='N' " +
-					" group by f.account_id " +
-					" order by f.account_id ";
+			// Consulta de cuentas integrales según el usuario indique o no cierre por socio de negocio
+			if (!this.isBPartner()){
+				sql = " select f.account_id, " +
+						" sum(round(f.amtacctdr,2)) as sumdr, sum(round(f.amtacctcr,2)) as sumcr " +
+						" from fact_acct f " +
+						" inner join c_elementvalue ev on f.account_id = ev.c_elementvalue_id " +
+						" where f.ad_client_id =" + this.getAD_Client_ID() +
+						" and f.ad_org_id =" + this.getAD_Org_ID() +
+						" and f.c_acctschema_id =" + this.getC_AcctSchema_ID() +
+						" and f.dateacct between '" + this.getStartDate() + "' and '" + this.getDateAcct() + "' " +
+						" and ev.accounttype in ('A','L','O') " +
+						" and ev.issummary='N' " +
+						" group by f.account_id " +
+						" order by f.account_id ";
+			}
+			else {
+				sql = " select f.account_id, f.c_bpartner_id, " +
+						" sum(round(f.amtacctdr,2)) as sumdr, sum(round(f.amtacctcr,2)) as sumcr " +
+						" from fact_acct f " +
+						" inner join c_elementvalue ev on f.account_id = ev.c_elementvalue_id " +
+						" where f.ad_client_id =" + this.getAD_Client_ID() +
+						" and f.ad_org_id =" + this.getAD_Org_ID() +
+						" and f.c_acctschema_id =" + this.getC_AcctSchema_ID() +
+						" and f.dateacct between '" + this.getStartDate() + "' and '" + this.getDateAcct() + "' " +
+						" and ev.accounttype in ('A','L','O') " +
+						" and ev.issummary='N' " +
+						" group by f.account_id, f.c_bpartner_id " +
+						" order by f.account_id, f.c_bpartner_id ";
+			}
+
 
 			pstmt = DB.prepareStatement(sql, get_TrxName());
 			rs = pstmt.executeQuery();
@@ -676,6 +694,10 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 				cierreLin.setDiffAmtSource(Env.ZERO);
 				cierreLin.setAmtSourceDrTo(Env.ZERO);
 				cierreLin.setAmtSourceCrTo(Env.ZERO);
+
+				if (this.isBPartner()){
+					cierreLin.setC_BPartner_ID(rs.getInt("c_bpartner_id"));
+				}
 
 				if ((elementValue.getAccountType().equalsIgnoreCase("A"))
 						|| (elementValue.getAccountType().equalsIgnoreCase("O"))){
@@ -800,6 +822,7 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 			acctApertura.setDateAcct(dateAcct);
 			acctApertura.setC_AcctSchema_ID(this.getC_AcctSchema_ID());
 			acctApertura.setDescription("Generada Automaticamente desde Cierre de Saldos Contables número :" + this.getDocumentNo());
+			acctApertura.setIsBPartner(this.isBPartner());
 			acctApertura.saveEx();
 
 			// Lineas
@@ -811,6 +834,10 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 				aperturaLin.setC_ElementValue_ID(cierreLin.getC_ElementValue_ID());
 				aperturaLin.setCodigoCuenta(cierreLin.getCodigoCuenta());
 				aperturaLin.setC_Currency_ID(cierreLin.getC_Currency_ID());
+
+				if (this.isBPartner()){
+					aperturaLin.setC_BPartner_ID(cierreLin.getC_BPartner_ID());
+				}
 
 				// Doy vuelta el asiento
 				aperturaLin.setAmtAcctDr(cierreLin.getAmtAcctCrTo());

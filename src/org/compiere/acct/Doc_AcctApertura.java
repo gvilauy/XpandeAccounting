@@ -120,6 +120,15 @@ public class Doc_AcctApertura extends Doc{
                 fl1.setAD_Org_ID(this.acctApertura.getAD_Org_ID());
                 fl1.setAmtAcctDr(acctAperturaLin.getAmtAcctDr());
                 fl1.setAmtAcctCr(acctAperturaLin.getAmtAcctCr());
+
+                if (acctAperturaLin.getC_BPartner_ID() > 0){
+                    fl1.setC_BPartner_ID(acctAperturaLin.getC_BPartner_ID());
+                }
+
+                if ((acctAperturaLin.getCurrencyRate() != null) && (acctAperturaLin.getCurrencyRate().compareTo(Env.ZERO) > 0)){
+                    fl1.set_ValueOfColumn("CurrencyRate", acctAperturaLin.getCurrencyRate());
+                }
+
                 fl1.saveEx();
             }
         }

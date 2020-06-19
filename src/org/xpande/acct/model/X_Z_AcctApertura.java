@@ -33,7 +33,7 @@ public class X_Z_AcctApertura extends PO implements I_Z_AcctApertura, I_Persiste
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20200617L;
+	private static final long serialVersionUID = 20200619L;
 
     /** Standard Constructor */
     public X_Z_AcctApertura (Properties ctx, int Z_AcctApertura_ID, String trxName)
@@ -53,13 +53,14 @@ public class X_Z_AcctApertura extends PO implements I_Z_AcctApertura, I_Persiste
 			setDocumentNo (null);
 			setIsApproved (false);
 // N
+			setIsBPartner (false);
+// N
 			setPosted (false);
 // N
 			setProcessed (false);
 // N
 			setProcessing (false);
 // N
-			setTotalAmt (Env.ZERO);
 			setZ_AcctApertura_ID (0);
         } */
     }
@@ -332,6 +333,30 @@ public class X_Z_AcctApertura extends PO implements I_Z_AcctApertura, I_Persiste
 		return false;
 	}
 
+	/** Set IsBPartner.
+		@param IsBPartner 
+		Si es o no un socio de negocio
+	  */
+	public void setIsBPartner (boolean IsBPartner)
+	{
+		set_Value (COLUMNNAME_IsBPartner, Boolean.valueOf(IsBPartner));
+	}
+
+	/** Get IsBPartner.
+		@return Si es o no un socio de negocio
+	  */
+	public boolean isBPartner () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsBPartner);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Posted.
 		@param Posted 
 		Posting status
@@ -419,6 +444,23 @@ public class X_Z_AcctApertura extends PO implements I_Z_AcctApertura, I_Persiste
 			return "Y".equals(oo);
 		}
 		return false;
+	}
+
+	/** Set Start Date.
+		@param StartDate 
+		First effective day (inclusive)
+	  */
+	public void setStartDate (Timestamp StartDate)
+	{
+		set_Value (COLUMNNAME_StartDate, StartDate);
+	}
+
+	/** Get Start Date.
+		@return First effective day (inclusive)
+	  */
+	public Timestamp getStartDate () 
+	{
+		return (Timestamp)get_Value(COLUMNNAME_StartDate);
 	}
 
 	/** Set Total Amount.

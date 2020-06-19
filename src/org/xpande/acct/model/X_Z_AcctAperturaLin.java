@@ -32,7 +32,7 @@ public class X_Z_AcctAperturaLin extends PO implements I_Z_AcctAperturaLin, I_Pe
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20200618L;
+	private static final long serialVersionUID = 20200619L;
 
     /** Standard Constructor */
     public X_Z_AcctAperturaLin (Properties ctx, int Z_AcctAperturaLin_ID, String trxName)
@@ -159,6 +159,34 @@ public class X_Z_AcctAperturaLin extends PO implements I_Z_AcctAperturaLin, I_Pe
 		if (bd == null)
 			 return Env.ZERO;
 		return bd;
+	}
+
+	public I_C_BPartner getC_BPartner() throws RuntimeException
+    {
+		return (I_C_BPartner)MTable.get(getCtx(), I_C_BPartner.Table_Name)
+			.getPO(getC_BPartner_ID(), get_TrxName());	}
+
+	/** Set Business Partner .
+		@param C_BPartner_ID 
+		Identifies a Business Partner
+	  */
+	public void setC_BPartner_ID (int C_BPartner_ID)
+	{
+		if (C_BPartner_ID < 1) 
+			set_Value (COLUMNNAME_C_BPartner_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
+	}
+
+	/** Get Business Partner .
+		@return Identifies a Business Partner
+	  */
+	public int getC_BPartner_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	public I_C_Currency getC_Currency() throws RuntimeException

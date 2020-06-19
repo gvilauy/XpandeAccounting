@@ -577,7 +577,7 @@ public class MZDifCambio extends X_Z_DifCambio implements DocAction, DocOptions 
 				*/
 
 				// Redondeo tasa de cambio
-				if ((rate == null) || (rate.compareTo(Env.ZERO) == 0)){
+				if ((rate == null) || (rate.compareTo(Env.ZERO) <= 0)){
 					// Obtengo tasa de cambio para ese dia
 					rate = CurrencyUtils.getCurrencyRate(getCtx(), this.getAD_Client_ID(), 0, this.getC_Currency_ID(), acctSchema.getC_Currency_ID(),
 									114, difCambioDet.getDateAcct(), get_TrxName());

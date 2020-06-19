@@ -33,7 +33,7 @@ public class X_Z_AcctCierre extends PO implements I_Z_AcctCierre, I_Persistent
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20200617L;
+	private static final long serialVersionUID = 20200619L;
 
     /** Standard Constructor */
     public X_Z_AcctCierre (Properties ctx, int Z_AcctCierre_ID, String trxName)
@@ -53,6 +53,8 @@ public class X_Z_AcctCierre extends PO implements I_Z_AcctCierre, I_Persistent
 // DR
 			setDocumentNo (null);
 			setIsApproved (false);
+// N
+			setIsBPartner (false);
 // N
 			setPosted (false);
 // N
@@ -389,6 +391,8 @@ public class X_Z_AcctCierre extends PO implements I_Z_AcctCierre, I_Persistent
 	public static final String DOCBASETYPE_CJDCierreDeCuentasDiferenciales = "CJD";
 	/** CJI Cierre de Cuentas Integrales = CJI */
 	public static final String DOCBASETYPE_CJICierreDeCuentasIntegrales = "CJI";
+	/** AJI Asiento de Apertura de Ejercicio = AJI */
+	public static final String DOCBASETYPE_AJIAsientoDeAperturaDeEjercicio = "AJI";
 	/** Set Document BaseType.
 		@param DocBaseType 
 		Logical type of document
@@ -483,6 +487,30 @@ public class X_Z_AcctCierre extends PO implements I_Z_AcctCierre, I_Persistent
 	public boolean isApproved () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsApproved);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set IsBPartner.
+		@param IsBPartner 
+		Si es o no un socio de negocio
+	  */
+	public void setIsBPartner (boolean IsBPartner)
+	{
+		set_Value (COLUMNNAME_IsBPartner, Boolean.valueOf(IsBPartner));
+	}
+
+	/** Get IsBPartner.
+		@return Si es o no un socio de negocio
+	  */
+	public boolean isBPartner () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsBPartner);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 
