@@ -535,54 +535,7 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 				BigDecimal amtAcctDR = rs.getBigDecimal("sumdr");
 				BigDecimal amtAcctCR = rs.getBigDecimal("sumcr");
 
-				MZAcctCierreLin cierreLin = new MZAcctCierreLin(getCtx(), 0, get_TrxName());
-				cierreLin.setAD_Org_ID(this.getAD_Org_ID());
-				cierreLin.setZ_AcctCierre_ID(this.get_ID());
-				cierreLin.setC_ElementValue_ID(elementValue.get_ID());
-				cierreLin.setCodigoCuenta(elementValue.getValue());
-				cierreLin.setC_Currency_ID(acctSchema.getC_Currency_ID());
-				cierreLin.setAmtAcctDr(Env.ZERO);
-				cierreLin.setAmtAcctCr(Env.ZERO);
-				cierreLin.setAmtSourceDr(Env.ZERO);
-				cierreLin.setAmtSourceCr(Env.ZERO);
-				cierreLin.setDifferenceAmt(Env.ZERO);
-				cierreLin.setAmtAcctDrTo(Env.ZERO);
-				cierreLin.setAmtAcctCrTo(Env.ZERO);
-				cierreLin.setDiffAmtSource(Env.ZERO);
-				cierreLin.setAmtSourceDrTo(Env.ZERO);
-				cierreLin.setAmtSourceCrTo(Env.ZERO);
-
-				if (elementValue.getAccountType().equalsIgnoreCase("R")){
-
-					cierreLin.setDifferenceAmt(amtAcctCR.subtract(amtAcctDR));
-
-					// Acct
-					if (cierreLin.getDifferenceAmt().compareTo(Env.ZERO) < 0){
-						cierreLin.setAmtAcctDr(cierreLin.getDifferenceAmt().negate());
-						cierreLin.setAmtAcctCrTo(cierreLin.getDifferenceAmt().negate());
-					}
-					else {
-						cierreLin.setAmtAcctCr(cierreLin.getDifferenceAmt());
-						cierreLin.setAmtAcctDrTo(cierreLin.getDifferenceAmt());
-					}
-
-				}
-				else if (elementValue.getAccountType().equalsIgnoreCase("E")){
-
-					cierreLin.setDifferenceAmt(amtAcctDR.subtract(amtAcctCR));
-
-					// Acct
-					if (cierreLin.getDifferenceAmt().compareTo(Env.ZERO) < 0){
-						cierreLin.setAmtAcctCr(cierreLin.getDifferenceAmt().negate());
-						cierreLin.setAmtAcctDrTo(cierreLin.getDifferenceAmt().negate());
-					}
-					else{
-						cierreLin.setAmtAcctDr(cierreLin.getDifferenceAmt());
-						cierreLin.setAmtAcctCrTo(cierreLin.getDifferenceAmt());
-					}
-				}
-
-				cierreLin.saveEx();
+				this.setCierreLin(elementValue, amtAcctDR, amtAcctCR, acctSchema.getC_Currency_ID(), Env.ONE, Env.ZERO, Env.ZERO, -1);
 			}
 		}
 		catch (Exception e){
@@ -607,41 +560,29 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 		ResultSet rs = null;
 
 		try{
-
 			HashMap<Integer, BigDecimal> hashRates = new HashMap<Integer, BigDecimal>();
-
 			MAcctSchema acctSchema = ((MAcctSchema) this.getC_AcctSchema());
 
-			// Consulta de cuentas integrales según el usuario indique o no cierre por socio de negocio
-			if (!this.isBPartner()){
-				sql = " select f.account_id, " +
-						" sum(round(f.amtacctdr,2)) as sumdr, sum(round(f.amtacctcr,2)) as sumcr " +
-						" from fact_acct f " +
-						" inner join c_elementvalue ev on f.account_id = ev.c_elementvalue_id " +
-						" where f.ad_client_id =" + this.getAD_Client_ID() +
-						" and f.ad_org_id =" + this.getAD_Org_ID() +
-						" and f.c_acctschema_id =" + this.getC_AcctSchema_ID() +
-						" and f.dateacct between '" + this.getStartDate() + "' and '" + this.getDateAcct() + "' " +
-						" and ev.accounttype in ('A','L','O') " +
-						" and ev.issummary='N' " +
-						" group by f.account_id " +
-						" order by f.account_id ";
-			}
-			else {
-				sql = " select f.account_id, f.c_bpartner_id, " +
-						" sum(round(f.amtacctdr,2)) as sumdr, sum(round(f.amtacctcr,2)) as sumcr " +
-						" from fact_acct f " +
-						" inner join c_elementvalue ev on f.account_id = ev.c_elementvalue_id " +
-						" where f.ad_client_id =" + this.getAD_Client_ID() +
-						" and f.ad_org_id =" + this.getAD_Org_ID() +
-						" and f.c_acctschema_id =" + this.getC_AcctSchema_ID() +
-						" and f.dateacct between '" + this.getStartDate() + "' and '" + this.getDateAcct() + "' " +
-						" and ev.accounttype in ('A','L','O') " +
-						" and ev.issummary='N' " +
-						" group by f.account_id, f.c_bpartner_id " +
-						" order by f.account_id, f.c_bpartner_id ";
+			String whereClause = "";
+
+			// Si tengo que detallar cuentas por socio de negocio
+			if (this.isBPartner()){
+				this.getSaldosIntegralesBPartner();
+				whereClause = " and ev.IsAcctCierreBP ='N' ";
 			}
 
+			sql = " select f.account_id, " +
+					" sum(round(f.amtacctdr,2)) as sumdr, sum(round(f.amtacctcr,2)) as sumcr " +
+					" from fact_acct f " +
+					" inner join c_elementvalue ev on f.account_id = ev.c_elementvalue_id " +
+					" where f.ad_client_id =" + this.getAD_Client_ID() +
+					" and f.ad_org_id =" + this.getAD_Org_ID() +
+					" and f.c_acctschema_id =" + this.getC_AcctSchema_ID() +
+					" and f.dateacct between '" + this.getStartDate() + "' and '" + this.getDateAcct() + "' " +
+					" and ev.accounttype in ('A','L','O') " +
+					" and ev.issummary='N' " + whereClause +
+					" group by f.account_id " +
+					" order by f.account_id ";
 
 			pstmt = DB.prepareStatement(sql, get_TrxName());
 			rs = pstmt.executeQuery();
@@ -676,82 +617,87 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 				BigDecimal amtSourceDR = amtAcctDR.divide(currencyRate, 2, RoundingMode.HALF_UP);
 				BigDecimal amtSourceCR = amtAcctCR.divide(currencyRate, 2, RoundingMode.HALF_UP);
 
-				MZAcctCierreLin cierreLin = new MZAcctCierreLin(getCtx(), 0, get_TrxName());
+				this.setCierreLin(elementValue, amtAcctDR, amtAcctCR, elementValue.getC_Currency_ID(), currencyRate, amtSourceDR, amtSourceCR, -1);
+			}
+		}
+		catch (Exception e){
+			throw new AdempiereException(e);
+		}
+		finally {
+			DB.close(rs, pstmt);
+			rs = null; pstmt = null;
+		}
 
-				cierreLin.setAD_Org_ID(this.getAD_Org_ID());
-				cierreLin.setZ_AcctCierre_ID(this.get_ID());
-				cierreLin.setC_ElementValue_ID(elementValue.get_ID());
-				cierreLin.setCodigoCuenta(elementValue.getValue());
-				cierreLin.setC_Currency_ID(elementValue.getC_Currency_ID());
-				cierreLin.setAmtAcctDr(Env.ZERO);
-				cierreLin.setAmtAcctCr(Env.ZERO);
-				cierreLin.setCurrencyRate(currencyRate);
-				cierreLin.setAmtSourceDr(Env.ZERO);
-				cierreLin.setAmtSourceCr(Env.ZERO);
-				cierreLin.setDifferenceAmt(Env.ZERO);
-				cierreLin.setAmtAcctDrTo(Env.ZERO);
-				cierreLin.setAmtAcctCrTo(Env.ZERO);
-				cierreLin.setDiffAmtSource(Env.ZERO);
-				cierreLin.setAmtSourceDrTo(Env.ZERO);
-				cierreLin.setAmtSourceCrTo(Env.ZERO);
+	}
 
-				if (this.isBPartner()){
-					cierreLin.setC_BPartner_ID(rs.getInt("c_bpartner_id"));
+	/***
+	 * Obtiene información de saldos de cuentas integrales a considerar abiertas por socio de negocio.
+	 * Xpande. Created by Gabriel Vila on 6/20/20.
+	 * @return
+	 */
+	private void getSaldosIntegralesBPartner(){
+
+		String sql = "";
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+
+		try{
+			HashMap<Integer, BigDecimal> hashRates = new HashMap<Integer, BigDecimal>();
+			MAcctSchema acctSchema = ((MAcctSchema) this.getC_AcctSchema());
+
+			// Si NO tengo que detallar cuentas por socio de negocio, salgo
+			if (!this.isBPartner()){
+				return;
+			}
+
+			sql = " select f.account_id, f.c_bpartner_id, " +
+					" sum(round(f.amtacctdr,2)) as sumdr, sum(round(f.amtacctcr,2)) as sumcr " +
+					" from fact_acct f " +
+					" inner join c_elementvalue ev on f.account_id = ev.c_elementvalue_id " +
+					" where f.ad_client_id =" + this.getAD_Client_ID() +
+					" and f.ad_org_id =" + this.getAD_Org_ID() +
+					" and f.c_acctschema_id =" + this.getC_AcctSchema_ID() +
+					" and f.dateacct between '" + this.getStartDate() + "' and '" + this.getDateAcct() + "' " +
+					" and ev.accounttype in ('A','L','O') " +
+					" and ev.issummary='N' " +
+					" and ev.IsAcctCierreBP ='Y' " +
+					" group by f.account_id, f.c_bpartner_id " +
+					" order by f.account_id, f.c_bpartner_id ";
+
+			pstmt = DB.prepareStatement(sql, get_TrxName());
+			rs = pstmt.executeQuery();
+
+			while (rs.next()){
+
+				MElementValue elementValue = new MElementValue(getCtx(), rs.getInt("account_id"), null);
+				if (elementValue.getC_Currency_ID() <= 0){
+					elementValue.setC_Currency_ID(acctSchema.getC_Currency_ID());
 				}
 
-				if ((elementValue.getAccountType().equalsIgnoreCase("A"))
-						|| (elementValue.getAccountType().equalsIgnoreCase("O"))){
-
-					cierreLin.setDifferenceAmt(amtAcctCR.subtract(amtAcctDR));
-					cierreLin.setDiffAmtSource(amtSourceCR.subtract(amtSourceDR));
-
-					// Acct
-					if (cierreLin.getDifferenceAmt().compareTo(Env.ZERO) < 0){
-						cierreLin.setAmtAcctDr(cierreLin.getDifferenceAmt().negate());
-						cierreLin.setAmtAcctCrTo(cierreLin.getDifferenceAmt().negate());
+				// Tasa de cambio para moneda distinta a moneda del esquema contable y fecha = fecha de cierre.
+				BigDecimal currencyRate = Env.ONE;
+				if (elementValue.getC_Currency_ID() != acctSchema.getC_Currency_ID()){
+					if (hashRates.containsKey(elementValue.getC_Currency_ID())){
+						currencyRate = hashRates.get(elementValue.getC_Currency_ID());
 					}
 					else {
-						cierreLin.setAmtAcctCr(cierreLin.getDifferenceAmt());
-						cierreLin.setAmtAcctDrTo(cierreLin.getDifferenceAmt());
-					}
-
-					// Source
-					if (cierreLin.getDiffAmtSource().compareTo(Env.ZERO) < 0){
-						cierreLin.setAmtSourceDr(cierreLin.getDiffAmtSource().negate());
-						cierreLin.setAmtSourceCrTo(cierreLin.getDiffAmtSource().negate());
-					}
-					else {
-						cierreLin.setAmtSourceCr(cierreLin.getDiffAmtSource());
-						cierreLin.setAmtSourceDrTo(cierreLin.getDiffAmtSource());
+						currencyRate = CurrencyUtils.getCurrencyRate(getCtx(), this.getAD_Client_ID(), 0, elementValue.getC_Currency_ID(),
+								acctSchema.getC_Currency_ID(), 114, this.getDateAcct(), null);
+						if ((currencyRate == null) || (currencyRate.compareTo(Env.ZERO) == 0)){
+							MCurrency currency = (MCurrency) elementValue.getC_Currency();
+							throw new AdempiereException("No se pudo obtener tasa de cambio para fecha de cierre y moneda : " + currency.getISO_Code());
+						}
+						currencyRate = currencyRate.setScale(3, RoundingMode.HALF_UP);
+						hashRates.put(elementValue.getC_Currency_ID(), currencyRate);
 					}
 				}
-				else if (elementValue.getAccountType().equalsIgnoreCase("L")){
 
-					cierreLin.setDifferenceAmt(amtAcctDR.subtract(amtAcctCR));
-					cierreLin.setDiffAmtSource(amtSourceDR.subtract(amtSourceCR));
+				BigDecimal amtAcctDR = rs.getBigDecimal("sumdr");
+				BigDecimal amtAcctCR = rs.getBigDecimal("sumcr");
+				BigDecimal amtSourceDR = amtAcctDR.divide(currencyRate, 2, RoundingMode.HALF_UP);
+				BigDecimal amtSourceCR = amtAcctCR.divide(currencyRate, 2, RoundingMode.HALF_UP);
 
-					// Acct
-					if (cierreLin.getDifferenceAmt().compareTo(Env.ZERO) < 0){
-						cierreLin.setAmtAcctCr(cierreLin.getDifferenceAmt().negate());
-						cierreLin.setAmtAcctDrTo(cierreLin.getDifferenceAmt().negate());
-					}
-					else{
-						cierreLin.setAmtAcctDr(cierreLin.getDifferenceAmt());
-						cierreLin.setAmtAcctCrTo(cierreLin.getDifferenceAmt());
-					}
-
-					// Source
-					if (cierreLin.getDiffAmtSource().compareTo(Env.ZERO) < 0){
-						cierreLin.setAmtSourceCr(cierreLin.getDiffAmtSource().negate());
-						cierreLin.setAmtSourceDrTo(cierreLin.getDiffAmtSource().negate());
-					}
-					else{
-						cierreLin.setAmtSourceDr(cierreLin.getDiffAmtSource());
-						cierreLin.setAmtSourceCrTo(cierreLin.getDiffAmtSource());
-					}
-
-				}
-				cierreLin.saveEx();
+				this.setCierreLin(elementValue, amtAcctDR, amtAcctCR, elementValue.getC_Currency_ID(), currencyRate, amtSourceDR, amtSourceCR, rs.getInt("c_bpartner_id"));
 			}
 		}
 		catch (Exception e){
@@ -871,5 +817,132 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 		return message;
 	}
 
+
+	/***
+	 * Guarda información en linea de cierre.
+	 * Xpande. Created by Gabriel Vila on 6/20/20.
+	 * @param elementValue
+	 * @param amtAcctDR
+	 * @param amtAcctCR
+	 * @param cCurrencyID
+	 * @param currencyRate
+	 * @param amtSourceDR
+	 * @param amtSourceCR
+	 */
+	private void setCierreLin(MElementValue elementValue, BigDecimal amtAcctDR, BigDecimal amtAcctCR, int cCurrencyID,
+							  BigDecimal currencyRate, BigDecimal amtSourceDR, BigDecimal amtSourceCR, int cBPartnerID){
+
+		try{
+
+			MZAcctCierreLin cierreLin = new MZAcctCierreLin(getCtx(), 0, get_TrxName());
+
+			cierreLin.setAD_Org_ID(this.getAD_Org_ID());
+			cierreLin.setZ_AcctCierre_ID(this.get_ID());
+			cierreLin.setC_ElementValue_ID(elementValue.get_ID());
+			cierreLin.setCodigoCuenta(elementValue.getValue());
+			cierreLin.setC_Currency_ID(cCurrencyID);
+			cierreLin.setAmtAcctDr(Env.ZERO);
+			cierreLin.setAmtAcctCr(Env.ZERO);
+			cierreLin.setCurrencyRate(currencyRate);
+			cierreLin.setAmtSourceDr(Env.ZERO);
+			cierreLin.setAmtSourceCr(Env.ZERO);
+			cierreLin.setDifferenceAmt(Env.ZERO);
+			cierreLin.setAmtAcctDrTo(Env.ZERO);
+			cierreLin.setAmtAcctCrTo(Env.ZERO);
+			cierreLin.setDiffAmtSource(Env.ZERO);
+			cierreLin.setAmtSourceDrTo(Env.ZERO);
+			cierreLin.setAmtSourceCrTo(Env.ZERO);
+			if (cBPartnerID > 0){
+				cierreLin.setC_BPartner_ID(cBPartnerID);
+			}
+
+			if (elementValue.getAccountType().equalsIgnoreCase("R")){
+
+				cierreLin.setDifferenceAmt(amtAcctCR.subtract(amtAcctDR));
+
+				// Acct
+				if (cierreLin.getDifferenceAmt().compareTo(Env.ZERO) < 0){
+					cierreLin.setAmtAcctDr(cierreLin.getDifferenceAmt().negate());
+					cierreLin.setAmtAcctCrTo(cierreLin.getDifferenceAmt().negate());
+				}
+				else {
+					cierreLin.setAmtAcctCr(cierreLin.getDifferenceAmt());
+					cierreLin.setAmtAcctDrTo(cierreLin.getDifferenceAmt());
+				}
+
+			}
+			else if (elementValue.getAccountType().equalsIgnoreCase("E")){
+
+				cierreLin.setDifferenceAmt(amtAcctDR.subtract(amtAcctCR));
+
+				// Acct
+				if (cierreLin.getDifferenceAmt().compareTo(Env.ZERO) < 0){
+					cierreLin.setAmtAcctCr(cierreLin.getDifferenceAmt().negate());
+					cierreLin.setAmtAcctDrTo(cierreLin.getDifferenceAmt().negate());
+				}
+				else{
+					cierreLin.setAmtAcctDr(cierreLin.getDifferenceAmt());
+					cierreLin.setAmtAcctCrTo(cierreLin.getDifferenceAmt());
+				}
+			}
+			else if ((elementValue.getAccountType().equalsIgnoreCase("A"))
+					|| (elementValue.getAccountType().equalsIgnoreCase("O"))){
+
+				cierreLin.setDifferenceAmt(amtAcctCR.subtract(amtAcctDR));
+				cierreLin.setDiffAmtSource(amtSourceCR.subtract(amtSourceDR));
+
+				// Acct
+				if (cierreLin.getDifferenceAmt().compareTo(Env.ZERO) < 0){
+					cierreLin.setAmtAcctDr(cierreLin.getDifferenceAmt().negate());
+					cierreLin.setAmtAcctCrTo(cierreLin.getDifferenceAmt().negate());
+				}
+				else {
+					cierreLin.setAmtAcctCr(cierreLin.getDifferenceAmt());
+					cierreLin.setAmtAcctDrTo(cierreLin.getDifferenceAmt());
+				}
+
+				// Source
+				if (cierreLin.getDiffAmtSource().compareTo(Env.ZERO) < 0){
+					cierreLin.setAmtSourceDr(cierreLin.getDiffAmtSource().negate());
+					cierreLin.setAmtSourceCrTo(cierreLin.getDiffAmtSource().negate());
+				}
+				else {
+					cierreLin.setAmtSourceCr(cierreLin.getDiffAmtSource());
+					cierreLin.setAmtSourceDrTo(cierreLin.getDiffAmtSource());
+				}
+			}
+			else if (elementValue.getAccountType().equalsIgnoreCase("L")){
+
+				cierreLin.setDifferenceAmt(amtAcctDR.subtract(amtAcctCR));
+				cierreLin.setDiffAmtSource(amtSourceDR.subtract(amtSourceCR));
+
+				// Acct
+				if (cierreLin.getDifferenceAmt().compareTo(Env.ZERO) < 0){
+					cierreLin.setAmtAcctCr(cierreLin.getDifferenceAmt().negate());
+					cierreLin.setAmtAcctDrTo(cierreLin.getDifferenceAmt().negate());
+				}
+				else{
+					cierreLin.setAmtAcctDr(cierreLin.getDifferenceAmt());
+					cierreLin.setAmtAcctCrTo(cierreLin.getDifferenceAmt());
+				}
+
+				// Source
+				if (cierreLin.getDiffAmtSource().compareTo(Env.ZERO) < 0){
+					cierreLin.setAmtSourceCr(cierreLin.getDiffAmtSource().negate());
+					cierreLin.setAmtSourceDrTo(cierreLin.getDiffAmtSource().negate());
+				}
+				else{
+					cierreLin.setAmtSourceDr(cierreLin.getDiffAmtSource());
+					cierreLin.setAmtSourceCrTo(cierreLin.getDiffAmtSource());
+				}
+
+			}
+			cierreLin.saveEx();
+
+		}
+		catch (Exception e){
+		    throw new AdempiereException(e);
+		}
+	}
 
 }
