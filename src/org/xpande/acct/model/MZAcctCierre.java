@@ -563,25 +563,24 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 			HashMap<Integer, BigDecimal> hashRates = new HashMap<Integer, BigDecimal>();
 			MAcctSchema acctSchema = ((MAcctSchema) this.getC_AcctSchema());
 
-			String whereClause = "";
-
-			// Si tengo que detallar cuentas por socio de negocio
-			if (this.isBPartner()){
-				this.getSaldosIntegralesBPartner();
-				whereClause = " and ev.IsAcctCierreBP ='N' ";
-			}
-
-			sql = " select f.account_id, " +
-					" sum(round(f.amtacctdr,2)) as sumdr, sum(round(f.amtacctcr,2)) as sumcr, " +
-					" sum(round(f.amtsourcedr,2)) as sumsourcedr, sum(round(f.amtsourcecr,2)) as sumsourcecr " +
-					" from fact_acct f " +
-					" inner join c_elementvalue ev on f.account_id = ev.c_elementvalue_id " +
-					" where f.ad_client_id =" + this.getAD_Client_ID() +
+			String whereClause = " f.ad_client_id =" + this.getAD_Client_ID() +
 					" and f.ad_org_id =" + this.getAD_Org_ID() +
 					" and f.c_acctschema_id =" + this.getC_AcctSchema_ID() +
 					" and f.dateacct between '" + this.getStartDate() + "' and '" + this.getDateAcct() + "' " +
 					" and ev.accounttype in ('A','L','O') " +
-					" and ev.issummary='N' " + whereClause +
+					" and ev.issummary='N' ";
+
+			// Si tengo que detallar cuentas por socio de negocio
+			if (this.isBPartner()){
+				//this.getSaldosIntegralesBPartner();
+				whereClause += " and ev.IsAcctCierreBP ='N' ";
+			}
+
+			sql = " select f.account_id, " +
+					" sum(round(f.amtacctdr,2)) as sumdr, sum(round(f.amtacctcr,2)) as sumcr " +
+					" from fact_acct f " +
+					" inner join c_elementvalue ev on f.account_id = ev.c_elementvalue_id " +
+					" where " + whereClause +
 					" group by f.account_id " +
 					" order by f.account_id ";
 
@@ -597,6 +596,8 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 
 				// Tasa de cambio para moneda distinta a moneda del esquema contable y fecha = fecha de cierre.
 				BigDecimal currencyRate = Env.ONE;
+
+				/*
 				if (elementValue.getC_Currency_ID() != acctSchema.getC_Currency_ID()){
 					if (hashRates.containsKey(elementValue.getC_Currency_ID())){
 						currencyRate = hashRates.get(elementValue.getC_Currency_ID());
@@ -612,18 +613,18 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 						hashRates.put(elementValue.getC_Currency_ID(), currencyRate);
 					}
 				}
+				*/
 
 				BigDecimal amtAcctDR = rs.getBigDecimal("sumdr");
 				BigDecimal amtAcctCR = rs.getBigDecimal("sumcr");
+				BigDecimal amtSourceDR = amtAcctDR;
+				BigDecimal amtSourceCR = amtAcctCR;
 
-				/*
-				BigDecimal amtSourceDR = amtAcctDR.divide(currencyRate, 2, RoundingMode.HALF_UP);
-				BigDecimal amtSourceCR = amtAcctCR.divide(currencyRate, 2, RoundingMode.HALF_UP);
-			 	*/
+				if (elementValue.getC_Currency_ID() != acctSchema.getC_Currency_ID()){
+					amtSourceDR = this.getAccountSumSaldoMO(elementValue.get_ID(), elementValue.getC_Currency_ID(), true, whereClause);
+					amtSourceCR = this.getAccountSumSaldoMO(elementValue.get_ID(), elementValue.getC_Currency_ID(), false, whereClause);
+				}
 
-				// Cambio para que la tasa de cambio sea la division entre source y acct
-				BigDecimal amtSourceDR = rs.getBigDecimal("sumsourcedr");
-				BigDecimal amtSourceCR = rs.getBigDecimal("sumsourcecr");
 				if (elementValue.getC_Currency_ID() != acctSchema.getC_Currency_ID()){
 					if ((amtSourceDR != null) && (amtSourceDR.compareTo(Env.ZERO) != 0)){
 						currencyRate = amtAcctDR.divide(amtSourceDR, 3, RoundingMode.HALF_UP);
@@ -647,6 +648,53 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 	}
 
 	/***
+	 * Obtiene suma de saldo contable segun determinados parametros recibidos.
+	 * Xpande. Created by Gabriel Vila on 6/22/20.
+	 * @param accountID
+	 * @param cCurrencyID
+	 * @param isDebit
+	 * @param whereClause
+	 * @return
+	 */
+	public BigDecimal getAccountSumSaldoMO(int accountID, int cCurrencyID, boolean isDebit, String whereClause){
+
+		String sql = "";
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+
+		BigDecimal saldo = Env.ZERO;
+
+		try{
+			String sumField = "amtSourceDr";
+			if (!isDebit) sumField = "amtSourceCr";
+
+		    sql = " select sum(round(f." + sumField + ",2)) as saldomo " +
+					" from fact_acct f " +
+					" inner join c_elementvalue ev on f.account_id = ev.c_elementvalue_id " +
+					" where " + whereClause +
+					" and f.account_id =" + accountID +
+					" and f.c_currency_id =" + cCurrencyID;
+
+			pstmt = DB.prepareStatement(sql, get_TrxName());
+			rs = pstmt.executeQuery();
+
+			if(rs.next()){
+				saldo = rs.getBigDecimal("saldomo");
+				if (saldo == null) saldo = Env.ZERO;
+			}
+		}
+		catch (Exception e){
+		    throw new AdempiereException(e);
+		}
+		finally {
+		    DB.close(rs, pstmt);
+			rs = null; pstmt = null;
+		}
+
+		return saldo;
+	}
+
+	/***
 	 * Obtiene información de saldos de cuentas integrales a considerar abiertas por socio de negocio.
 	 * Xpande. Created by Gabriel Vila on 6/20/20.
 	 * @return
@@ -666,18 +714,19 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 				return;
 			}
 
-			sql = " select f.account_id, f.c_bpartner_id, " +
-					" sum(round(f.amtacctdr,2)) as sumdr, sum(round(f.amtacctcr,2)) as sumcr, " +
-					" sum(round(f.amtsourcedr,2)) as sumsourcedr, sum(round(f.amtsourcecr,2)) as sumsourcecr " +
-					" from fact_acct f " +
-					" inner join c_elementvalue ev on f.account_id = ev.c_elementvalue_id " +
-					" where f.ad_client_id =" + this.getAD_Client_ID() +
+			String whereClause = " f.ad_client_id =" + this.getAD_Client_ID() +
 					" and f.ad_org_id =" + this.getAD_Org_ID() +
 					" and f.c_acctschema_id =" + this.getC_AcctSchema_ID() +
 					" and f.dateacct between '" + this.getStartDate() + "' and '" + this.getDateAcct() + "' " +
 					" and ev.accounttype in ('A','L','O') " +
 					" and ev.issummary='N' " +
-					" and ev.IsAcctCierreBP ='Y' " +
+					" and ev.IsAcctCierreBP ='Y' ";
+
+			sql = " select f.account_id, f.c_bpartner_id, " +
+					" sum(round(f.amtacctdr,2)) as sumdr, sum(round(f.amtacctcr,2)) as sumcr " +
+					" from fact_acct f " +
+					" inner join c_elementvalue ev on f.account_id = ev.c_elementvalue_id " +
+					" where " + whereClause +
 					" group by f.account_id, f.c_bpartner_id " +
 					" order by f.account_id, f.c_bpartner_id ";
 
@@ -693,6 +742,8 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 
 				// Tasa de cambio para moneda distinta a moneda del esquema contable y fecha = fecha de cierre.
 				BigDecimal currencyRate = Env.ONE;
+
+				/*
 				if (elementValue.getC_Currency_ID() != acctSchema.getC_Currency_ID()){
 					if (hashRates.containsKey(elementValue.getC_Currency_ID())){
 						currencyRate = hashRates.get(elementValue.getC_Currency_ID());
@@ -708,18 +759,18 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 						hashRates.put(elementValue.getC_Currency_ID(), currencyRate);
 					}
 				}
+				*/
 
 				BigDecimal amtAcctDR = rs.getBigDecimal("sumdr");
 				BigDecimal amtAcctCR = rs.getBigDecimal("sumcr");
+				BigDecimal amtSourceDR = amtAcctDR;
+				BigDecimal amtSourceCR = amtAcctCR;
 
-				/*
-				BigDecimal amtSourceDR = amtAcctDR.divide(currencyRate, 2, RoundingMode.HALF_UP);
-				BigDecimal amtSourceCR = amtAcctCR.divide(currencyRate, 2, RoundingMode.HALF_UP);
-				*/
+				if (elementValue.getC_Currency_ID() != acctSchema.getC_Currency_ID()){
+					amtSourceDR = this.getAccountSumSaldoMO(elementValue.get_ID(), elementValue.getC_Currency_ID(), true, whereClause);
+					amtSourceCR = this.getAccountSumSaldoMO(elementValue.get_ID(), elementValue.getC_Currency_ID(), false, whereClause);
+				}
 
-				// Cambio para que la tasa de cambio sea la division entre source y acct
-				BigDecimal amtSourceDR = rs.getBigDecimal("sumsourcedr");
-				BigDecimal amtSourceCR = rs.getBigDecimal("sumsourcecr");
 				if (elementValue.getC_Currency_ID() != acctSchema.getC_Currency_ID()){
 					if ((amtSourceDR != null) && (amtSourceDR.compareTo(Env.ZERO) != 0)){
 						currencyRate = amtAcctDR.divide(amtSourceDR, 3, RoundingMode.HALF_UP);

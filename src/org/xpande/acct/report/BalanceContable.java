@@ -130,7 +130,8 @@ public class BalanceContable {
             action = " insert into " + TABLA_REPORTE + " (ad_client_id, ad_org_id, ad_user_id, c_elementvalue_id, c_currency_id, " +
                     " codigocuenta, nombrecuenta, issummary, accounttype, nrocapituloacct, nomcapituloacct, " +
                     " parent_id, node_id, seqno, nrofila, " +
-                    " amttotal1, amttotal2, c_acctschema_id, tipobalanceacct, dateacct, tipofiltromonacct, incctasaldosinmov) ";
+                    " amttotal1, amttotal2, c_acctschema_id, tipobalanceacct, dateacct, tipofiltromonacct, " +
+                    " incctasaldosinmov, IsCierreDiferencial, IsCierreIntegral) ";
 
             String whereClause = "";
 
@@ -155,7 +156,8 @@ public class BalanceContable {
                     " case when f.accounttype='O' then 'PATRIMONIO' else " +
                     " case when f.accounttype='R' then 'GANANCIAS' else 'OTROS' end end end end end as nomcapituloacct, " +
                     " f.parent_id, f.node_id, f.seqno, f.nrofila, 0, 0, " + this.cAcctSchemaID + ", '" + this.tipoBalanceAcct + "', '" +
-                    this.endDate + "', '" + this.tipoFiltroMonAcct + "', '" + this.incCtaSaldoSinMov + "' " +
+                    this.endDate + "', '" + this.tipoFiltroMonAcct + "', '" + this.incCtaSaldoSinMov + "', ' " +
+                    this.incCierreDiferencial + "', '" + this.incCierreIntegral + "' " +
                     " from ZV_ElementValueTree f " +
                     " where f.ad_client_id =" + this.adClientID +
                     " and f.c_acctschema_id =" + this.cAcctSchemaID + whereClause +
