@@ -572,7 +572,8 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 			}
 
 			sql = " select f.account_id, " +
-					" sum(round(f.amtacctdr,2)) as sumdr, sum(round(f.amtacctcr,2)) as sumcr " +
+					" sum(round(f.amtacctdr,2)) as sumdr, sum(round(f.amtacctcr,2)) as sumcr, " +
+					" sum(round(f.amtsourcedr,2)) as sumsourcedr, sum(round(f.amtsourcecr,2)) as sumsourcecr " +
 					" from fact_acct f " +
 					" inner join c_elementvalue ev on f.account_id = ev.c_elementvalue_id " +
 					" where f.ad_client_id =" + this.getAD_Client_ID() +
@@ -614,8 +615,23 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 
 				BigDecimal amtAcctDR = rs.getBigDecimal("sumdr");
 				BigDecimal amtAcctCR = rs.getBigDecimal("sumcr");
+
+				/*
 				BigDecimal amtSourceDR = amtAcctDR.divide(currencyRate, 2, RoundingMode.HALF_UP);
 				BigDecimal amtSourceCR = amtAcctCR.divide(currencyRate, 2, RoundingMode.HALF_UP);
+			 	*/
+
+				// Cambio para que la tasa de cambio sea la division entre source y acct
+				BigDecimal amtSourceDR = rs.getBigDecimal("sumsourcedr");
+				BigDecimal amtSourceCR = rs.getBigDecimal("sumsourcecr");
+				if (elementValue.getC_Currency_ID() != acctSchema.getC_Currency_ID()){
+					if ((amtSourceDR != null) && (amtSourceDR.compareTo(Env.ZERO) != 0)){
+						currencyRate = amtAcctDR.divide(amtSourceDR, 3, RoundingMode.HALF_UP);
+					}
+					else if ((amtSourceCR != null) && (amtSourceCR.compareTo(Env.ZERO) != 0)){
+						currencyRate = amtAcctCR.divide(amtSourceCR, 3, RoundingMode.HALF_UP);
+					}
+				}
 
 				this.setCierreLin(elementValue, amtAcctDR, amtAcctCR, elementValue.getC_Currency_ID(), currencyRate, amtSourceDR, amtSourceCR, -1);
 			}
@@ -651,7 +667,8 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 			}
 
 			sql = " select f.account_id, f.c_bpartner_id, " +
-					" sum(round(f.amtacctdr,2)) as sumdr, sum(round(f.amtacctcr,2)) as sumcr " +
+					" sum(round(f.amtacctdr,2)) as sumdr, sum(round(f.amtacctcr,2)) as sumcr, " +
+					" sum(round(f.amtsourcedr,2)) as sumsourcedr, sum(round(f.amtsourcecr,2)) as sumsourcecr " +
 					" from fact_acct f " +
 					" inner join c_elementvalue ev on f.account_id = ev.c_elementvalue_id " +
 					" where f.ad_client_id =" + this.getAD_Client_ID() +
@@ -694,8 +711,23 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 
 				BigDecimal amtAcctDR = rs.getBigDecimal("sumdr");
 				BigDecimal amtAcctCR = rs.getBigDecimal("sumcr");
+
+				/*
 				BigDecimal amtSourceDR = amtAcctDR.divide(currencyRate, 2, RoundingMode.HALF_UP);
 				BigDecimal amtSourceCR = amtAcctCR.divide(currencyRate, 2, RoundingMode.HALF_UP);
+				*/
+
+				// Cambio para que la tasa de cambio sea la division entre source y acct
+				BigDecimal amtSourceDR = rs.getBigDecimal("sumsourcedr");
+				BigDecimal amtSourceCR = rs.getBigDecimal("sumsourcecr");
+				if (elementValue.getC_Currency_ID() != acctSchema.getC_Currency_ID()){
+					if ((amtSourceDR != null) && (amtSourceDR.compareTo(Env.ZERO) != 0)){
+						currencyRate = amtAcctDR.divide(amtSourceDR, 3, RoundingMode.HALF_UP);
+					}
+					else if ((amtSourceCR != null) && (amtSourceCR.compareTo(Env.ZERO) != 0)){
+						currencyRate = amtAcctCR.divide(amtSourceCR, 3, RoundingMode.HALF_UP);
+					}
+				}
 
 				this.setCierreLin(elementValue, amtAcctDR, amtAcctCR, elementValue.getC_Currency_ID(), currencyRate, amtSourceDR, amtSourceCR, rs.getInt("c_bpartner_id"));
 			}

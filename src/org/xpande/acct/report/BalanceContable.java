@@ -251,8 +251,8 @@ public class BalanceContable {
                     " sum(f.amtacctdr - f.amtacctcr) as saldomn " +
                     " from fact_acct f " +
                     " inner join " + TABLA_REPORTE + " b on (f.account_id = b.c_elementvalue_id " +
-                    " left outer join c_doctype doc on f.c_doctype_id = doc.c_doctype_id " +
                     " and b.ad_user_id =" + this.adUserID + ") " +
+                    " left outer join c_doctype doc on f.c_doctype_id = doc.c_doctype_id " +
                     " where b.issummary ='N' " + whereClause + whereMoneda +
                     " group by f.account_id, f.c_currency_id " +
                     " order by f.account_id, f.c_currency_id ";

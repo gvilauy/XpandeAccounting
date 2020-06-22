@@ -279,6 +279,9 @@ public class Doc_Pago extends Doc {
                         }
                         else {
                             fl2 = fact.createLine(null, MAccount.get(getCtx(), acctAcreedID), getC_Currency_ID(), entry.getValue().amtSource, null);
+                            if (fl2 != null){
+                                fl2.setAmtAcctDr(entry.getValue().amtAcct);
+                            }
                         }
 
                     }
@@ -288,8 +291,10 @@ public class Doc_Pago extends Doc {
                         }
                         else{
                             fl2 = fact.createLine(null, MAccount.get(getCtx(), acctAcreedID), getC_Currency_ID(), null, entry.getValue().amtSource);
+                            if (fl2 != null){
+                                fl2.setAmtAcctCr(entry.getValue().amtAcct);
+                            }
                         }
-
                     }
                     if (fl2 != null){
                         fl2.setAD_Org_ID(this.pago.getAD_Org_ID());
