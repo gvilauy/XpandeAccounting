@@ -39,6 +39,11 @@ public class MayorContable {
     public boolean consideraSaldoInicial = true;
     public String incSaldoInicial = "Y";
 
+    public boolean isCierreDiferencial = true;
+    public boolean isCierreIntegral = true;
+    public String incCierreDiferencial = "Y";
+    public String incCierreIntegral = "Y";
+
     private Properties ctx = null;
     private String trxName = null;
     private BigDecimal currencyRate = Env.ONE;
@@ -169,6 +174,21 @@ public class MayorContable {
                 whereClause += " and f.c_activity_id =" + this.cBPartnerID;
             }
 
+            // Considerar cierre de cuentas diferenciales
+            if ((!this.isCierreDiferencial) && (!this.isCierreIntegral)){
+                whereClause += " and doc.docbasetype not in ('CJD','CJI') ";
+            }
+            else{
+                if (!this.isCierreDiferencial){
+                    whereClause += " and doc.docbasetype <>'CJD' ";
+                }
+                else{
+                    if (!this.isCierreIntegral){
+                        whereClause += " and doc.docbasetype <>'CJI' ";
+                    }
+                }
+            }
+
             // Inserto en tabla de reporte
             action = " insert into " + TABLA_REPORTE + " (ad_client_id, ad_org_id, ad_user_id, fact_acct_id, created, createdby, " +
                     " ad_table_id, record_id, c_elementvalue_id, c_currency_id, amtsourcedr, amtsourcecr, amtacctdr, amtacctcr, " +
@@ -188,6 +208,7 @@ public class MayorContable {
                     " inner join c_elementvalue ev on f.account_id = ev.c_elementvalue_id " +
                     " left outer join c_bpartner bp on f.c_bpartner_id = bp.c_bpartner_id " +
                     " left outer join z_acctfactdet det on f.fact_acct_id = det.fact_acct_id " +
+                    " left outer join c_doctype doc on f.c_doctype_id = doc.c_doctype_id " +
                     " where f.ad_client_id =" + this.adClientID +
                     " and f.ad_org_id =" + this.adOrgID +
                     " and f.c_acctschema_id =" + this.cAcctSchemaID + whereClause +

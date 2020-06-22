@@ -91,7 +91,14 @@ public class MayorContableRP extends SvrProcess {
                     this.mayorProcessor.consideraSaldoInicial = (((String) para[i].getParameter()).trim().equalsIgnoreCase("Y")) ? true : false;
                     this.mayorProcessor.incSaldoInicial = (String) ((String) para[i].getParameter()).trim();
                 }
-
+                else if (name.trim().equalsIgnoreCase("IsCierreDiferencial")) {
+                    this.mayorProcessor.isCierreDiferencial = (((String) para[i].getParameter()).trim().equalsIgnoreCase("Y")) ? true : false;
+                    this.mayorProcessor.incCierreDiferencial = (String) ((String) para[i].getParameter()).trim();
+                }
+                else if (name.trim().equalsIgnoreCase("IsCierreIntegral")) {
+                    this.mayorProcessor.isCierreIntegral = (((String) para[i].getParameter()).trim().equalsIgnoreCase("Y")) ? true : false;
+                    this.mayorProcessor.incCierreIntegral = (String) ((String) para[i].getParameter()).trim();
+                }
                 else if (name.trim().equalsIgnoreCase("DateAcct")){
                     this.mayorProcessor.startDate = (Timestamp)para[i].getParameter();
                     this.mayorProcessor.endDate = (Timestamp)para[i].getParameter_To();

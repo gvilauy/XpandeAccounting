@@ -38,6 +38,11 @@ public class BalanceContable {
     public Timestamp endDate = null;
     public boolean mostrarSinSaldo = false;
 
+    public boolean isCierreDiferencial = true;
+    public boolean isCierreIntegral = true;
+    public String incCierreDiferencial = "Y";
+    public String incCierreIntegral = "Y";
+
     private Properties ctx = null;
     private String trxName = null;
     private BigDecimal currencyRate = Env.ONE;
@@ -227,10 +232,26 @@ public class BalanceContable {
                 }
             }
 
+            // Considerar cierre de cuentas diferenciales
+            if ((!this.isCierreDiferencial) && (!this.isCierreIntegral)){
+                whereClause += " and doc.docbasetype not in ('CJD','CJI') ";
+            }
+            else{
+                if (!this.isCierreDiferencial){
+                    whereClause += " and doc.docbasetype <>'CJD' ";
+                }
+                else{
+                    if (!this.isCierreIntegral){
+                        whereClause += " and doc.docbasetype <>'CJI' ";
+                    }
+                }
+            }
+
             sql = " select f.account_id, f.c_currency_id, sum(f.amtsourcedr - f.amtsourcecr) as saldomo, " +
                     " sum(f.amtacctdr - f.amtacctcr) as saldomn " +
                     " from fact_acct f " +
                     " inner join " + TABLA_REPORTE + " b on (f.account_id = b.c_elementvalue_id " +
+                    " left outer join c_doctype doc on f.c_doctype_id = doc.c_doctype_id " +
                     " and b.ad_user_id =" + this.adUserID + ") " +
                     " where b.issummary ='N' " + whereClause + whereMoneda +
                     " group by f.account_id, f.c_currency_id " +

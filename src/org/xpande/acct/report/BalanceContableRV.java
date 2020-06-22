@@ -75,6 +75,15 @@ public class BalanceContableRV extends SvrProcess {
                     this.balanceProcessor.mostrarSinSaldo = (((String) para[i].getParameter()).trim().equalsIgnoreCase("Y")) ? true : false;
                     this.balanceProcessor.incCtaSaldoSinMov = (String) ((String) para[i].getParameter()).trim();
                 }
+                else if (name.trim().equalsIgnoreCase("IsCierreDiferencial")) {
+                    this.balanceProcessor.isCierreDiferencial = (((String) para[i].getParameter()).trim().equalsIgnoreCase("Y")) ? true : false;
+                    this.balanceProcessor.incCierreDiferencial = (String) ((String) para[i].getParameter()).trim();
+                }
+                else if (name.trim().equalsIgnoreCase("IsCierreIntegral")) {
+                    this.balanceProcessor.isCierreIntegral = (((String) para[i].getParameter()).trim().equalsIgnoreCase("Y")) ? true : false;
+                    this.balanceProcessor.incCierreIntegral = (String) ((String) para[i].getParameter()).trim();
+                }
+
                 else if (name.trim().equalsIgnoreCase("RP_Titulo")){
                     paramTituloReporte = para[i];
                 }
