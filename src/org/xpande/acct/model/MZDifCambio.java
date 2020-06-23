@@ -670,88 +670,41 @@ public class MZDifCambio extends X_Z_DifCambio implements DocAction, DocOptions 
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 
+		String whereClause = "";
+
 		try{
 
 			// Elimino info anterior
 			action = " delete from z_difcambiolin where z_difcambio_id =" + this.get_ID();
 			DB.executeUpdateEx(action, get_TrxName());
 
-		    sql = " select a.ad_org_id, ev.value, a.c_elementvalue_id, sum(amtsourcedr) as amtsourcedr, sum(amtsourcecr) as amtsourcecr, " +
+			// Si tengo que detallar cuentas por socio de negocio
+			if (this.isBPartner()){
+				this.updateDataLineasBPartner();
+				whereClause += " and ev.IsAcctCierreBP ='N' ";
+			}
+
+			sql = " select a.ad_org_id, ev.value, a.c_elementvalue_id, sum(amtsourcedr) as amtsourcedr, sum(amtsourcecr) as amtsourcecr, " +
 					" sum(amtacctdr) as amtacctdr, sum(amtacctcr) as amtacctcr " +
 					" from z_difcambiodet a " +
 					" inner join c_elementvalue ev on a.c_elementvalue_id = ev.c_elementvalue_id " +
-					" where z_difcambio_id =" + this.get_ID() +
+					" where z_difcambio_id =" + this.get_ID() + whereClause +
 					" group by a.ad_org_id, ev.value, a.c_elementvalue_id " +
 					" order by a.ad_org_id, ev.value, a.c_elementvalue_id ";
-
 
 			pstmt = DB.prepareStatement(sql, get_TrxName());
 			rs = pstmt.executeQuery();
 
 			while(rs.next()){
 
-				MZDifCambioLin difCambioLin = new MZDifCambioLin(getCtx(), 0, get_TrxName());
-				difCambioLin.setAD_Org_ID(this.getAD_Org_ID());
-				difCambioLin.setZ_DifCambio_ID(this.get_ID());
-				difCambioLin.setCurrencyRate(this.getCurrencyRate());
-				difCambioLin.setC_ElementValue_ID(rs.getInt("c_elementvalue_id"));
-				difCambioLin.setC_Currency_ID(this.getC_Currency_ID());
+				BigDecimal amtAcctDR = rs.getBigDecimal("amtacctdr");
+				BigDecimal amtAcctCR = rs.getBigDecimal("amtacctcr");
+				BigDecimal amtSourceDR = rs.getBigDecimal("amtsourcedr");
+				BigDecimal amtSourceCR = rs.getBigDecimal("amtsourcecr");
+				int cElementValueID = rs.getInt("c_elementvalue_id");
 
-				difCambioLin.setAmtSourceDr(rs.getBigDecimal("amtsourcedr"));
-				difCambioLin.setAmtSourceCr(rs.getBigDecimal("amtsourcecr"));
-				difCambioLin.setAmtAcctDr(rs.getBigDecimal("amtacctdr"));
-				difCambioLin.setAmtAcctCr(rs.getBigDecimal("amtacctcr"));
+				this.setDiferenciaLin(cElementValueID, -1, amtAcctDR, amtAcctCR, amtSourceDR, amtSourceCR);
 
-				// Diferencia debitos-creditos MO
-				BigDecimal difSourceDR = Env.ZERO, difSourceCR = Env.ZERO;
-				if (difCambioLin.getAmtSourceDr().compareTo(difCambioLin.getAmtSourceCr()) >= 0){
-					difSourceDR = difCambioLin.getAmtSourceDr().subtract(difCambioLin.getAmtSourceCr());
-				}
-				else{
-					difSourceCR = difCambioLin.getAmtSourceCr().subtract(difCambioLin.getAmtSourceDr());
-				}
-
-				difCambioLin.setAmtSourceDrDif(difSourceDR);
-				difCambioLin.setAmtSourceCrDif(difSourceCR);
-
-				// Diferencia debitos-creditos MN
-				BigDecimal difAcctDR = Env.ZERO, difAcctCR = Env.ZERO;
-				if (difCambioLin.getAmtAcctDr().compareTo(difCambioLin.getAmtAcctCr()) >= 0){
-					difAcctDR = difCambioLin.getAmtAcctDr().subtract(difCambioLin.getAmtAcctCr());
-				}
-				else{
-					difAcctCR = difCambioLin.getAmtAcctCr().subtract(difCambioLin.getAmtAcctDr());
-				}
-
-				difCambioLin.setAmtAcctDrDif(difAcctDR);
-				difCambioLin.setAmtAcctCrDif(difAcctCR);
-
-
-				// Asiento DifCambio Debitos - Creditos
-				BigDecimal difSourceDRAcct = Env.ZERO;
-				if (difSourceDR.compareTo(Env.ZERO) > 0){
-					difSourceDRAcct = difSourceDR.multiply(this.getCurrencyRate()).setScale(2, RoundingMode.HALF_UP);
-				}
-				difSourceDRAcct = difSourceDRAcct.subtract(difAcctDR);
-
-				BigDecimal difSourceCRAcct = Env.ZERO;
-				if (difSourceCR.compareTo(Env.ZERO) > 0){
-					difSourceCRAcct = difSourceCR.multiply(this.getCurrencyRate()).setScale(2, RoundingMode.HALF_UP);
-				}
-				difSourceCRAcct = difSourceCRAcct.subtract(difAcctCR);
-
-				// Resto diferencias y segun signo, va al debe o al haber
-				BigDecimal saldoAsiento = difSourceDRAcct.subtract(difSourceCRAcct);
-				if (saldoAsiento.compareTo(Env.ZERO) > 0){
-					difCambioLin.setAmtAcctDrTo(saldoAsiento);
-					difCambioLin.setAmtAcctCrTo(Env.ZERO);
-				}
-				else{
-					difCambioLin.setAmtAcctDrTo(Env.ZERO);
-					difCambioLin.setAmtAcctCrTo(saldoAsiento.negate());
-				}
-
-				difCambioLin.saveEx();
 			}
 
 		}
@@ -761,6 +714,136 @@ public class MZDifCambio extends X_Z_DifCambio implements DocAction, DocOptions 
 		finally {
 		    DB.close(rs, pstmt);
 			rs = null; pstmt = null;
+		}
+	}
+
+	private void updateDataLineasBPartner() {
+
+		String sql = "", action = "";
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+
+		try{
+
+			// Si no tengo que detallar cuentas por socio de negocio, no hago nada.
+			if (!this.isBPartner()){
+				return;
+			}
+
+			sql = " select a.ad_org_id, ev.value, a.c_elementvalue_id, a.c_bpartner_id, sum(amtsourcedr) as amtsourcedr, sum(amtsourcecr) as amtsourcecr, " +
+					" sum(amtacctdr) as amtacctdr, sum(amtacctcr) as amtacctcr " +
+					" from z_difcambiodet a " +
+					" inner join c_elementvalue ev on a.c_elementvalue_id = ev.c_elementvalue_id " +
+					" where z_difcambio_id =" + this.get_ID() +
+					" and ev.IsAcctCierreBP ='Y' " +
+					" group by a.ad_org_id, ev.value, a.c_elementvalue_id, a.c_bpartner_id " +
+					" order by a.ad_org_id, ev.value, a.c_elementvalue_id, a.c_bpartner_id ";
+
+			pstmt = DB.prepareStatement(sql, get_TrxName());
+			rs = pstmt.executeQuery();
+
+			while(rs.next()){
+
+				BigDecimal amtAcctDR = rs.getBigDecimal("amtacctdr");
+				BigDecimal amtAcctCR = rs.getBigDecimal("amtacctcr");
+				BigDecimal amtSourceDR = rs.getBigDecimal("amtsourcedr");
+				BigDecimal amtSourceCR = rs.getBigDecimal("amtsourcecr");
+				int cElementValueID = rs.getInt("c_elementvalue_id");
+				int cBPartnerID = rs.getInt("c_bpartner_id");
+
+				this.setDiferenciaLin(cElementValueID, cBPartnerID, amtAcctDR, amtAcctCR, amtSourceDR, amtSourceCR);
+			}
+
+		}
+		catch (Exception e){
+			throw new AdempiereException(e);
+		}
+		finally {
+			DB.close(rs, pstmt);
+			rs = null; pstmt = null;
+		}
+	}
+
+	/***
+	 * Guarda linea de diferencia de cambio con sumarización de información.
+	 * @param cElementValueID
+	 * @param cBPartnerID
+	 * @param amtAcctDR
+	 * @param amtAcctCR
+	 * @param amtSourceDR
+	 * @param amtSourceCR
+	 */
+	private void setDiferenciaLin(int cElementValueID, int cBPartnerID, BigDecimal amtAcctDR, BigDecimal amtAcctCR, BigDecimal amtSourceDR, BigDecimal amtSourceCR) {
+
+		try{
+			MZDifCambioLin difCambioLin = new MZDifCambioLin(getCtx(), 0, get_TrxName());
+			difCambioLin.setAD_Org_ID(this.getAD_Org_ID());
+			difCambioLin.setZ_DifCambio_ID(this.get_ID());
+			difCambioLin.setCurrencyRate(this.getCurrencyRate());
+			difCambioLin.setC_ElementValue_ID(cElementValueID);
+			difCambioLin.setC_Currency_ID(this.getC_Currency_ID());
+
+			if (cBPartnerID > 0){
+				difCambioLin.setC_BPartner_ID(cBPartnerID);
+			}
+
+			difCambioLin.setAmtSourceDr(amtSourceDR);
+			difCambioLin.setAmtSourceCr(amtSourceCR);
+			difCambioLin.setAmtAcctDr(amtAcctDR);
+			difCambioLin.setAmtAcctCr(amtAcctCR);
+
+			// Diferencia debitos-creditos MO
+			BigDecimal difSourceDR = Env.ZERO, difSourceCR = Env.ZERO;
+			if (difCambioLin.getAmtSourceDr().compareTo(difCambioLin.getAmtSourceCr()) >= 0){
+				difSourceDR = difCambioLin.getAmtSourceDr().subtract(difCambioLin.getAmtSourceCr());
+			}
+			else{
+				difSourceCR = difCambioLin.getAmtSourceCr().subtract(difCambioLin.getAmtSourceDr());
+			}
+
+			difCambioLin.setAmtSourceDrDif(difSourceDR);
+			difCambioLin.setAmtSourceCrDif(difSourceCR);
+
+			// Diferencia debitos-creditos MN
+			BigDecimal difAcctDR = Env.ZERO, difAcctCR = Env.ZERO;
+			if (difCambioLin.getAmtAcctDr().compareTo(difCambioLin.getAmtAcctCr()) >= 0){
+				difAcctDR = difCambioLin.getAmtAcctDr().subtract(difCambioLin.getAmtAcctCr());
+			}
+			else{
+				difAcctCR = difCambioLin.getAmtAcctCr().subtract(difCambioLin.getAmtAcctDr());
+			}
+
+			difCambioLin.setAmtAcctDrDif(difAcctDR);
+			difCambioLin.setAmtAcctCrDif(difAcctCR);
+
+			// Asiento DifCambio Debitos - Creditos
+			BigDecimal difSourceDRAcct = Env.ZERO;
+			if (difSourceDR.compareTo(Env.ZERO) > 0){
+				difSourceDRAcct = difSourceDR.multiply(this.getCurrencyRate()).setScale(2, RoundingMode.HALF_UP);
+			}
+			difSourceDRAcct = difSourceDRAcct.subtract(difAcctDR);
+
+			BigDecimal difSourceCRAcct = Env.ZERO;
+			if (difSourceCR.compareTo(Env.ZERO) > 0){
+				difSourceCRAcct = difSourceCR.multiply(this.getCurrencyRate()).setScale(2, RoundingMode.HALF_UP);
+			}
+			difSourceCRAcct = difSourceCRAcct.subtract(difAcctCR);
+
+			// Resto diferencias y segun signo, va al debe o al haber
+			BigDecimal saldoAsiento = difSourceDRAcct.subtract(difSourceCRAcct);
+			if (saldoAsiento.compareTo(Env.ZERO) > 0){
+				difCambioLin.setAmtAcctDrTo(saldoAsiento);
+				difCambioLin.setAmtAcctCrTo(Env.ZERO);
+			}
+			else{
+				difCambioLin.setAmtAcctDrTo(Env.ZERO);
+				difCambioLin.setAmtAcctCrTo(saldoAsiento.negate());
+			}
+
+			difCambioLin.saveEx();
+		}
+		catch (Exception e){
+		    throw new AdempiereException(e);
 		}
 	}
 

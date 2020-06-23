@@ -56,7 +56,7 @@ public interface I_Z_DifCambio
 	/** Set Organization.
 	  * Organizational entity within client
 	  */
-	public void setAD_Org_ID(int AD_Org_ID);
+	public void setAD_Org_ID (int AD_Org_ID);
 
 	/** Get Organization.
 	  * Organizational entity within client
@@ -69,7 +69,7 @@ public interface I_Z_DifCambio
 	/** Set Accounting Schema.
 	  * Rules for accounting
 	  */
-	public void setC_AcctSchema_ID(int C_AcctSchema_ID);
+	public void setC_AcctSchema_ID (int C_AcctSchema_ID);
 
 	/** Get Accounting Schema.
 	  * Rules for accounting
@@ -84,7 +84,7 @@ public interface I_Z_DifCambio
 	/** Set Currency.
 	  * The Currency for this record
 	  */
-	public void setC_Currency_ID(int C_Currency_ID);
+	public void setC_Currency_ID (int C_Currency_ID);
 
 	/** Get Currency.
 	  * The Currency for this record
@@ -99,7 +99,7 @@ public interface I_Z_DifCambio
 	/** Set Document Type.
 	  * Document type or rules
 	  */
-	public void setC_DocType_ID(int C_DocType_ID);
+	public void setC_DocType_ID (int C_DocType_ID);
 
 	/** Get Document Type.
 	  * Document type or rules
@@ -130,7 +130,7 @@ public interface I_Z_DifCambio
 	/** Set Rate.
 	  * Currency Conversion Rate
 	  */
-	public void setCurrencyRate(BigDecimal CurrencyRate);
+	public void setCurrencyRate (BigDecimal CurrencyRate);
 
 	/** Get Rate.
 	  * Currency Conversion Rate
@@ -143,7 +143,7 @@ public interface I_Z_DifCambio
 	/** Set Account Date.
 	  * Accounting Date
 	  */
-	public void setDateAcct(Timestamp DateAcct);
+	public void setDateAcct (Timestamp DateAcct);
 
 	/** Get Account Date.
 	  * Accounting Date
@@ -156,7 +156,7 @@ public interface I_Z_DifCambio
 	/** Set Document Date.
 	  * Date of the Document
 	  */
-	public void setDateDoc(Timestamp DateDoc);
+	public void setDateDoc (Timestamp DateDoc);
 
 	/** Get Document Date.
 	  * Date of the Document
@@ -169,7 +169,7 @@ public interface I_Z_DifCambio
 	/** Set Description.
 	  * Optional short description of the record
 	  */
-	public void setDescription(String Description);
+	public void setDescription (String Description);
 
 	/** Get Description.
 	  * Optional short description of the record
@@ -182,7 +182,7 @@ public interface I_Z_DifCambio
 	/** Set Document Action.
 	  * The targeted status of the document
 	  */
-	public void setDocAction(String DocAction);
+	public void setDocAction (String DocAction);
 
 	/** Get Document Action.
 	  * The targeted status of the document
@@ -195,7 +195,7 @@ public interface I_Z_DifCambio
 	/** Set Document Status.
 	  * The current status of the document
 	  */
-	public void setDocStatus(String DocStatus);
+	public void setDocStatus (String DocStatus);
 
 	/** Get Document Status.
 	  * The current status of the document
@@ -208,7 +208,7 @@ public interface I_Z_DifCambio
 	/** Set Document No.
 	  * Document sequence number of the document
 	  */
-	public void setDocumentNo(String DocumentNo);
+	public void setDocumentNo (String DocumentNo);
 
 	/** Get Document No.
 	  * Document sequence number of the document
@@ -221,7 +221,7 @@ public interface I_Z_DifCambio
 	/** Set Active.
 	  * The record is active in the system
 	  */
-	public void setIsActive(boolean IsActive);
+	public void setIsActive (boolean IsActive);
 
 	/** Get Active.
 	  * The record is active in the system
@@ -234,12 +234,25 @@ public interface I_Z_DifCambio
 	/** Set Approved.
 	  * Indicates if this document requires approval
 	  */
-	public void setIsApproved(boolean IsApproved);
+	public void setIsApproved (boolean IsApproved);
 
 	/** Get Approved.
 	  * Indicates if this document requires approval
 	  */
 	public boolean isApproved();
+
+    /** Column name IsBPartner */
+    public static final String COLUMNNAME_IsBPartner = "IsBPartner";
+
+	/** Set IsBPartner.
+	  * Si es o no un socio de negocio
+	  */
+	public void setIsBPartner (boolean IsBPartner);
+
+	/** Get IsBPartner.
+	  * Si es o no un socio de negocio
+	  */
+	public boolean isBPartner();
 
     /** Column name Posted */
     public static final String COLUMNNAME_Posted = "Posted";
@@ -247,7 +260,7 @@ public interface I_Z_DifCambio
 	/** Set Posted.
 	  * Posting status
 	  */
-	public void setPosted(boolean Posted);
+	public void setPosted (boolean Posted);
 
 	/** Get Posted.
 	  * Posting status
@@ -258,7 +271,7 @@ public interface I_Z_DifCambio
     public static final String COLUMNNAME_ProcessButton = "ProcessButton";
 
 	/** Set ProcessButton	  */
-	public void setProcessButton(String ProcessButton);
+	public void setProcessButton (String ProcessButton);
 
 	/** Get ProcessButton	  */
 	public String getProcessButton();
@@ -269,7 +282,7 @@ public interface I_Z_DifCambio
 	/** Set Processed.
 	  * The document has been processed
 	  */
-	public void setProcessed(boolean Processed);
+	public void setProcessed (boolean Processed);
 
 	/** Get Processed.
 	  * The document has been processed
@@ -282,7 +295,7 @@ public interface I_Z_DifCambio
 	/** Set Processed On.
 	  * The date+time (expressed in decimal format) when the document has been processed
 	  */
-	public void setProcessedOn(BigDecimal ProcessedOn);
+	public void setProcessedOn (BigDecimal ProcessedOn);
 
 	/** Get Processed On.
 	  * The date+time (expressed in decimal format) when the document has been processed
@@ -293,7 +306,7 @@ public interface I_Z_DifCambio
     public static final String COLUMNNAME_Processing = "Processing";
 
 	/** Set Process Now	  */
-	public void setProcessing(boolean Processing);
+	public void setProcessing (boolean Processing);
 
 	/** Get Process Now	  */
 	public boolean isProcessing();
@@ -304,7 +317,7 @@ public interface I_Z_DifCambio
 	/** Set Start Date.
 	  * First effective day (inclusive)
 	  */
-	public void setStartDate(Timestamp StartDate);
+	public void setStartDate (Timestamp StartDate);
 
 	/** Get Start Date.
 	  * First effective day (inclusive)
@@ -333,7 +346,7 @@ public interface I_Z_DifCambio
 	/** Set Immutable Universally Unique Identifier.
 	  * Immutable Universally Unique Identifier
 	  */
-	public void setUUID(String UUID);
+	public void setUUID (String UUID);
 
 	/** Get Immutable Universally Unique Identifier.
 	  * Immutable Universally Unique Identifier
@@ -344,7 +357,7 @@ public interface I_Z_DifCambio
     public static final String COLUMNNAME_Z_DifCambio_ID = "Z_DifCambio_ID";
 
 	/** Set Z_DifCambio ID	  */
-	public void setZ_DifCambio_ID(int Z_DifCambio_ID);
+	public void setZ_DifCambio_ID (int Z_DifCambio_ID);
 
 	/** Get Z_DifCambio ID	  */
 	public int getZ_DifCambio_ID();

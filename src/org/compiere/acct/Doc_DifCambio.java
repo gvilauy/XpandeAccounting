@@ -167,6 +167,9 @@ public class Doc_DifCambio extends Doc {
                 FactLine f1 = fact.createLine(p_lines[i], accountLinea, as.getC_Currency_ID(), difCambioLin.getAmtAcctDrTo(), null);
                 if (f1 != null){
                     f1.setAD_Org_ID(this.difCambio.getAD_Org_ID());
+                    if (difCambioLin.getC_BPartner_ID() > 0){
+                        f1.setC_BPartner_ID(difCambioLin.getC_BPartner_ID());
+                    }
                 }
 
                 // CR - Cuenta diferencia de cambio ganada o perdida
@@ -174,6 +177,9 @@ public class Doc_DifCambio extends Doc {
                 FactLine f2 = fact.createLine(p_lines[i], accountDifCambioGanada, as.getC_Currency_ID(), null, difCambioLin.getAmtAcctDrTo());
                 if (f2 != null){
                     f2.setAD_Org_ID(this.difCambio.getAD_Org_ID());
+                    if (difCambioLin.getC_BPartner_ID() > 0){
+                        f2.setC_BPartner_ID(difCambioLin.getC_BPartner_ID());
+                    }
                 }
             }
             // Si la diferencia a guardar es credito
@@ -184,12 +190,18 @@ public class Doc_DifCambio extends Doc {
                 FactLine f1 = fact.createLine(p_lines[i], accountDifCambioPerdida, as.getC_Currency_ID(), difCambioLin.getAmtAcctCrTo(), null);
                 if (f1 != null){
                     f1.setAD_Org_ID(this.difCambio.getAD_Org_ID());
+                    if (difCambioLin.getC_BPartner_ID() > 0){
+                        f1.setC_BPartner_ID(difCambioLin.getC_BPartner_ID());
+                    }
                 }
 
                 // CR - Cuenta de la linea
                 FactLine f2 = fact.createLine(p_lines[i], accountLinea, as.getC_Currency_ID(), null, difCambioLin.getAmtAcctCrTo());
                 if (f2 != null){
                     f2.setAD_Org_ID(this.difCambio.getAD_Org_ID());
+                    if (difCambioLin.getC_BPartner_ID() > 0){
+                        f2.setC_BPartner_ID(difCambioLin.getC_BPartner_ID());
+                    }
                 }
             }
         }

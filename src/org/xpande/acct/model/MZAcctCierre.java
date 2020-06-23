@@ -470,6 +470,11 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 				this.getSaldosIntegrales();
 			}
 
+			// Elimino cuentas que no tuvieron movimientos
+			action = " delete from z_acctcierrelin where z_acctcierre_id =" + this.get_ID() +
+					" and (amtacctdr =0 and amtacctcr =0 and amtsourcedr =0 and amtsourcecr =0) ";
+			DB.executeUpdateEx(action, get_TrxName());
+
 			// Actualizo totales
 			String sql = " select sum(AmtAcctDrTo) from z_acctcierrelin where z_acctcierre_id =" + this.get_ID();
 			BigDecimal totalAcctDr = DB.getSQLValueBDEx(get_TrxName(), sql);
@@ -535,7 +540,7 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 				BigDecimal amtAcctDR = rs.getBigDecimal("sumdr");
 				BigDecimal amtAcctCR = rs.getBigDecimal("sumcr");
 
-				this.setCierreLin(elementValue, amtAcctDR, amtAcctCR, acctSchema.getC_Currency_ID(), Env.ONE, Env.ZERO, Env.ZERO, -1);
+				this.setCierreLin(acctSchema, elementValue, acctSchema.getC_Currency_ID(), amtAcctDR, amtAcctCR,  Env.ZERO, Env.ZERO, -1);
 			}
 		}
 		catch (Exception e){
@@ -560,7 +565,6 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 		ResultSet rs = null;
 
 		try{
-			HashMap<Integer, BigDecimal> hashRates = new HashMap<Integer, BigDecimal>();
 			MAcctSchema acctSchema = ((MAcctSchema) this.getC_AcctSchema());
 
 			String whereClause = " f.ad_client_id =" + this.getAD_Client_ID() +
@@ -572,7 +576,7 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 
 			// Si tengo que detallar cuentas por socio de negocio
 			if (this.isBPartner()){
-				//this.getSaldosIntegralesBPartner();
+				this.getSaldosIntegralesBPartner();
 				whereClause += " and ev.IsAcctCierreBP ='N' ";
 			}
 
@@ -594,47 +598,17 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 					elementValue.setC_Currency_ID(acctSchema.getC_Currency_ID());
 				}
 
-				// Tasa de cambio para moneda distinta a moneda del esquema contable y fecha = fecha de cierre.
-				BigDecimal currencyRate = Env.ONE;
-
-				/*
-				if (elementValue.getC_Currency_ID() != acctSchema.getC_Currency_ID()){
-					if (hashRates.containsKey(elementValue.getC_Currency_ID())){
-						currencyRate = hashRates.get(elementValue.getC_Currency_ID());
-					}
-					else {
-						currencyRate = CurrencyUtils.getCurrencyRate(getCtx(), this.getAD_Client_ID(), 0, elementValue.getC_Currency_ID(),
-								acctSchema.getC_Currency_ID(), 114, this.getDateAcct(), null);
-						if ((currencyRate == null) || (currencyRate.compareTo(Env.ZERO) == 0)){
-							MCurrency currency = (MCurrency) elementValue.getC_Currency();
-							throw new AdempiereException("No se pudo obtener tasa de cambio para fecha de cierre y moneda : " + currency.getISO_Code());
-						}
-						currencyRate = currencyRate.setScale(3, RoundingMode.HALF_UP);
-						hashRates.put(elementValue.getC_Currency_ID(), currencyRate);
-					}
-				}
-				*/
-
 				BigDecimal amtAcctDR = rs.getBigDecimal("sumdr");
 				BigDecimal amtAcctCR = rs.getBigDecimal("sumcr");
 				BigDecimal amtSourceDR = amtAcctDR;
 				BigDecimal amtSourceCR = amtAcctCR;
 
 				if (elementValue.getC_Currency_ID() != acctSchema.getC_Currency_ID()){
-					amtSourceDR = this.getAccountSumSaldoMO(elementValue.get_ID(), elementValue.getC_Currency_ID(), true, whereClause);
-					amtSourceCR = this.getAccountSumSaldoMO(elementValue.get_ID(), elementValue.getC_Currency_ID(), false, whereClause);
+					amtSourceDR = this.getAccountSumSaldoMO(elementValue.get_ID(), elementValue.getC_Currency_ID(), -1, true, whereClause);
+					amtSourceCR = this.getAccountSumSaldoMO(elementValue.get_ID(), elementValue.getC_Currency_ID(), -1, false, whereClause);
 				}
 
-				if (elementValue.getC_Currency_ID() != acctSchema.getC_Currency_ID()){
-					if ((amtSourceDR != null) && (amtSourceDR.compareTo(Env.ZERO) != 0)){
-						currencyRate = amtAcctDR.divide(amtSourceDR, 3, RoundingMode.HALF_UP);
-					}
-					else if ((amtSourceCR != null) && (amtSourceCR.compareTo(Env.ZERO) != 0)){
-						currencyRate = amtAcctCR.divide(amtSourceCR, 3, RoundingMode.HALF_UP);
-					}
-				}
-
-				this.setCierreLin(elementValue, amtAcctDR, amtAcctCR, elementValue.getC_Currency_ID(), currencyRate, amtSourceDR, amtSourceCR, -1);
+				this.setCierreLin(acctSchema, elementValue, elementValue.getC_Currency_ID(), amtAcctDR, amtAcctCR, amtSourceDR, amtSourceCR, -1);
 			}
 		}
 		catch (Exception e){
@@ -652,11 +626,12 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 	 * Xpande. Created by Gabriel Vila on 6/22/20.
 	 * @param accountID
 	 * @param cCurrencyID
+	 * @param cBPartnerID
 	 * @param isDebit
 	 * @param whereClause
 	 * @return
 	 */
-	public BigDecimal getAccountSumSaldoMO(int accountID, int cCurrencyID, boolean isDebit, String whereClause){
+	public BigDecimal getAccountSumSaldoMO(int accountID, int cCurrencyID, int cBPartnerID, boolean isDebit, String whereClause){
 
 		String sql = "";
 		PreparedStatement pstmt = null;
@@ -667,6 +642,10 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 		try{
 			String sumField = "amtSourceDr";
 			if (!isDebit) sumField = "amtSourceCr";
+
+			if (cBPartnerID > 0){
+				whereClause += " and f.c_bpartner_id =" + cBPartnerID;
+			}
 
 		    sql = " select sum(round(f." + sumField + ",2)) as saldomo " +
 					" from fact_acct f " +
@@ -740,47 +719,21 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 					elementValue.setC_Currency_ID(acctSchema.getC_Currency_ID());
 				}
 
-				// Tasa de cambio para moneda distinta a moneda del esquema contable y fecha = fecha de cierre.
-				BigDecimal currencyRate = Env.ONE;
-
-				/*
-				if (elementValue.getC_Currency_ID() != acctSchema.getC_Currency_ID()){
-					if (hashRates.containsKey(elementValue.getC_Currency_ID())){
-						currencyRate = hashRates.get(elementValue.getC_Currency_ID());
-					}
-					else {
-						currencyRate = CurrencyUtils.getCurrencyRate(getCtx(), this.getAD_Client_ID(), 0, elementValue.getC_Currency_ID(),
-								acctSchema.getC_Currency_ID(), 114, this.getDateAcct(), null);
-						if ((currencyRate == null) || (currencyRate.compareTo(Env.ZERO) == 0)){
-							MCurrency currency = (MCurrency) elementValue.getC_Currency();
-							throw new AdempiereException("No se pudo obtener tasa de cambio para fecha de cierre y moneda : " + currency.getISO_Code());
-						}
-						currencyRate = currencyRate.setScale(3, RoundingMode.HALF_UP);
-						hashRates.put(elementValue.getC_Currency_ID(), currencyRate);
-					}
-				}
-				*/
-
 				BigDecimal amtAcctDR = rs.getBigDecimal("sumdr");
 				BigDecimal amtAcctCR = rs.getBigDecimal("sumcr");
 				BigDecimal amtSourceDR = amtAcctDR;
 				BigDecimal amtSourceCR = amtAcctCR;
 
-				if (elementValue.getC_Currency_ID() != acctSchema.getC_Currency_ID()){
-					amtSourceDR = this.getAccountSumSaldoMO(elementValue.get_ID(), elementValue.getC_Currency_ID(), true, whereClause);
-					amtSourceCR = this.getAccountSumSaldoMO(elementValue.get_ID(), elementValue.getC_Currency_ID(), false, whereClause);
-				}
+				int cBPartnerID = rs.getInt("c_bpartner_id");
 
 				if (elementValue.getC_Currency_ID() != acctSchema.getC_Currency_ID()){
-					if ((amtSourceDR != null) && (amtSourceDR.compareTo(Env.ZERO) != 0)){
-						currencyRate = amtAcctDR.divide(amtSourceDR, 3, RoundingMode.HALF_UP);
-					}
-					else if ((amtSourceCR != null) && (amtSourceCR.compareTo(Env.ZERO) != 0)){
-						currencyRate = amtAcctCR.divide(amtSourceCR, 3, RoundingMode.HALF_UP);
-					}
+					amtSourceDR = this.getAccountSumSaldoMO(elementValue.get_ID(), elementValue.getC_Currency_ID(),
+															cBPartnerID ,true, whereClause);
+					amtSourceCR = this.getAccountSumSaldoMO(elementValue.get_ID(), elementValue.getC_Currency_ID(),
+															cBPartnerID, false, whereClause);
 				}
 
-				this.setCierreLin(elementValue, amtAcctDR, amtAcctCR, elementValue.getC_Currency_ID(), currencyRate, amtSourceDR, amtSourceCR, rs.getInt("c_bpartner_id"));
+				this.setCierreLin(acctSchema, elementValue, elementValue.getC_Currency_ID(), amtAcctDR, amtAcctCR, amtSourceDR, amtSourceCR, cBPartnerID);
 			}
 		}
 		catch (Exception e){
@@ -904,16 +857,18 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 	/***
 	 * Guarda información en linea de cierre.
 	 * Xpande. Created by Gabriel Vila on 6/20/20.
+	 * @param acctSchema
 	 * @param elementValue
+	 * @param cCurrencyID
 	 * @param amtAcctDR
 	 * @param amtAcctCR
-	 * @param cCurrencyID
-	 * @param currencyRate
 	 * @param amtSourceDR
 	 * @param amtSourceCR
+	 * @param cBPartnerID
 	 */
-	private void setCierreLin(MElementValue elementValue, BigDecimal amtAcctDR, BigDecimal amtAcctCR, int cCurrencyID,
-							  BigDecimal currencyRate, BigDecimal amtSourceDR, BigDecimal amtSourceCR, int cBPartnerID){
+	private void setCierreLin(MAcctSchema acctSchema, MElementValue elementValue, int cCurrencyID,
+							  BigDecimal amtAcctDR,  BigDecimal amtAcctCR,
+							  BigDecimal amtSourceDR, BigDecimal amtSourceCR, int cBPartnerID){
 
 		try{
 
@@ -926,7 +881,6 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 			cierreLin.setC_Currency_ID(cCurrencyID);
 			cierreLin.setAmtAcctDr(Env.ZERO);
 			cierreLin.setAmtAcctCr(Env.ZERO);
-			cierreLin.setCurrencyRate(currencyRate);
 			cierreLin.setAmtSourceDr(Env.ZERO);
 			cierreLin.setAmtSourceCr(Env.ZERO);
 			cierreLin.setDifferenceAmt(Env.ZERO);
@@ -1020,6 +974,18 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 				}
 
 			}
+
+			BigDecimal currencyRate = Env.ONE;
+			if (elementValue.getC_Currency_ID() != acctSchema.getC_Currency_ID()){
+				if ((cierreLin.getAmtSourceDrTo() != null) && (cierreLin.getAmtSourceDrTo().compareTo(Env.ZERO) != 0)){
+					currencyRate = cierreLin.getAmtAcctDrTo().divide(cierreLin.getAmtSourceDrTo(), 3, RoundingMode.HALF_UP);
+				}
+				else if ((cierreLin.getAmtSourceCrTo() != null) && (cierreLin.getAmtSourceCrTo().compareTo(Env.ZERO) != 0)){
+					currencyRate = cierreLin.getAmtAcctCrTo().divide(cierreLin.getAmtSourceCrTo(), 3, RoundingMode.HALF_UP);
+				}
+			}
+
+			cierreLin.setCurrencyRate(currencyRate);
 			cierreLin.saveEx();
 
 		}

@@ -56,7 +56,7 @@ public interface I_Z_DifCambioLin
 	/** Set Organization.
 	  * Organizational entity within client
 	  */
-	public void setAD_Org_ID(int AD_Org_ID);
+	public void setAD_Org_ID (int AD_Org_ID);
 
 	/** Get Organization.
 	  * Organizational entity within client
@@ -69,7 +69,7 @@ public interface I_Z_DifCambioLin
 	/** Set Accounted Credit.
 	  * Accounted Credit Amount
 	  */
-	public void setAmtAcctCr(BigDecimal AmtAcctCr);
+	public void setAmtAcctCr (BigDecimal AmtAcctCr);
 
 	/** Get Accounted Credit.
 	  * Accounted Credit Amount
@@ -82,7 +82,7 @@ public interface I_Z_DifCambioLin
 	/** Set AmtAcctCrDif.
 	  * Monto diferencia en créditos en moneda nacional
 	  */
-	public void setAmtAcctCrDif(BigDecimal AmtAcctCrDif);
+	public void setAmtAcctCrDif (BigDecimal AmtAcctCrDif);
 
 	/** Get AmtAcctCrDif.
 	  * Monto diferencia en créditos en moneda nacional
@@ -95,7 +95,7 @@ public interface I_Z_DifCambioLin
 	/** Set AmtAcctCrTo.
 	  * Monto crédito final en moneda nacional
 	  */
-	public void setAmtAcctCrTo(BigDecimal AmtAcctCrTo);
+	public void setAmtAcctCrTo (BigDecimal AmtAcctCrTo);
 
 	/** Get AmtAcctCrTo.
 	  * Monto crédito final en moneda nacional
@@ -108,7 +108,7 @@ public interface I_Z_DifCambioLin
 	/** Set Accounted Debit.
 	  * Accounted Debit Amount
 	  */
-	public void setAmtAcctDr(BigDecimal AmtAcctDr);
+	public void setAmtAcctDr (BigDecimal AmtAcctDr);
 
 	/** Get Accounted Debit.
 	  * Accounted Debit Amount
@@ -121,7 +121,7 @@ public interface I_Z_DifCambioLin
 	/** Set AmtAcctDrDif.
 	  * Monto diferencia en débitos en moneda nacional
 	  */
-	public void setAmtAcctDrDif(BigDecimal AmtAcctDrDif);
+	public void setAmtAcctDrDif (BigDecimal AmtAcctDrDif);
 
 	/** Get AmtAcctDrDif.
 	  * Monto diferencia en débitos en moneda nacional
@@ -134,7 +134,7 @@ public interface I_Z_DifCambioLin
 	/** Set AmtAcctDrTo.
 	  * Monto débito final en moneda nacional
 	  */
-	public void setAmtAcctDrTo(BigDecimal AmtAcctDrTo);
+	public void setAmtAcctDrTo (BigDecimal AmtAcctDrTo);
 
 	/** Get AmtAcctDrTo.
 	  * Monto débito final en moneda nacional
@@ -147,7 +147,7 @@ public interface I_Z_DifCambioLin
 	/** Set Source Credit.
 	  * Source Credit Amount
 	  */
-	public void setAmtSourceCr(BigDecimal AmtSourceCr);
+	public void setAmtSourceCr (BigDecimal AmtSourceCr);
 
 	/** Get Source Credit.
 	  * Source Credit Amount
@@ -160,7 +160,7 @@ public interface I_Z_DifCambioLin
 	/** Set AmtSourceCrDif.
 	  * Monto diferencia para créditos en moneda orígen
 	  */
-	public void setAmtSourceCrDif(BigDecimal AmtSourceCrDif);
+	public void setAmtSourceCrDif (BigDecimal AmtSourceCrDif);
 
 	/** Get AmtSourceCrDif.
 	  * Monto diferencia para créditos en moneda orígen
@@ -173,7 +173,7 @@ public interface I_Z_DifCambioLin
 	/** Set Source Debit.
 	  * Source Debit Amount
 	  */
-	public void setAmtSourceDr(BigDecimal AmtSourceDr);
+	public void setAmtSourceDr (BigDecimal AmtSourceDr);
 
 	/** Get Source Debit.
 	  * Source Debit Amount
@@ -186,12 +186,27 @@ public interface I_Z_DifCambioLin
 	/** Set AmtSourceDrDif.
 	  * Monto diferencia para débitos en moneda origen
 	  */
-	public void setAmtSourceDrDif(BigDecimal AmtSourceDrDif);
+	public void setAmtSourceDrDif (BigDecimal AmtSourceDrDif);
 
 	/** Get AmtSourceDrDif.
 	  * Monto diferencia para débitos en moneda origen
 	  */
 	public BigDecimal getAmtSourceDrDif();
+
+    /** Column name C_BPartner_ID */
+    public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+
+	/** Set Business Partner .
+	  * Identifies a Business Partner
+	  */
+	public void setC_BPartner_ID (int C_BPartner_ID);
+
+	/** Get Business Partner .
+	  * Identifies a Business Partner
+	  */
+	public int getC_BPartner_ID();
+
+	public I_C_BPartner getC_BPartner() throws RuntimeException;
 
     /** Column name C_Currency_ID */
     public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
@@ -199,7 +214,7 @@ public interface I_Z_DifCambioLin
 	/** Set Currency.
 	  * The Currency for this record
 	  */
-	public void setC_Currency_ID(int C_Currency_ID);
+	public void setC_Currency_ID (int C_Currency_ID);
 
 	/** Get Currency.
 	  * The Currency for this record
@@ -214,7 +229,7 @@ public interface I_Z_DifCambioLin
 	/** Set Account Element.
 	  * Account Element
 	  */
-	public void setC_ElementValue_ID(int C_ElementValue_ID);
+	public void setC_ElementValue_ID (int C_ElementValue_ID);
 
 	/** Get Account Element.
 	  * Account Element
@@ -245,7 +260,7 @@ public interface I_Z_DifCambioLin
 	/** Set Rate.
 	  * Currency Conversion Rate
 	  */
-	public void setCurrencyRate(BigDecimal CurrencyRate);
+	public void setCurrencyRate (BigDecimal CurrencyRate);
 
 	/** Get Rate.
 	  * Currency Conversion Rate
@@ -258,7 +273,7 @@ public interface I_Z_DifCambioLin
 	/** Set Active.
 	  * The record is active in the system
 	  */
-	public void setIsActive(boolean IsActive);
+	public void setIsActive (boolean IsActive);
 
 	/** Get Active.
 	  * The record is active in the system
@@ -287,7 +302,7 @@ public interface I_Z_DifCambioLin
 	/** Set Immutable Universally Unique Identifier.
 	  * Immutable Universally Unique Identifier
 	  */
-	public void setUUID(String UUID);
+	public void setUUID (String UUID);
 
 	/** Get Immutable Universally Unique Identifier.
 	  * Immutable Universally Unique Identifier
@@ -298,7 +313,7 @@ public interface I_Z_DifCambioLin
     public static final String COLUMNNAME_Z_DifCambio_ID = "Z_DifCambio_ID";
 
 	/** Set Z_DifCambio ID	  */
-	public void setZ_DifCambio_ID(int Z_DifCambio_ID);
+	public void setZ_DifCambio_ID (int Z_DifCambio_ID);
 
 	/** Get Z_DifCambio ID	  */
 	public int getZ_DifCambio_ID();
@@ -309,7 +324,7 @@ public interface I_Z_DifCambioLin
     public static final String COLUMNNAME_Z_DifCambioLin_ID = "Z_DifCambioLin_ID";
 
 	/** Set Z_DifCambioLin ID	  */
-	public void setZ_DifCambioLin_ID(int Z_DifCambioLin_ID);
+	public void setZ_DifCambioLin_ID (int Z_DifCambioLin_ID);
 
 	/** Get Z_DifCambioLin ID	  */
 	public int getZ_DifCambioLin_ID();
