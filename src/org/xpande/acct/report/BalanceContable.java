@@ -156,7 +156,7 @@ public class BalanceContable {
                     " case when f.accounttype='O' then 'PATRIMONIO' else " +
                     " case when f.accounttype='R' then 'GANANCIAS' else 'OTROS' end end end end end as nomcapituloacct, " +
                     " f.parent_id, f.node_id, f.seqno, f.nrofila, 0, 0, " + this.cAcctSchemaID + ", '" + this.tipoBalanceAcct + "', '" +
-                    this.endDate + "', '" + this.tipoFiltroMonAcct + "', '" + this.incCtaSaldoSinMov + "', ' " +
+                    this.endDate + "', '" + this.tipoFiltroMonAcct + "', '" + this.incCtaSaldoSinMov + "', '" +
                     this.incCierreDiferencial + "', '" + this.incCierreIntegral + "' " +
                     " from ZV_ElementValueTree f " +
                     " where f.ad_client_id =" + this.adClientID +
