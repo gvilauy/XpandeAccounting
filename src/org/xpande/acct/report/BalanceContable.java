@@ -252,9 +252,9 @@ public class BalanceContable {
             sql = " select f.account_id, f.c_currency_id, sum(f.amtsourcedr - f.amtsourcecr) as saldomo, " +
                     " sum(f.amtacctdr - f.amtacctcr) as saldomn " +
                     " from fact_acct f " +
+                    " left outer join c_doctype doc on f.c_doctype_id = doc.c_doctype_id " +
                     " inner join " + TABLA_REPORTE + " b on (f.account_id = b.c_elementvalue_id " +
                     " and b.ad_user_id =" + this.adUserID + ") " +
-                    " left outer join c_doctype doc on f.c_doctype_id = doc.c_doctype_id " +
                     " where b.issummary ='N' " + whereClause + whereMoneda +
                     " group by f.account_id, f.c_currency_id " +
                     " order by f.account_id, f.c_currency_id ";
@@ -484,8 +484,9 @@ public class BalanceContable {
 
             sql = " select sum(f.amtacctdr - f.amtacctcr) as saldomn " +
                     " from fact_acct f " +
+                    " left outer join c_doctype doc on f.c_doctype_id = doc.c_doctype_id " +
                     " where f.account_id =" + cElementValueID +
-                    " and c_doctype_id =" + cDocTypeID + whereClause + whereMoneda;
+                    " and f.c_doctype_id =" + cDocTypeID + whereClause + whereMoneda;
 
         	pstmt = DB.prepareStatement(sql, null);
         	rs = pstmt.executeQuery();
