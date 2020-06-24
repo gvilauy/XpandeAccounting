@@ -207,27 +207,6 @@ public class Doc_Pago extends Doc {
                 if (montoAnticipos == null) montoAnticipos = Env.ZERO;
                 if (this.pago.isReciboAnticipo()) montoAnticipos = Env.ZERO;
 
-                // DR : Monto total del recibo - Cuenta Acreedores del Socio de Negocio
-                /*
-                int acctAcreedID = getValidCombination_ID (Doc.ACCTTYPE_V_Liability, as);
-                if (acctAcreedID <= 0){
-                    p_Error = "Falta parametrizar Cuenta Contable para CxP del Proveedor en moneda de este Documento.";
-                    log.log(Level.SEVERE, p_Error);
-                    fact = null;
-                    facts.add(fact);
-                    return facts;
-                }
-                FactLine fl2 = null;
-                if (!pago.isExtornarAcct()){
-                    fl2 = fact.createLine(null, MAccount.get(getCtx(), acctAcreedID), getC_Currency_ID(), grossAmt.add(montoAnticipos), null);
-                }
-                else{
-                    fl2 = fact.createLine(null, MAccount.get(getCtx(), acctAcreedID), getC_Currency_ID(), null, grossAmt.add(montoAnticipos));
-                }
-                if (fl2 != null){
-                    fl2.setAD_Org_ID(this.pago.getAD_Org_ID());
-                }
-                */
                 HashMap<Integer, InfoMultiCurrency> hashPartnerCR = new HashMap<Integer, InfoMultiCurrency>();
                 MZPago pago = (MZPago) getPO();
                 List<MZPagoLin> pagoLinList = pago.getSelectedLines();
@@ -275,24 +254,52 @@ public class Doc_Pago extends Doc {
                     FactLine fl2 = null;
                     if (!pago.isExtornarAcct()){
                         if (getC_Currency_ID() == as.getC_Currency_ID()){
-                            fl2 = fact.createLine(null, MAccount.get(getCtx(), acctAcreedID), getC_Currency_ID(), entry.getValue().amtSource.add(montoAnticipos), null);
+                            if (entry.getValue().amtSource.add(montoAnticipos).compareTo(Env.ZERO) >= 0){
+                                fl2 = fact.createLine(null, MAccount.get(getCtx(), acctAcreedID), getC_Currency_ID(), entry.getValue().amtSource.add(montoAnticipos), null);
+                            }
+                            else{
+                                fl2 = fact.createLine(null, MAccount.get(getCtx(), acctAcreedID), getC_Currency_ID(), null, entry.getValue().amtSource.add(montoAnticipos).negate());
+                            }
+
                         }
                         else {
-                            fl2 = fact.createLine(null, MAccount.get(getCtx(), acctAcreedID), getC_Currency_ID(), entry.getValue().amtSource, null);
-                            if (fl2 != null){
-                                fl2.setAmtAcctDr(entry.getValue().amtAcct);
+                            if (entry.getValue().amtSource.compareTo(Env.ZERO) >= 0){
+                                fl2 = fact.createLine(null, MAccount.get(getCtx(), acctAcreedID), getC_Currency_ID(), entry.getValue().amtSource, null);
+                                if (fl2 != null){
+                                    fl2.setAmtAcctDr(entry.getValue().amtAcct);
+                                }
+                            }
+                            else{
+                                fl2 = fact.createLine(null, MAccount.get(getCtx(), acctAcreedID), getC_Currency_ID(), null, entry.getValue().amtSource.negate());
+                                if (fl2 != null){
+                                    fl2.setAmtAcctCr(entry.getValue().amtAcct.negate());
+                                }
                             }
                         }
 
                     }
                     else{
                         if (getC_Currency_ID() == as.getC_Currency_ID()){
-                            fl2 = fact.createLine(null, MAccount.get(getCtx(), acctAcreedID), getC_Currency_ID(), null, entry.getValue().amtSource.add(montoAnticipos));
+
+                            if (entry.getValue().amtSource.add(montoAnticipos).compareTo(Env.ZERO) >= 0){
+                                fl2 = fact.createLine(null, MAccount.get(getCtx(), acctAcreedID), getC_Currency_ID(), null, entry.getValue().amtSource.add(montoAnticipos));
+                            }
+                            else{
+                                fl2 = fact.createLine(null, MAccount.get(getCtx(), acctAcreedID), getC_Currency_ID(), entry.getValue().amtSource.add(montoAnticipos).negate(), null);
+                            }
                         }
                         else{
-                            fl2 = fact.createLine(null, MAccount.get(getCtx(), acctAcreedID), getC_Currency_ID(), null, entry.getValue().amtSource);
-                            if (fl2 != null){
-                                fl2.setAmtAcctCr(entry.getValue().amtAcct);
+                            if (entry.getValue().amtSource.compareTo(Env.ZERO) >= 0){
+                                fl2 = fact.createLine(null, MAccount.get(getCtx(), acctAcreedID), getC_Currency_ID(), null, entry.getValue().amtSource);
+                                if (fl2 != null){
+                                    fl2.setAmtAcctCr(entry.getValue().amtAcct);
+                                }
+                            }
+                            else{
+                                fl2 = fact.createLine(null, MAccount.get(getCtx(), acctAcreedID), getC_Currency_ID(), entry.getValue().amtSource.negate(), null);
+                                if (fl2 != null){
+                                    fl2.setAmtAcctDr(entry.getValue().amtAcct.negate());
+                                }
                             }
                         }
                     }
@@ -348,10 +355,21 @@ public class Doc_Pago extends Doc {
 
                         FactLine fl1 = null;
                         if (!pago.isExtornarAcct()){
-                            fl1 = fact.createLine(p_lines[i], MAccount.get(getCtx(), mpEmitidos_ID), getC_Currency_ID(), amt, null);
+                            if (amt.compareTo(Env.ZERO) >= 0){
+                                fl1 = fact.createLine(p_lines[i], MAccount.get(getCtx(), mpEmitidos_ID), getC_Currency_ID(), amt, null);
+                            }
+                            else{
+                                fl1 = fact.createLine(p_lines[i], MAccount.get(getCtx(), mpEmitidos_ID), getC_Currency_ID(), null, amt.negate());
+                            }
+
                         }
                         else{
-                            fl1 = fact.createLine(p_lines[i], MAccount.get(getCtx(), mpEmitidos_ID), getC_Currency_ID(), null, amt);
+                            if (amt.compareTo(Env.ZERO) >= 0){
+                                fl1 = fact.createLine(p_lines[i], MAccount.get(getCtx(), mpEmitidos_ID), getC_Currency_ID(), null, amt);
+                            }
+                            else{
+                                fl1 = fact.createLine(p_lines[i], MAccount.get(getCtx(), mpEmitidos_ID), getC_Currency_ID(), amt.negate(), null);
+                            }
                         }
 
                         if (fl1 != null){
@@ -402,10 +420,20 @@ public class Doc_Pago extends Doc {
                         }
                         FactLine fl11 = null;
                         if (!pago.isExtornarAcct()){
-                            fl11 = fact.createLine(p_lines[i], MAccount.get(getCtx(), emiPendEnt_ID), getC_Currency_ID(), null, amt);
+                            if (amt.compareTo(Env.ZERO) >= 0){
+                                fl11 = fact.createLine(p_lines[i], MAccount.get(getCtx(), emiPendEnt_ID), getC_Currency_ID(), null, amt);
+                            }
+                            else{
+                                fl11 = fact.createLine(p_lines[i], MAccount.get(getCtx(), emiPendEnt_ID), getC_Currency_ID(), amt.negate(), null);
+                            }
                         }
                         else{
-                            fl11 = fact.createLine(p_lines[i], MAccount.get(getCtx(), emiPendEnt_ID), getC_Currency_ID(), amt,  null);
+                            if (amt.compareTo(Env.ZERO) >= 0){
+                                fl11 = fact.createLine(p_lines[i], MAccount.get(getCtx(), emiPendEnt_ID), getC_Currency_ID(), amt,  null);
+                            }
+                            else{
+                                fl11 = fact.createLine(p_lines[i], MAccount.get(getCtx(), emiPendEnt_ID), getC_Currency_ID(), null, amt.negate());
+                            }
                         }
                         if (fl11 != null){
                             fl11.setAD_Org_ID(this.pago.getAD_Org_ID());
@@ -496,10 +524,20 @@ public class Doc_Pago extends Doc {
 
                         FactLine fl22 = null;
                         if (!pago.isExtornarAcct()){
-                            fl22 = fact.createLine (p_lines[i], acctBankCr, getC_Currency_ID(), null, amt);
+                            if (amt.compareTo(Env.ZERO) >= 0){
+                                fl22 = fact.createLine (p_lines[i], acctBankCr, getC_Currency_ID(), null, amt);
+                            }
+                            else{
+                                fl22 = fact.createLine (p_lines[i], acctBankCr, getC_Currency_ID(), amt.negate(), null);
+                            }
                         }
                         else{
-                            fl22 = fact.createLine (p_lines[i], acctBankCr, getC_Currency_ID(), amt, null);
+                            if (amt.compareTo(Env.ZERO) >= 0){
+                                fl22 = fact.createLine (p_lines[i], acctBankCr, getC_Currency_ID(), amt, null);
+                            }
+                            else {
+                                fl22 = fact.createLine (p_lines[i], acctBankCr, getC_Currency_ID(), null, amt.negate());
+                            }
                         }
 
                         if (fl22 != null){
@@ -605,7 +643,14 @@ public class Doc_Pago extends Doc {
             // CR - Deudores comerciales por el total del cobro
             int receivables_ID = getValidCombination_ID(Doc.ACCTTYPE_C_Receivable, as);
 
-            FactLine fl3 = fact.createLine(null, MAccount.get(getCtx(), receivables_ID), getC_Currency_ID(),  null, grossAmt);
+            FactLine fl3 = null;
+
+            if (grossAmt.compareTo(Env.ZERO) >= 0){
+                fl3 = fact.createLine(null, MAccount.get(getCtx(), receivables_ID), getC_Currency_ID(),  null, grossAmt);
+            }
+            else{
+                fl3 = fact.createLine(null, MAccount.get(getCtx(), receivables_ID), getC_Currency_ID(),  grossAmt.negate(), null);
+            }
 
             if (fl3 != null){
                 fl3.setAD_Org_ID(this.pago.getAD_Org_ID());
@@ -670,7 +715,15 @@ public class Doc_Pago extends Doc {
                 }
 
                 // DR - Lineas de Medios de Pago - Monto de cada linea
-                FactLine fl1 = fact.createLine(p_lines[i], MAccount.get(getCtx(), accountID), getC_Currency_ID(), amt, null);
+                FactLine fl1 = null;
+
+                if (amt.compareTo(Env.ZERO) >= 0){
+                    fl1 = fact.createLine(p_lines[i], MAccount.get(getCtx(), accountID), getC_Currency_ID(), amt, null);
+                }
+                else{
+                    fl1 = fact.createLine(p_lines[i], MAccount.get(getCtx(), accountID), getC_Currency_ID(), null, amt.negate());
+                }
+
                 if (fl1 != null){
                     fl1.setAD_Org_ID(this.pago.getAD_Org_ID());
 
@@ -739,7 +792,15 @@ public class Doc_Pago extends Doc {
                     }
 
                     // DR - Lineas de Resguardos Recibidos - Monto de cada linea
-                    FactLine fl1 = fact.createLine(null, MAccount.get(getCtx(), accountID), getC_Currency_ID(), amt, null);
+                    FactLine fl1 = null;
+
+                    if (amt.compareTo(Env.ZERO) >= 0){
+                        fl1 = fact.createLine(null, MAccount.get(getCtx(), accountID), getC_Currency_ID(), amt, null);
+                    }
+                    else{
+                        fl1 = fact.createLine(null, MAccount.get(getCtx(), accountID), getC_Currency_ID(), null, amt.negate());
+                    }
+
                     if (fl1 != null){
                         fl1.setAD_Org_ID(this.pago.getAD_Org_ID());
                     }
