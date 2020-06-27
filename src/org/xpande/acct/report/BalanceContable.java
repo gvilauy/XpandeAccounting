@@ -256,7 +256,6 @@ public class BalanceContable {
                     " inner join " + TABLA_REPORTE + " b on (f.account_id = b.c_elementvalue_id " +
                     " and b.ad_user_id =" + this.adUserID + ") " +
                     " where b.issummary ='N' " + whereClause + whereMoneda +
-                    " and f.account_id = 1000389 " +
                     " group by f.account_id, f.c_currency_id " +
                     " order by f.account_id, f.c_currency_id ";
 
