@@ -880,6 +880,7 @@ public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
 
                 String nroIdentificacion = rs.getString("taxid");
 
+                // Si no tengo numero de identificación
                 if ((nroIdentificacion == null) || (nroIdentificacion.trim().equalsIgnoreCase(""))){
 
                     MZGeneraFormDGIError dgiError = new MZGeneraFormDGIError(getCtx(), 0, get_TrxName());
