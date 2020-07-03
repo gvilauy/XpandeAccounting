@@ -852,7 +852,7 @@ public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
                     " (coalesce(a.sc_seriecfe,'') || a.sc_numerooperacion) as documentnoref, a.datetrx as dateinvoiced, " +
                     " bp.c_bpartner_id, a.c_currency_id, tax.c_tax_id, bp.c_taxgroup_id, " +
                     " coalesce(bp.taxid, a.sc_rucfactura) as taxid , bp.value, bp.name, " +
-                    " vc.account_id, vcVta.account_id as account_vta_id, sum(v.sc_montoiva) " +
+                    " vc.account_id, vcVta.account_id as account_vta_id, sum(v.sc_montoiva) as taxamt " +
                     " from z_stechvtactacte a " +
                     " inner join zv_scanntech_detvtas v on a.z_stech_tk_mov_id = v.z_stech_tk_mov_id " +
                     " left outer join c_bpartner bp on a.sc_rucfactura = bp.taxid " +
