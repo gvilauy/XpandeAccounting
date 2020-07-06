@@ -211,13 +211,16 @@ public class Doc_Pago extends Doc {
                 MZPago pago = (MZPago) getPO();
                 List<MZPagoLin> pagoLinList = pago.getSelectedLines();
                 for (MZPagoLin pagoLin: pagoLinList){
-                    // Sumarizo por moneda para contabilizacion CR por cuenta de Socio de Negocio y Moneda.
-                    if (!hashPartnerCR.containsKey(pagoLin.getC_Currency_ID())){
-                        hashPartnerCR.put(pagoLin.getC_Currency_ID(), new InfoMultiCurrency());
-                        hashPartnerCR.get(pagoLin.getC_Currency_ID()).cuurencyID = pagoLin.getC_Currency_ID();
+                    // Sumarizo por moneda para contabilizacion CR por cuenta de Socio de Negocio y Moneda,
+                    // No considero documentos de anticipos aca, ya que luego se hace un asiento al CR para los mismos.
+                    if (pagoLin.getRef_Pago_ID() <= 0){
+                        if (!hashPartnerCR.containsKey(pagoLin.getC_Currency_ID())){
+                            hashPartnerCR.put(pagoLin.getC_Currency_ID(), new InfoMultiCurrency());
+                            hashPartnerCR.get(pagoLin.getC_Currency_ID()).cuurencyID = pagoLin.getC_Currency_ID();
+                        }
+                        hashPartnerCR.get(pagoLin.getC_Currency_ID()).amtSource = hashPartnerCR.get(pagoLin.getC_Currency_ID()).amtSource.add(pagoLin.getAmtAllocation());
+                        hashPartnerCR.get(pagoLin.getC_Currency_ID()).amtAcct = hashPartnerCR.get(pagoLin.getC_Currency_ID()).amtAcct.add(pagoLin.getAmtAllocationMT());
                     }
-                    hashPartnerCR.get(pagoLin.getC_Currency_ID()).amtSource = hashPartnerCR.get(pagoLin.getC_Currency_ID()).amtSource.add(pagoLin.getAmtAllocation());
-                    hashPartnerCR.get(pagoLin.getC_Currency_ID()).amtAcct = hashPartnerCR.get(pagoLin.getC_Currency_ID()).amtAcct.add(pagoLin.getAmtAllocationMT());
                 }
 
                 // Resto resguardos en la moneda correspondiente
@@ -266,13 +269,17 @@ public class Doc_Pago extends Doc {
                             if (entry.getValue().amtSource.compareTo(Env.ZERO) >= 0){
                                 fl2 = fact.createLine(null, MAccount.get(getCtx(), acctAcreedID), getC_Currency_ID(), entry.getValue().amtSource, null);
                                 if (fl2 != null){
-                                    fl2.setAmtAcctDr(entry.getValue().amtAcct);
+                                    if (this.isMultiCurrency()){
+                                        fl2.setAmtAcctDr(entry.getValue().amtAcct);
+                                    }
                                 }
                             }
                             else{
                                 fl2 = fact.createLine(null, MAccount.get(getCtx(), acctAcreedID), getC_Currency_ID(), null, entry.getValue().amtSource.negate());
                                 if (fl2 != null){
-                                    fl2.setAmtAcctCr(entry.getValue().amtAcct.negate());
+                                    if (this.isMultiCurrency()){
+                                        fl2.setAmtAcctCr(entry.getValue().amtAcct.negate());
+                                    }
                                 }
                             }
                         }
@@ -292,13 +299,17 @@ public class Doc_Pago extends Doc {
                             if (entry.getValue().amtSource.compareTo(Env.ZERO) >= 0){
                                 fl2 = fact.createLine(null, MAccount.get(getCtx(), acctAcreedID), getC_Currency_ID(), null, entry.getValue().amtSource);
                                 if (fl2 != null){
-                                    fl2.setAmtAcctCr(entry.getValue().amtAcct);
+                                    if (this.isMultiCurrency()){
+                                        fl2.setAmtAcctCr(entry.getValue().amtAcct);
+                                    }
                                 }
                             }
                             else{
                                 fl2 = fact.createLine(null, MAccount.get(getCtx(), acctAcreedID), getC_Currency_ID(), entry.getValue().amtSource.negate(), null);
                                 if (fl2 != null){
-                                    fl2.setAmtAcctDr(entry.getValue().amtAcct.negate());
+                                    if (this.isMultiCurrency()){
+                                        fl2.setAmtAcctDr(entry.getValue().amtAcct.negate());
+                                    }
                                 }
                             }
                         }
