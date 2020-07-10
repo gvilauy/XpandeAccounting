@@ -864,6 +864,7 @@ public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
                     " left outer join c_validcombination vcVta on tacct.t_due_acct = vcVta.c_validcombination_id " +
                     " where a.ad_org_id =" + this.getAD_Org_ID() +
                     " and a.datetrx between ? and ? " +
+                    " and a.EsVentaEmpresa ='Y' " +
                     " and ((a.sc_tipocfe <> '101') or (a.sc_tipocfe = '101' and a.sc_rucfactura is not null)) " +
                     " group by 1,2,3,4,5,6,7,8,9,10,11,12,13 " +
                     " order by 1,2,3,4,5,6,7,8,9,10,11,12,13 ";
