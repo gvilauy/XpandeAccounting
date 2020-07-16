@@ -236,6 +236,16 @@ public class Doc_Pago extends Doc {
                     }
                 }
 
+                // Cuando solo tengo Anticipos como documentos, debo agregar importe al hash.
+                if (hashPartnerCR.size() <= 0){
+                    if ((this.pago.getPayAmt() != null) && (this.pago.getPayAmt().compareTo(Env.ZERO) != 0)){
+                        hashPartnerCR.put(this.pago.getC_Currency_ID(), new InfoMultiCurrency());
+                        hashPartnerCR.get(this.pago.getC_Currency_ID()).cuurencyID = this.pago.getC_Currency_ID();
+                        hashPartnerCR.get(this.pago.getC_Currency_ID()).amtSource = hashPartnerCR.get(this.pago.getC_Currency_ID()).amtSource.add(this.pago.getPayAmt());
+                        hashPartnerCR.get(this.pago.getC_Currency_ID()).amtAcct = hashPartnerCR.get(this.pago.getC_Currency_ID()).amtAcct.add(this.pago.getPayAmt());
+                    }
+                }
+
                 // DR : Cuenta Acreedores del Socio de Negocio según moneda
                 for (HashMap.Entry<Integer, InfoMultiCurrency> entry : hashPartnerCR.entrySet()){
 
@@ -257,13 +267,15 @@ public class Doc_Pago extends Doc {
                     FactLine fl2 = null;
                     if (!pago.isExtornarAcct()){
                         if (getC_Currency_ID() == as.getC_Currency_ID()){
+                            /*
                             if (entry.getValue().amtSource.add(montoAnticipos).compareTo(Env.ZERO) >= 0){
                                 fl2 = fact.createLine(null, MAccount.get(getCtx(), acctAcreedID), getC_Currency_ID(), entry.getValue().amtSource.add(montoAnticipos), null);
                             }
                             else{
                                 fl2 = fact.createLine(null, MAccount.get(getCtx(), acctAcreedID), getC_Currency_ID(), null, entry.getValue().amtSource.add(montoAnticipos).negate());
                             }
-
+                             */
+                            fl2 = fact.createLine(null, MAccount.get(getCtx(), acctAcreedID), getC_Currency_ID(), entry.getValue().amtSource, null);
                         }
                         else {
                             if (entry.getValue().amtSource.compareTo(Env.ZERO) >= 0){
@@ -288,12 +300,16 @@ public class Doc_Pago extends Doc {
                     else{
                         if (getC_Currency_ID() == as.getC_Currency_ID()){
 
+                            /*
                             if (entry.getValue().amtSource.add(montoAnticipos).compareTo(Env.ZERO) >= 0){
                                 fl2 = fact.createLine(null, MAccount.get(getCtx(), acctAcreedID), getC_Currency_ID(), null, entry.getValue().amtSource.add(montoAnticipos));
                             }
                             else{
                                 fl2 = fact.createLine(null, MAccount.get(getCtx(), acctAcreedID), getC_Currency_ID(), entry.getValue().amtSource.add(montoAnticipos).negate(), null);
                             }
+                            */
+
+                            fl2 = fact.createLine(null, MAccount.get(getCtx(), acctAcreedID), getC_Currency_ID(), null, entry.getValue().amtSource.add(montoAnticipos));
                         }
                         else{
                             if (entry.getValue().amtSource.compareTo(Env.ZERO) >= 0){
