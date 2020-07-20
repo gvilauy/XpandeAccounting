@@ -1194,7 +1194,7 @@ public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
             sql = " select b.account_id, a.dateacct, a.c_invoice_id, a.c_doctypetarget_id, " +
                     " (coalesce(a.documentserie, '') || a.documentno) as documentnoref, " +
                     " a.dateinvoiced, a.c_bpartner_id, a.c_currency_id, doc.docbasetype, a.issotrx, " +
-                    " b.c_validcombination_id, b.amtsourcedr, b.amtsourcecr, " +
+                    " b.c_validcombination_id, b.amtsourcedr, b.amtsourcecr, b.c_tax_id, " +
                     " bp.c_taxgroup_id, bp.taxid, bp.value, bp.name " +
                     " from c_invoice a " +
                     " inner join Z_InvoiceAstoManual b on a.c_invoice_id = b.c_invoice_id " +
@@ -1234,6 +1234,12 @@ public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
                 }
                 else{
 
+                    boolean negarMontos = false;
+                    MDocType docType = new MDocType(getCtx(), rs.getInt("c_doctypetarget_id"), null);
+                    if ((docType.getDocBaseType().equalsIgnoreCase("APC")) || (docType.getDocBaseType().equalsIgnoreCase("ARC"))){
+                        negarMontos = true;
+                    }
+
                     BigDecimal taxAmt = rs.getBigDecimal("amtsourcedr");
                     if ((taxAmt == null) || (taxAmt.compareTo(Env.ZERO) == 0)){
                         taxAmt = rs.getBigDecimal("amtsourcecr");
@@ -1245,13 +1251,27 @@ public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
                     MZGeneraFormDGILin linea = new MZGeneraFormDGILin(getCtx(), 0, get_TrxName());
                     linea.setAD_Org_ID(this.getAD_Org_ID());
                     linea.setZ_GeneraFormDGI_ID(this.get_ID());
-                    linea.setAmtDocument(taxAmt);
-                    linea.setAmtDocumentMT(linea.getAmtDocument());
+
+
+                    if (!negarMontos){
+                        linea.setAmtDocument(taxAmt);
+                        linea.setAmtDocumentMT(linea.getAmtDocument());
+
+                    }
+                    else{
+                        linea.setAmtDocument(taxAmt.negate());
+                        linea.setAmtDocumentMT(linea.getAmtDocument().negate());
+                    }
+
                     linea.setC_BPartner_ID(rs.getInt("c_bpartner_id"));
                     linea.setC_Currency_ID(rs.getInt("c_currency_id"));
                     linea.setC_DocType_ID(rs.getInt("c_doctypetarget_id"));
                     linea.setC_Invoice_ID(rs.getInt("c_invoice_id"));
-                    //linea.setC_Tax_ID(rs.getInt("c_tax_id"));
+
+                    if (rs.getInt("c_tax_id") > 0){
+                        linea.setC_Tax_ID(rs.getInt("c_tax_id"));
+                    }
+
                     linea.setCurrencyRate(Env.ONE);
                     linea.setDateAcct(rs.getTimestamp("dateacct"));
                     linea.setDateDoc(rs.getTimestamp("dateinvoiced"));
@@ -1292,7 +1312,14 @@ public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
                         }
                         else{
                             linea.setCurrencyRate(rate);
-                            linea.setAmtDocumentMT(linea.getAmtDocument().multiply(linea.getCurrencyRate()).setScale(2, RoundingMode.HALF_UP));
+
+                            if (!negarMontos){
+                                linea.setAmtDocumentMT(linea.getAmtDocument().multiply(linea.getCurrencyRate()).setScale(2, RoundingMode.HALF_UP));
+                            }
+                            else {
+                                linea.setAmtDocumentMT(linea.getAmtDocument().multiply(linea.getCurrencyRate()).setScale(2, RoundingMode.HALF_UP).negate());
+                            }
+
                         }
                     }
 
