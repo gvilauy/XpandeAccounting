@@ -707,7 +707,7 @@ public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
                     " left outer join c_bpartner bp on a.st_documentoreceptor = bp.taxid " +
                     " left outer join z_sisteco_tk_cfecab cfe on a.z_sisteco_tk_cvta_id = cfe.z_sisteco_tk_cvta_id " +
                     " left outer join z_cfe_configdocdgi dgi on cfe.st_tipocfe = dgi.codigodgi " +
-                    " left outer join z_cfe_configdocsend sdgi on dgi.z_cfe_configdocdgi_id = sdgi.z_cfe_configdocdgi_id " +
+                    " left outer join z_cfe_configdocsend sdgi on (dgi.z_cfe_configdocdgi_id = sdgi.z_cfe_configdocdgi_id and sdgi.ad_orgtrx_id = a.ad_org_id) " +
                     " left outer join c_tax tax on (a.c_taxcategory_id = tax.c_taxcategory_id and tax.isdefault='Y') " +
                     " left outer join c_tax_acct tacct on tax.c_tax_id = tacct.c_tax_id " +
                     " left outer join c_validcombination vc on tacct.t_credit_acct = vc.c_validcombination_id " +
