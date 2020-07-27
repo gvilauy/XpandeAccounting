@@ -472,7 +472,8 @@ public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
                     " left outer join c_validcombination vcVta on tacct.t_due_acct = vcVta.c_validcombination_id " +
                     " where inv.docstatus = 'CO' " +
                     " and inv.ad_org_id =" + this.getAD_Org_ID() +
-                    " and inv.c_doctypetarget_id != " + docInternoID +
+                    //" and inv.c_doctypetarget_id != " + docInternoID +
+                    " and inv.c_doctypetarget_id not in (select c_doctype_id from Z_AcctConfigDoc2181) " +
                     " and inv.AsientoManualInvoice ='N' " +
                     " and inv.dateacct between ? and ? " +
                     " and taxgrp.value <>'OTRO' " +
@@ -1255,12 +1256,12 @@ public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
 
                     if (!negarMontos){
                         linea.setAmtDocument(taxAmt);
-                        linea.setAmtDocumentMT(linea.getAmtDocument());
+                        linea.setAmtDocumentMT(taxAmt);
 
                     }
                     else{
                         linea.setAmtDocument(taxAmt.negate());
-                        linea.setAmtDocumentMT(linea.getAmtDocument().negate());
+                        linea.setAmtDocumentMT(taxAmt.negate());
                     }
 
                     linea.setC_BPartner_ID(rs.getInt("c_bpartner_id"));
