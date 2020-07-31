@@ -56,7 +56,7 @@ public interface I_Z_AcctFactDet
 	/** Set Organization.
 	  * Organizational entity within client
 	  */
-	public void setAD_Org_ID(int AD_Org_ID);
+	public void setAD_Org_ID (int AD_Org_ID);
 
 	/** Get Organization.
 	  * Organizational entity within client
@@ -69,7 +69,7 @@ public interface I_Z_AcctFactDet
 	/** Set Bank Account.
 	  * Account at the Bank
 	  */
-	public void setC_BankAccount_ID(int C_BankAccount_ID);
+	public void setC_BankAccount_ID (int C_BankAccount_ID);
 
 	/** Get Bank Account.
 	  * Account at the Bank
@@ -84,7 +84,7 @@ public interface I_Z_AcctFactDet
 	/** Set Bank.
 	  * Bank
 	  */
-	public void setC_Bank_ID(int C_Bank_ID);
+	public void setC_Bank_ID (int C_Bank_ID);
 
 	/** Get Bank.
 	  * Bank
@@ -99,7 +99,7 @@ public interface I_Z_AcctFactDet
 	/** Set Invoice.
 	  * Invoice Identifier
 	  */
-	public void setC_Invoice_ID(int C_Invoice_ID);
+	public void setC_Invoice_ID (int C_Invoice_ID);
 
 	/** Get Invoice.
 	  * Invoice Identifier
@@ -130,7 +130,7 @@ public interface I_Z_AcctFactDet
 	/** Set Tax.
 	  * Tax identifier
 	  */
-	public void setC_Tax_ID(int C_Tax_ID);
+	public void setC_Tax_ID (int C_Tax_ID);
 
 	/** Get Tax.
 	  * Tax identifier
@@ -145,7 +145,7 @@ public interface I_Z_AcctFactDet
 	/** Set Rate.
 	  * Currency Conversion Rate
 	  */
-	public void setCurrencyRate(BigDecimal CurrencyRate);
+	public void setCurrencyRate (BigDecimal CurrencyRate);
 
 	/** Get Rate.
 	  * Currency Conversion Rate
@@ -158,7 +158,7 @@ public interface I_Z_AcctFactDet
 	/** Set Due Date.
 	  * Date when the payment is due
 	  */
-	public void setDueDate(Timestamp DueDate);
+	public void setDueDate (Timestamp DueDate);
 
 	/** Get Due Date.
 	  * Date when the payment is due
@@ -171,7 +171,7 @@ public interface I_Z_AcctFactDet
 	/** Set EstadoMedioPago.
 	  * Estado de un medio de pago
 	  */
-	public void setEstadoMedioPago(String EstadoMedioPago);
+	public void setEstadoMedioPago (String EstadoMedioPago);
 
 	/** Get EstadoMedioPago.
 	  * Estado de un medio de pago
@@ -182,7 +182,7 @@ public interface I_Z_AcctFactDet
     public static final String COLUMNNAME_Fact_Acct_ID = "Fact_Acct_ID";
 
 	/** Set Accounting Fact	  */
-	public void setFact_Acct_ID(int Fact_Acct_ID);
+	public void setFact_Acct_ID (int Fact_Acct_ID);
 
 	/** Get Accounting Fact	  */
 	public int getFact_Acct_ID();
@@ -195,7 +195,7 @@ public interface I_Z_AcctFactDet
 	/** Set Journal.
 	  * General Ledger Journal
 	  */
-	public void setGL_Journal_ID(int GL_Journal_ID);
+	public void setGL_Journal_ID (int GL_Journal_ID);
 
 	/** Get Journal.
 	  * General Ledger Journal
@@ -210,7 +210,7 @@ public interface I_Z_AcctFactDet
 	/** Set Active.
 	  * The record is active in the system
 	  */
-	public void setIsActive(boolean IsActive);
+	public void setIsActive (boolean IsActive);
 
 	/** Get Active.
 	  * The record is active in the system
@@ -223,7 +223,7 @@ public interface I_Z_AcctFactDet
 	/** Set NroMedioPago.
 	  * Numero de medio de pago
 	  */
-	public void setNroMedioPago(String NroMedioPago);
+	public void setNroMedioPago (String NroMedioPago);
 
 	/** Get NroMedioPago.
 	  * Numero de medio de pago
@@ -252,7 +252,7 @@ public interface I_Z_AcctFactDet
 	/** Set Immutable Universally Unique Identifier.
 	  * Immutable Universally Unique Identifier
 	  */
-	public void setUUID(String UUID);
+	public void setUUID (String UUID);
 
 	/** Get Immutable Universally Unique Identifier.
 	  * Immutable Universally Unique Identifier
@@ -263,7 +263,7 @@ public interface I_Z_AcctFactDet
     public static final String COLUMNNAME_Z_AcctFactDet_ID = "Z_AcctFactDet_ID";
 
 	/** Set Z_AcctFactDet ID	  */
-	public void setZ_AcctFactDet_ID(int Z_AcctFactDet_ID);
+	public void setZ_AcctFactDet_ID (int Z_AcctFactDet_ID);
 
 	/** Get Z_AcctFactDet ID	  */
 	public int getZ_AcctFactDet_ID();
@@ -272,7 +272,7 @@ public interface I_Z_AcctFactDet
     public static final String COLUMNNAME_Z_DepositoMedioPago_ID = "Z_DepositoMedioPago_ID";
 
 	/** Set Z_DepositoMedioPago ID	  */
-	public void setZ_DepositoMedioPago_ID(int Z_DepositoMedioPago_ID);
+	public void setZ_DepositoMedioPago_ID (int Z_DepositoMedioPago_ID);
 
 	/** Get Z_DepositoMedioPago ID	  */
 	public int getZ_DepositoMedioPago_ID();
@@ -281,7 +281,7 @@ public interface I_Z_AcctFactDet
     public static final String COLUMNNAME_Z_EmisionMedioPago_ID = "Z_EmisionMedioPago_ID";
 
 	/** Set Z_EmisionMedioPago ID	  */
-	public void setZ_EmisionMedioPago_ID(int Z_EmisionMedioPago_ID);
+	public void setZ_EmisionMedioPago_ID (int Z_EmisionMedioPago_ID);
 
 	/** Get Z_EmisionMedioPago ID	  */
 	public int getZ_EmisionMedioPago_ID();
@@ -290,7 +290,7 @@ public interface I_Z_AcctFactDet
     public static final String COLUMNNAME_Z_MedioPago_ID = "Z_MedioPago_ID";
 
 	/** Set Z_MedioPago ID	  */
-	public void setZ_MedioPago_ID(int Z_MedioPago_ID);
+	public void setZ_MedioPago_ID (int Z_MedioPago_ID);
 
 	/** Get Z_MedioPago ID	  */
 	public int getZ_MedioPago_ID();
@@ -299,7 +299,7 @@ public interface I_Z_AcctFactDet
     public static final String COLUMNNAME_Z_MedioPagoIdent_ID = "Z_MedioPagoIdent_ID";
 
 	/** Set Z_MedioPagoIdent ID	  */
-	public void setZ_MedioPagoIdent_ID(int Z_MedioPagoIdent_ID);
+	public void setZ_MedioPagoIdent_ID (int Z_MedioPagoIdent_ID);
 
 	/** Get Z_MedioPagoIdent ID	  */
 	public int getZ_MedioPagoIdent_ID();
@@ -308,7 +308,7 @@ public interface I_Z_AcctFactDet
     public static final String COLUMNNAME_Z_MedioPagoItem_ID = "Z_MedioPagoItem_ID";
 
 	/** Set Z_MedioPagoItem ID	  */
-	public void setZ_MedioPagoItem_ID(int Z_MedioPagoItem_ID);
+	public void setZ_MedioPagoItem_ID (int Z_MedioPagoItem_ID);
 
 	/** Get Z_MedioPagoItem ID	  */
 	public int getZ_MedioPagoItem_ID();
@@ -317,16 +317,25 @@ public interface I_Z_AcctFactDet
     public static final String COLUMNNAME_Z_MedioPagoReplace_ID = "Z_MedioPagoReplace_ID";
 
 	/** Set Z_MedioPagoReplace ID	  */
-	public void setZ_MedioPagoReplace_ID(int Z_MedioPagoReplace_ID);
+	public void setZ_MedioPagoReplace_ID (int Z_MedioPagoReplace_ID);
 
 	/** Get Z_MedioPagoReplace ID	  */
 	public int getZ_MedioPagoReplace_ID();
+
+    /** Column name Z_MPagoCaja_ID */
+    public static final String COLUMNNAME_Z_MPagoCaja_ID = "Z_MPagoCaja_ID";
+
+	/** Set Z_MPagoCaja ID	  */
+	public void setZ_MPagoCaja_ID (int Z_MPagoCaja_ID);
+
+	/** Get Z_MPagoCaja ID	  */
+	public int getZ_MPagoCaja_ID();
 
     /** Column name Z_Pago_ID */
     public static final String COLUMNNAME_Z_Pago_ID = "Z_Pago_ID";
 
 	/** Set Z_Pago ID	  */
-	public void setZ_Pago_ID(int Z_Pago_ID);
+	public void setZ_Pago_ID (int Z_Pago_ID);
 
 	/** Get Z_Pago ID	  */
 	public int getZ_Pago_ID();
@@ -335,7 +344,7 @@ public interface I_Z_AcctFactDet
     public static final String COLUMNNAME_Z_ResguardoSocio_ID = "Z_ResguardoSocio_ID";
 
 	/** Set Z_ResguardoSocio ID	  */
-	public void setZ_ResguardoSocio_ID(int Z_ResguardoSocio_ID);
+	public void setZ_ResguardoSocio_ID (int Z_ResguardoSocio_ID);
 
 	/** Get Z_ResguardoSocio ID	  */
 	public int getZ_ResguardoSocio_ID();
@@ -344,7 +353,7 @@ public interface I_Z_AcctFactDet
     public static final String COLUMNNAME_Z_RetencionSocio_ID = "Z_RetencionSocio_ID";
 
 	/** Set Z_RetencionSocio ID	  */
-	public void setZ_RetencionSocio_ID(int Z_RetencionSocio_ID);
+	public void setZ_RetencionSocio_ID (int Z_RetencionSocio_ID);
 
 	/** Get Z_RetencionSocio ID	  */
 	public int getZ_RetencionSocio_ID();
