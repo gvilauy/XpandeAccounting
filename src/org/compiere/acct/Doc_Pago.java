@@ -342,12 +342,19 @@ public class Doc_Pago extends Doc {
                 // Lineas de Medios de Pago - Monto de cada linea
                 for (int i = 0; i < p_lines.length; i++)
                 {
+
                     BigDecimal amt = p_lines[i].getAmtSource();
 
                     MZPagoMedioPago pagoMedioPago = new MZPagoMedioPago(getCtx(), p_lines[i].get_ID(), this.getTrxName());
                     MZMedioPagoItem medioPagoItem = (MZMedioPagoItem) pagoMedioPago.getZ_MedioPagoItem();
                     String nroMedioPago = "";
                     MBank bank = null;
+
+                    if (pagoMedioPago.getC_Currency_ID() != this.pago.getC_Currency_ID()){
+                        amt = pagoMedioPago.getTotalAmt();
+                        this.setIsMultiCurrency(true);
+                    }
+                    this.setC_Currency_ID(pagoMedioPago.getC_Currency_ID());
 
                     // Si el medio de pago esta configurado como no emisible, entonces no muevo cuentas de Emision.
                     MZMedioPago medioPagoAux = (MZMedioPago) medioPagoItem.getZ_MedioPago();
