@@ -10,6 +10,7 @@ import org.xpande.financial.utils.InfoMultiCurrency;
 import org.xpande.financial.model.*;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -267,14 +268,6 @@ public class Doc_Pago extends Doc {
                     FactLine fl2 = null;
                     if (!pago.isExtornarAcct()){
                         if (getC_Currency_ID() == as.getC_Currency_ID()){
-                            /*
-                            if (entry.getValue().amtSource.add(montoAnticipos).compareTo(Env.ZERO) >= 0){
-                                fl2 = fact.createLine(null, MAccount.get(getCtx(), acctAcreedID), getC_Currency_ID(), entry.getValue().amtSource.add(montoAnticipos), null);
-                            }
-                            else{
-                                fl2 = fact.createLine(null, MAccount.get(getCtx(), acctAcreedID), getC_Currency_ID(), null, entry.getValue().amtSource.add(montoAnticipos).negate());
-                            }
-                             */
                             fl2 = fact.createLine(null, MAccount.get(getCtx(), acctAcreedID), getC_Currency_ID(), entry.getValue().amtSource, null);
                         }
                         else {
@@ -284,6 +277,13 @@ public class Doc_Pago extends Doc {
                                     if (this.isMultiCurrency()){
                                         fl2.setAmtAcctDr(entry.getValue().amtAcct);
                                     }
+                                    else{
+                                        MZPagoMoneda pagoMoneda = MZPagoMoneda.getByCurrencyPago(getCtx(), this.pago.get_ID(), as.getC_Currency_ID(), getTrxName());
+                                        if ((pagoMoneda != null) && (pagoMoneda.get_ID() > 0)){
+                                            BigDecimal amtAcct = entry.getValue().amtSource.multiply(pagoMoneda.getMultiplyRate()).setScale(2, RoundingMode.HALF_UP);
+                                            fl2.setAmtAcctDr(amtAcct);
+                                        }
+                                    }
                                 }
                             }
                             else{
@@ -292,6 +292,13 @@ public class Doc_Pago extends Doc {
                                     if (this.isMultiCurrency()){
                                         fl2.setAmtAcctCr(entry.getValue().amtAcct.negate());
                                     }
+                                    else{
+                                        MZPagoMoneda pagoMoneda = MZPagoMoneda.getByCurrencyPago(getCtx(), this.pago.get_ID(), as.getC_Currency_ID(), getTrxName());
+                                        if ((pagoMoneda != null) && (pagoMoneda.get_ID() > 0)){
+                                            BigDecimal amtAcct = entry.getValue().amtSource.negate().multiply(pagoMoneda.getMultiplyRate()).setScale(2, RoundingMode.HALF_UP);
+                                            fl2.setAmtAcctCr(amtAcct);
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -299,16 +306,6 @@ public class Doc_Pago extends Doc {
                     }
                     else{
                         if (getC_Currency_ID() == as.getC_Currency_ID()){
-
-                            /*
-                            if (entry.getValue().amtSource.add(montoAnticipos).compareTo(Env.ZERO) >= 0){
-                                fl2 = fact.createLine(null, MAccount.get(getCtx(), acctAcreedID), getC_Currency_ID(), null, entry.getValue().amtSource.add(montoAnticipos));
-                            }
-                            else{
-                                fl2 = fact.createLine(null, MAccount.get(getCtx(), acctAcreedID), getC_Currency_ID(), entry.getValue().amtSource.add(montoAnticipos).negate(), null);
-                            }
-                            */
-
                             fl2 = fact.createLine(null, MAccount.get(getCtx(), acctAcreedID), getC_Currency_ID(), null, entry.getValue().amtSource.add(montoAnticipos));
                         }
                         else{
@@ -318,6 +315,13 @@ public class Doc_Pago extends Doc {
                                     if (this.isMultiCurrency()){
                                         fl2.setAmtAcctCr(entry.getValue().amtAcct);
                                     }
+                                    else{
+                                        MZPagoMoneda pagoMoneda = MZPagoMoneda.getByCurrencyPago(getCtx(), this.pago.get_ID(), as.getC_Currency_ID(), getTrxName());
+                                        if ((pagoMoneda != null) && (pagoMoneda.get_ID() > 0)){
+                                            BigDecimal amtAcct = entry.getValue().amtSource.multiply(pagoMoneda.getMultiplyRate()).setScale(2, RoundingMode.HALF_UP);
+                                            fl2.setAmtAcctCr(amtAcct);
+                                        }
+                                    }
                                 }
                             }
                             else{
@@ -325,6 +329,13 @@ public class Doc_Pago extends Doc {
                                 if (fl2 != null){
                                     if (this.isMultiCurrency()){
                                         fl2.setAmtAcctDr(entry.getValue().amtAcct.negate());
+                                    }
+                                    else{
+                                        MZPagoMoneda pagoMoneda = MZPagoMoneda.getByCurrencyPago(getCtx(), this.pago.get_ID(), as.getC_Currency_ID(), getTrxName());
+                                        if ((pagoMoneda != null) && (pagoMoneda.get_ID() > 0)){
+                                            BigDecimal amtAcct = entry.getValue().amtSource.negate().multiply(pagoMoneda.getMultiplyRate()).setScale(2, RoundingMode.HALF_UP);
+                                            fl2.setAmtAcctDr(amtAcct);
+                                        }
                                     }
                                 }
                             }
@@ -349,6 +360,7 @@ public class Doc_Pago extends Doc {
                     MZMedioPagoItem medioPagoItem = (MZMedioPagoItem) pagoMedioPago.getZ_MedioPagoItem();
                     String nroMedioPago = "";
                     MBank bank = null;
+
 
                     if (pagoMedioPago.getC_Currency_ID() != this.pago.getC_Currency_ID()){
                         amt = pagoMedioPago.getTotalAmt();
