@@ -516,7 +516,8 @@ public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
                 else{
 
                     BigDecimal taxAmt = rs.getBigDecimal("taxamt");
-                    if (rs.getString("DocBaseType").equalsIgnoreCase("APC")){
+                    if ((rs.getString("DocBaseType").equalsIgnoreCase("APC")) ||
+                            (rs.getString("DocBaseType").equalsIgnoreCase("ARC"))) {
                         taxAmt = taxAmt.negate();
                     }
 
