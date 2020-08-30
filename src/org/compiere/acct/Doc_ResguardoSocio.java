@@ -42,7 +42,7 @@ public class Doc_ResguardoSocio extends Doc {
 
         this.resguardoSocio = (MZResguardoSocio) getPO();
         setDateDoc(resguardoSocio.getDateDoc());
-        setDateAcct(resguardoSocio.getDateDoc());
+        setDateAcct(resguardoSocio.getDateAcct());
 
         setPeriod();
 

@@ -308,12 +308,10 @@ public class MayorContable {
      */
     public String setCuentasFiltro(){
 
-        String message = null;
-
         try{
 
             if ((this.textoFiltroCuentas == null) || (this.textoFiltroCuentas.trim().equalsIgnoreCase(""))){
-                return message;
+                return null;
             }
 
             // Split por separadores de cuentas
@@ -349,7 +347,7 @@ public class MayorContable {
             throw new AdempiereException(e);
         }
 
-        return message;
+        return null;
     }
 
     /***
