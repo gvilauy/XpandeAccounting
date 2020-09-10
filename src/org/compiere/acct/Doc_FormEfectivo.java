@@ -97,6 +97,8 @@ public class Doc_FormEfectivo extends Doc {
         // Configuracion de retail
         MZRetailConfig retailConfig = MZRetailConfig.getDefault(getCtx(), null);
 
+        MDocType docType = (MDocType) this.formEfectivo.getC_DocType();
+
         BigDecimal amtBalanceo1 = Env.ZERO, amtBalanceo2 = Env.ZERO;
 
         // Recorro lineas del documento a contabilizar
@@ -169,10 +171,17 @@ public class Doc_FormEfectivo extends Doc {
         }
 
         // Cuenta de balanceo en ambas monedas
+        boolean esFormulario01 = true;
+        if (docType.getDocSubTypeSO() != null){
+            if (docType.getDocSubTypeSO().equalsIgnoreCase("F2")){
+                esFormulario01 = false;
+            }
+        }
+
         MAccount acctBalanceoMoneda1 = null;
         if (amtBalanceo1.compareTo(Env.ZERO) != 0){
 
-            X_Z_RetailForEfe_Acct forEfeAcct = retailConfig.getFormEfectivoAcct(as.get_ID(), 142);
+            X_Z_RetailForEfe_Acct forEfeAcct = retailConfig.getFormEfectivoAcct(as.get_ID(), 142, esFormulario01);
             if ((forEfeAcct != null) && (forEfeAcct.get_ID() > 0)){
 
                 acctBalanceoMoneda1 = MAccount.get(getCtx(), forEfeAcct.getP_Revenue_Acct());
@@ -197,7 +206,7 @@ public class Doc_FormEfectivo extends Doc {
         MAccount acctBalanceoMoneda2 = null;
         if (amtBalanceo2.compareTo(Env.ZERO) != 0){
 
-            X_Z_RetailForEfe_Acct forEfeAcct = retailConfig.getFormEfectivoAcct(as.get_ID(), 100);
+            X_Z_RetailForEfe_Acct forEfeAcct = retailConfig.getFormEfectivoAcct(as.get_ID(), 100, esFormulario01);
             if ((forEfeAcct != null) && (forEfeAcct.get_ID() > 0)){
 
                 acctBalanceoMoneda2 = MAccount.get(getCtx(), forEfeAcct.getP_Revenue_Acct());
@@ -221,7 +230,7 @@ public class Doc_FormEfectivo extends Doc {
         // Diferencias en ambas monedas
         if (this.formEfectivo.getDifferenceAmt().compareTo(Env.ZERO) != 0){
 
-            X_Z_RetailForEfe_Acct forEfeAcct = retailConfig.getFormEfectivoAcct(as.get_ID(), 142);
+            X_Z_RetailForEfe_Acct forEfeAcct = retailConfig.getFormEfectivoAcct(as.get_ID(), 142, esFormulario01);
 
             if (acctBalanceoMoneda1 == null){
                 acctBalanceoMoneda1 = MAccount.get(getCtx(), forEfeAcct.getP_Revenue_Acct());
@@ -258,7 +267,7 @@ public class Doc_FormEfectivo extends Doc {
         }
         if (this.formEfectivo.getDifferenceAmt2().compareTo(Env.ZERO) != 0){
 
-            X_Z_RetailForEfe_Acct forEfeAcct = retailConfig.getFormEfectivoAcct(as.get_ID(), 100);
+            X_Z_RetailForEfe_Acct forEfeAcct = retailConfig.getFormEfectivoAcct(as.get_ID(), 100, esFormulario01);
             if (acctBalanceoMoneda2 == null){
                 acctBalanceoMoneda2 = MAccount.get(getCtx(), forEfeAcct.getP_Revenue_Acct());
             }
