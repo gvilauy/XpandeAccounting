@@ -78,9 +78,9 @@ public class MZLoadJournal extends X_Z_LoadJournal implements DocAction, DocOpti
 		}
 		else if (docStatus.equalsIgnoreCase(STATUS_Completed)){
 
-			options[newIndex++] = DocumentEngine.ACTION_None;
-			//options[newIndex++] = DocumentEngine.ACTION_ReActivate;
-			options[newIndex++] = DocumentEngine.ACTION_Void;
+			//options[newIndex++] = DocumentEngine.ACTION_None;
+			options[newIndex++] = DocumentEngine.ACTION_ReActivate;
+			//options[newIndex++] = DocumentEngine.ACTION_Void;
 		}
 
 		return newIndex;
@@ -528,10 +528,35 @@ public class MZLoadJournal extends X_Z_LoadJournal implements DocAction, DocOpti
 	public boolean reActivateIt()
 	{
 		log.info("reActivateIt - " + toString());
-		setProcessed(false);
-		if (reverseCorrectIt())
-			return true;
-		return false;
+
+		// Before reActivate
+		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_BEFORE_REACTIVATE);
+		if (m_processMsg != null)
+			return false;
+
+		// Reactivo asientos completados asociados a esta carga
+		List<MJournal> journalCompletosList = this.getJournalsCompleted();
+		for (MJournal journal: journalCompletosList){
+			if (!journal.processIt(DocAction.ACTION_ReActivate)){
+				m_processMsg = "No se pudo reactivar el asiento contable numero : " + journal.getDocumentNo();
+				return false;
+			}
+		}
+
+		// Elimino todos los asientos asociados a esta carga
+		String action = " delete from gl_journal where z_loadjournal_id =" + this.get_ID();
+		DB.executeUpdateEx(action, get_TrxName());
+
+		// After reActivate
+		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_REACTIVATE);
+		if (m_processMsg != null)
+			return false;
+
+		this.setProcessed(false);
+		this.setDocStatus(DOCSTATUS_InProgress);
+		this.setDocAction(DOCACTION_Complete);
+
+		return true;
 	}	//	reActivateIt
 	
 	
