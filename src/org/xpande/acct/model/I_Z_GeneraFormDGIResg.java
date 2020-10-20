@@ -56,7 +56,7 @@ public interface I_Z_GeneraFormDGIResg
 	/** Set Organization.
 	  * Organizational entity within client
 	  */
-	public void setAD_Org_ID(int AD_Org_ID);
+	public void setAD_Org_ID (int AD_Org_ID);
 
 	/** Get Organization.
 	  * Organizational entity within client
@@ -69,7 +69,7 @@ public interface I_Z_GeneraFormDGIResg
 	/** Set AmtBase.
 	  * Monto base
 	  */
-	public void setAmtBase(BigDecimal AmtBase);
+	public void setAmtBase (BigDecimal AmtBase);
 
 	/** Get AmtBase.
 	  * Monto base
@@ -82,7 +82,7 @@ public interface I_Z_GeneraFormDGIResg
 	/** Set AmtBaseMO.
 	  * Monto base en moneda origen
 	  */
-	public void setAmtBaseMO(BigDecimal AmtBaseMO);
+	public void setAmtBaseMO (BigDecimal AmtBaseMO);
 
 	/** Get AmtBaseMO.
 	  * Monto base en moneda origen
@@ -95,7 +95,7 @@ public interface I_Z_GeneraFormDGIResg
 	/** Set AmtRetencion.
 	  * Monto retención
 	  */
-	public void setAmtRetencion(BigDecimal AmtRetencion);
+	public void setAmtRetencion (BigDecimal AmtRetencion);
 
 	/** Get AmtRetencion.
 	  * Monto retención
@@ -108,7 +108,7 @@ public interface I_Z_GeneraFormDGIResg
 	/** Set AmtRetencionMO.
 	  * Monto retención en Moneda Origen que es igual a la moneda del documento
 	  */
-	public void setAmtRetencionMO(BigDecimal AmtRetencionMO);
+	public void setAmtRetencionMO (BigDecimal AmtRetencionMO);
 
 	/** Get AmtRetencionMO.
 	  * Monto retención en Moneda Origen que es igual a la moneda del documento
@@ -121,7 +121,7 @@ public interface I_Z_GeneraFormDGIResg
 	/** Set Business Partner .
 	  * Identifies a Business Partner
 	  */
-	public void setC_BPartner_ID(int C_BPartner_ID);
+	public void setC_BPartner_ID (int C_BPartner_ID);
 
 	/** Get Business Partner .
 	  * Identifies a Business Partner
@@ -136,7 +136,7 @@ public interface I_Z_GeneraFormDGIResg
 	/** Set Currency.
 	  * The Currency for this record
 	  */
-	public void setC_Currency_ID(int C_Currency_ID);
+	public void setC_Currency_ID (int C_Currency_ID);
 
 	/** Get Currency.
 	  * The Currency for this record
@@ -151,7 +151,7 @@ public interface I_Z_GeneraFormDGIResg
 	/** Set Document Type.
 	  * Document type or rules
 	  */
-	public void setC_DocType_ID(int C_DocType_ID);
+	public void setC_DocType_ID (int C_DocType_ID);
 
 	/** Get Document Type.
 	  * Document type or rules
@@ -166,7 +166,7 @@ public interface I_Z_GeneraFormDGIResg
 	/** Set Invoice.
 	  * Invoice Identifier
 	  */
-	public void setC_Invoice_ID(int C_Invoice_ID);
+	public void setC_Invoice_ID (int C_Invoice_ID);
 
 	/** Get Invoice.
 	  * Invoice Identifier
@@ -175,13 +175,26 @@ public interface I_Z_GeneraFormDGIResg
 
 	public I_C_Invoice getC_Invoice() throws RuntimeException;
 
+    /** Column name CodigoDGI */
+    public static final String COLUMNNAME_CodigoDGI = "CodigoDGI";
+
+	/** Set CodigoDGI.
+	  * Código DGI de determinado comprobante
+	  */
+	public void setCodigoDGI (String CodigoDGI);
+
+	/** Get CodigoDGI.
+	  * Código DGI de determinado comprobante
+	  */
+	public String getCodigoDGI();
+
     /** Column name C_Period_ID */
     public static final String COLUMNNAME_C_Period_ID = "C_Period_ID";
 
 	/** Set Period.
 	  * Period of the Calendar
 	  */
-	public void setC_Period_ID(int C_Period_ID);
+	public void setC_Period_ID (int C_Period_ID);
 
 	/** Get Period.
 	  * Period of the Calendar
@@ -210,7 +223,7 @@ public interface I_Z_GeneraFormDGIResg
     public static final String COLUMNNAME_C_TaxGroup_ID = "C_TaxGroup_ID";
 
 	/** Set Tax Group	  */
-	public void setC_TaxGroup_ID(int C_TaxGroup_ID);
+	public void setC_TaxGroup_ID (int C_TaxGroup_ID);
 
 	/** Get Tax Group	  */
 	public int getC_TaxGroup_ID();
@@ -223,7 +236,7 @@ public interface I_Z_GeneraFormDGIResg
 	/** Set Account Date.
 	  * Accounting Date
 	  */
-	public void setDateAcct(Timestamp DateAcct);
+	public void setDateAcct (Timestamp DateAcct);
 
 	/** Get Account Date.
 	  * Accounting Date
@@ -236,7 +249,7 @@ public interface I_Z_GeneraFormDGIResg
 	/** Set Document Date.
 	  * Date of the Document
 	  */
-	public void setDateDoc(Timestamp DateDoc);
+	public void setDateDoc (Timestamp DateDoc);
 
 	/** Get Document Date.
 	  * Date of the Document
@@ -249,7 +262,7 @@ public interface I_Z_GeneraFormDGIResg
 	/** Set DateRefResguardo.
 	  * Fecha referencia de un Resguardo a Socio de Negocio
 	  */
-	public void setDateRefResguardo(Timestamp DateRefResguardo);
+	public void setDateRefResguardo (Timestamp DateRefResguardo);
 
 	/** Get DateRefResguardo.
 	  * Fecha referencia de un Resguardo a Socio de Negocio
@@ -262,7 +275,7 @@ public interface I_Z_GeneraFormDGIResg
 	/** Set Document BaseType.
 	  * Logical type of document
 	  */
-	public void setDocBaseType(String DocBaseType);
+	public void setDocBaseType (String DocBaseType);
 
 	/** Get Document BaseType.
 	  * Logical type of document
@@ -275,7 +288,7 @@ public interface I_Z_GeneraFormDGIResg
 	/** Set DocumentNoRef.
 	  * Numero de documento referenciado
 	  */
-	public void setDocumentNoRef(String DocumentNoRef);
+	public void setDocumentNoRef (String DocumentNoRef);
 
 	/** Get DocumentNoRef.
 	  * Numero de documento referenciado
@@ -288,7 +301,7 @@ public interface I_Z_GeneraFormDGIResg
 	/** Set Active.
 	  * The record is active in the system
 	  */
-	public void setIsActive(boolean IsActive);
+	public void setIsActive (boolean IsActive);
 
 	/** Get Active.
 	  * The record is active in the system
@@ -301,7 +314,7 @@ public interface I_Z_GeneraFormDGIResg
 	/** Set PorcRetencion.
 	  * Porcentaje Retención 
 	  */
-	public void setPorcRetencion(BigDecimal PorcRetencion);
+	public void setPorcRetencion (BigDecimal PorcRetencion);
 
 	/** Get PorcRetencion.
 	  * Porcentaje Retención 
@@ -314,7 +327,7 @@ public interface I_Z_GeneraFormDGIResg
 	/** Set Reference.
 	  * Reference for this record
 	  */
-	public void setReference(String Reference);
+	public void setReference (String Reference);
 
 	/** Get Reference.
 	  * Reference for this record
@@ -327,7 +340,7 @@ public interface I_Z_GeneraFormDGIResg
 	/** Set Tax ID.
 	  * Tax Identification
 	  */
-	public void setTaxID(String TaxID);
+	public void setTaxID (String TaxID);
 
 	/** Get Tax ID.
 	  * Tax Identification
@@ -356,7 +369,7 @@ public interface I_Z_GeneraFormDGIResg
 	/** Set Immutable Universally Unique Identifier.
 	  * Immutable Universally Unique Identifier
 	  */
-	public void setUUID(String UUID);
+	public void setUUID (String UUID);
 
 	/** Get Immutable Universally Unique Identifier.
 	  * Immutable Universally Unique Identifier
@@ -367,7 +380,7 @@ public interface I_Z_GeneraFormDGIResg
     public static final String COLUMNNAME_Z_AcctConfigRubroDGI_ID = "Z_AcctConfigRubroDGI_ID";
 
 	/** Set Z_AcctConfigRubroDGI ID	  */
-	public void setZ_AcctConfigRubroDGI_ID(int Z_AcctConfigRubroDGI_ID);
+	public void setZ_AcctConfigRubroDGI_ID (int Z_AcctConfigRubroDGI_ID);
 
 	/** Get Z_AcctConfigRubroDGI ID	  */
 	public int getZ_AcctConfigRubroDGI_ID();
@@ -378,7 +391,7 @@ public interface I_Z_GeneraFormDGIResg
     public static final String COLUMNNAME_Z_GeneraFormDGI_ID = "Z_GeneraFormDGI_ID";
 
 	/** Set Z_GeneraFormDGI ID	  */
-	public void setZ_GeneraFormDGI_ID(int Z_GeneraFormDGI_ID);
+	public void setZ_GeneraFormDGI_ID (int Z_GeneraFormDGI_ID);
 
 	/** Get Z_GeneraFormDGI ID	  */
 	public int getZ_GeneraFormDGI_ID();
@@ -389,7 +402,7 @@ public interface I_Z_GeneraFormDGIResg
     public static final String COLUMNNAME_Z_GeneraFormDGIResg_ID = "Z_GeneraFormDGIResg_ID";
 
 	/** Set Z_GeneraFormDGIResg ID	  */
-	public void setZ_GeneraFormDGIResg_ID(int Z_GeneraFormDGIResg_ID);
+	public void setZ_GeneraFormDGIResg_ID (int Z_GeneraFormDGIResg_ID);
 
 	/** Get Z_GeneraFormDGIResg ID	  */
 	public int getZ_GeneraFormDGIResg_ID();
@@ -398,7 +411,7 @@ public interface I_Z_GeneraFormDGIResg
     public static final String COLUMNNAME_Z_ResguardoSocioDoc_ID = "Z_ResguardoSocioDoc_ID";
 
 	/** Set Z_ResguardoSocioDoc ID	  */
-	public void setZ_ResguardoSocioDoc_ID(int Z_ResguardoSocioDoc_ID);
+	public void setZ_ResguardoSocioDoc_ID (int Z_ResguardoSocioDoc_ID);
 
 	/** Get Z_ResguardoSocioDoc ID	  */
 	public int getZ_ResguardoSocioDoc_ID();
@@ -407,7 +420,7 @@ public interface I_Z_GeneraFormDGIResg
     public static final String COLUMNNAME_Z_ResguardoSocioDocRet_ID = "Z_ResguardoSocioDocRet_ID";
 
 	/** Set Z_ResguardoSocioDocRet ID	  */
-	public void setZ_ResguardoSocioDocRet_ID(int Z_ResguardoSocioDocRet_ID);
+	public void setZ_ResguardoSocioDocRet_ID (int Z_ResguardoSocioDocRet_ID);
 
 	/** Get Z_ResguardoSocioDocRet ID	  */
 	public int getZ_ResguardoSocioDocRet_ID();
@@ -416,7 +429,7 @@ public interface I_Z_GeneraFormDGIResg
     public static final String COLUMNNAME_Z_ResguardoSocio_ID = "Z_ResguardoSocio_ID";
 
 	/** Set Z_ResguardoSocio ID	  */
-	public void setZ_ResguardoSocio_ID(int Z_ResguardoSocio_ID);
+	public void setZ_ResguardoSocio_ID (int Z_ResguardoSocio_ID);
 
 	/** Get Z_ResguardoSocio ID	  */
 	public int getZ_ResguardoSocio_ID();
@@ -425,7 +438,7 @@ public interface I_Z_GeneraFormDGIResg
     public static final String COLUMNNAME_Z_RetencionSocio_ID = "Z_RetencionSocio_ID";
 
 	/** Set Z_RetencionSocio ID	  */
-	public void setZ_RetencionSocio_ID(int Z_RetencionSocio_ID);
+	public void setZ_RetencionSocio_ID (int Z_RetencionSocio_ID);
 
 	/** Get Z_RetencionSocio ID	  */
 	public int getZ_RetencionSocio_ID();

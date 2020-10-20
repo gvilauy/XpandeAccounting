@@ -33,7 +33,7 @@ public class X_Z_GeneraFormDGIResg extends PO implements I_Z_GeneraFormDGIResg, 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20190922L;
+	private static final long serialVersionUID = 20201020L;
 
     /** Standard Constructor */
     public X_Z_GeneraFormDGIResg (Properties ctx, int Z_GeneraFormDGIResg_ID, String trxName)
@@ -285,6 +285,23 @@ public class X_Z_GeneraFormDGIResg extends PO implements I_Z_GeneraFormDGIResg, 
 		return ii.intValue();
 	}
 
+	/** Set CodigoDGI.
+		@param CodigoDGI 
+		Código DGI de determinado comprobante
+	  */
+	public void setCodigoDGI (String CodigoDGI)
+	{
+		set_Value (COLUMNNAME_CodigoDGI, CodigoDGI);
+	}
+
+	/** Get CodigoDGI.
+		@return Código DGI de determinado comprobante
+	  */
+	public String getCodigoDGI () 
+	{
+		return (String)get_Value(COLUMNNAME_CodigoDGI);
+	}
+
 	public I_C_Period getC_Period() throws RuntimeException
     {
 		return (I_C_Period)MTable.get(getCtx(), I_C_Period.Table_Name)
@@ -519,6 +536,28 @@ public class X_Z_GeneraFormDGIResg extends PO implements I_Z_GeneraFormDGIResg, 
 	public static final String DOCBASETYPE_FMEFormularioMovimientoEfectivo = "FME";
 	/** DPT Deposito Medio Pago Tercero = DPT */
 	public static final String DOCBASETYPE_DPTDepositoMedioPagoTercero = "DPT";
+	/** AVR Asiento de Reclasificación de Medios de Pago = AVR */
+	public static final String DOCBASETYPE_AVRAsientoDeReclasificaciónDeMediosDePago = "AVR";
+	/** CEX Carga Extractos Bancarios = CEX */
+	public static final String DOCBASETYPE_CEXCargaExtractosBancarios = "CEX";
+	/** CIP Carga Inicial de Pagoa / Cobros = CIP */
+	public static final String DOCBASETYPE_CIPCargaInicialDePagoaCobros = "CIP";
+	/** CSC Carga Scanntech Comprobantes = CSC */
+	public static final String DOCBASETYPE_CSCCargaScanntechComprobantes = "CSC";
+	/** CJD Cierre de Cuentas Diferenciales = CJD */
+	public static final String DOCBASETYPE_CJDCierreDeCuentasDiferenciales = "CJD";
+	/** CJI Cierre de Cuentas Integrales = CJI */
+	public static final String DOCBASETYPE_CJICierreDeCuentasIntegrales = "CJI";
+	/** AJI Asiento de Apertura de Ejercicio = AJI */
+	public static final String DOCBASETYPE_AJIAsientoDeAperturaDeEjercicio = "AJI";
+	/** DPS Desafectacion de Productos de Socio = DPS */
+	public static final String DOCBASETYPE_DPSDesafectacionDeProductosDeSocio = "DPS";
+	/** LCB Carga Informacion Core = LCB */
+	public static final String DOCBASETYPE_LCBCargaInformacionCore = "LCB";
+	/** IMC Ingreso Medio Pago Caja = IMC */
+	public static final String DOCBASETYPE_IMCIngresoMedioPagoCaja = "IMC";
+	/** STT Transferencia de Stock = STT */
+	public static final String DOCBASETYPE_STTTransferenciaDeStock = "STT";
 	/** Set Document BaseType.
 		@param DocBaseType 
 		Logical type of document

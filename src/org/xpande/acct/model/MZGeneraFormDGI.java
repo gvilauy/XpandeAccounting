@@ -1576,6 +1576,7 @@ public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
                                     dgiResg.setZ_ResguardoSocio_ID(resguardoSocioDoc.getZ_ResguardoSocio_ID());
                                     dgiResg.setZ_ResguardoSocioDoc_ID(resguardoSocioDoc.get_ID());
                                     dgiResg.setZ_ResguardoSocioDocRet_ID(resguardoSocioDocRet.get_ID());
+                                    dgiResg.setCodigoDGI(retencionSocio.getCodigoDGI());
                                     dgiResg.setZ_RetencionSocio_ID(retencionSocio.get_ID());
 
                                     MZResguardoSocio resguardoSocio = (MZResguardoSocio) resguardoSocioDoc.getZ_ResguardoSocio();
@@ -1786,6 +1787,7 @@ public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
                                     dgiResg.setZ_ResguardoSocioDoc_ID(resguardoSocioDoc.get_ID());
                                     dgiResg.setZ_ResguardoSocioDocRet_ID(resguardoSocioDocRet.get_ID());
                                     dgiResg.setZ_RetencionSocio_ID(retencionSocio.get_ID());
+                                    dgiResg.setCodigoDGI(retencionSocio.getCodigoDGI());
 
                                     MZResguardoSocio resguardoSocio = (MZResguardoSocio) resguardoSocioDoc.getZ_ResguardoSocio();
                                     dgiResg.setDateRefResguardo(resguardoSocio.getDateDoc());
