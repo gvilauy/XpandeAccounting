@@ -437,16 +437,16 @@ public class MZDifCambio extends X_Z_DifCambio implements DocAction, DocOptions 
 		return null;	//getTotalLines();
 	}	//	getApprovalAmt
 	
-	/**
-	 * 	Get Document Currency
-	 *	@return C_Currency_ID
-	 */
+
+	/*
 	public int getC_Currency_ID()
 	{
 	//	MPriceList pl = MPriceList.get(getCtx(), getM_PriceList_ID());
 	//	return pl.getC_Currency_ID();
 		return super.getC_Currency_ID();
 	}	//	getC_Currency_ID
+
+	 */
 
     @Override
     public String toString()
@@ -474,6 +474,10 @@ public class MZDifCambio extends X_Z_DifCambio implements DocAction, DocOptions 
 			}
 
 			MAcctSchema acctSchema = (MAcctSchema) this.getC_AcctSchema();
+
+			if (this.getC_Currency_ID() == acctSchema.getC_Currency_ID()){
+				this.setC_Currency_ID(100);
+			}
 
 			// Valido que la moneda de proceso no sea igual a la moneda del esquema contable
 			if (this.getC_Currency_ID() == acctSchema.getC_Currency_ID()){
