@@ -3,15 +3,16 @@ package org.compiere.acct;
 import org.compiere.model.*;
 import org.compiere.util.Env;
 import org.xpande.acct.model.MZAcctFactDet;
-import org.xpande.financial.model.MZResguardoSocio;
-import org.xpande.financial.model.MZResguardoSocioRet;
-import org.xpande.financial.model.MZRetencionSocio;
-import org.xpande.financial.model.MZRetencionSocioAcct;
+import org.xpande.financial.model.*;
+import org.xpande.financial.utils.InfoMultiCurrency;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Level;
 
 /**
  * Contabilización de Documentos: Resguardos emitidos, contra-resguardos emitidos.
@@ -102,6 +103,67 @@ public class Doc_ResguardoSocio extends Doc {
         ArrayList<Fact> facts = new ArrayList<Fact>();
         Fact fact = new Fact(this, as, Fact.POST_Actual);
 
+        //
+
+        HashMap<Integer, InfoMultiCurrency> hashPartnerAmt = new HashMap<Integer, InfoMultiCurrency>();
+        List<MZResguardoSocioDoc> socioDocList = this.resguardoSocio.getResguardoDocs();
+        for (MZResguardoSocioDoc socioDoc: socioDocList){
+            // Sumarizo por moneda para contabilizacion por cuenta de Socio de Negocio y Moneda,
+            if (!hashPartnerAmt.containsKey(socioDoc.getC_Currency_ID())){
+                hashPartnerAmt.put(socioDoc.getC_Currency_ID(), new InfoMultiCurrency());
+                hashPartnerAmt.get(socioDoc.getC_Currency_ID()).cuurencyID = socioDoc.getC_Currency_ID();
+            }
+            hashPartnerAmt.get(socioDoc.getC_Currency_ID()).amtSource = hashPartnerAmt.get(socioDoc.getC_Currency_ID()).amtSource.add(socioDoc.getAmtRetencionMO());
+            hashPartnerAmt.get(socioDoc.getC_Currency_ID()).amtAcct = hashPartnerAmt.get(socioDoc.getC_Currency_ID()).amtAcct.add(socioDoc.getAmtRetencion());
+        }
+
+        for (HashMap.Entry<Integer, InfoMultiCurrency> entry : hashPartnerAmt.entrySet()) {
+
+            if (entry.getValue().cuurencyID != this.resguardoSocio.getC_Currency_ID()) {
+                this.setIsMultiCurrency(true);
+            }
+
+            this.setC_Currency_ID(entry.getValue().cuurencyID);
+
+            int payables_ID = getValidCombination_ID(Doc.ACCTTYPE_V_Liability, as);
+            if (payables_ID <= 0) {
+                MCurrency currency = new MCurrency(getCtx(), this.getC_Currency_ID(), null);
+                p_Error = "Falta parametrizar Cuenta Contable para CxP del Proveedor en moneda: " + currency.getISO_Code();
+                log.log(Level.SEVERE, p_Error);
+                facts.add(null);
+                return facts;
+            }
+
+            FactLine fl2 = null;
+
+            if (this.getDocumentType().equalsIgnoreCase("RGU")){
+
+                fl2 = fact.createLine(null, MAccount.get(getCtx(), payables_ID), getC_Currency_ID(), entry.getValue().amtSource, null);
+
+                if (getC_Currency_ID() != as.getC_Currency_ID()){
+                    if (fl2 != null){
+                        fl2.setAmtAcctDr(entry.getValue().amtAcct);
+                    }
+                }
+
+            }
+            else{
+                fl2 = fact.createLine(null, MAccount.get(getCtx(), payables_ID), getC_Currency_ID(), null, entry.getValue().amtSource);
+
+                if (getC_Currency_ID() != as.getC_Currency_ID()){
+                    if (fl2 != null){
+                        fl2.setAmtAcctCr(entry.getValue().amtAcct);
+                    }
+                }
+            }
+            if (fl2 != null){
+                fl2.setAD_Org_ID(this.resguardoSocio.getAD_Org_ID());
+            }
+        }
+
+        this.setC_Currency_ID(this.resguardoSocio.getC_Currency_ID());
+
+        /*
 
         BigDecimal grossAmt = getAmount(Doc.AMTTYPE_Gross);
 
@@ -118,6 +180,7 @@ public class Doc_ResguardoSocio extends Doc {
                 fact.createLine(null, MAccount.get(getCtx(), payables_ID), getC_Currency_ID(), null, grossAmt);
             }
         }
+        */
 
         // CR - Lineas de retenciones aplicadas en este resguardo - Monto de cada linea - Cuenta contable asociada a la retencion.
         for (int i = 0; i < p_lines.length; i++)
