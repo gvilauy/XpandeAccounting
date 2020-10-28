@@ -232,8 +232,16 @@ public class Doc_Pago extends Doc {
                         hashPartnerCR.get(pagoResguardo.getC_Currency_ID()).amtAcct = hashPartnerCR.get(pagoResguardo.getC_Currency_ID()).amtAcct.subtract(pagoResguardo.getAmtAllocationMT());
                     }
                     else{
-                        hashPartnerCR.get(100).amtSource = hashPartnerCR.get(100).amtSource.subtract(pagoResguardo.getAmtAllocationMT());
-                        hashPartnerCR.get(100).amtAcct = hashPartnerCR.get(100).amtAcct.subtract(pagoResguardo.getAmtAllocationMT());
+                        // Debo restar el monto en moneda extranjera del resguardo si es que tiene
+                        MZResguardoSocio resguardoSocio = (MZResguardoSocio) pagoResguardo.getZ_ResguardoSocio();
+                        BigDecimal montoME = resguardoSocio.getTotalAmtME();
+                        if (montoME == null) montoME = Env.ZERO;
+                        if (montoME.compareTo(Env.ZERO) > 0){
+                            if (montoME.compareTo(resguardoSocio.getTotalAmt()) != 0){
+                                hashPartnerCR.get(100).amtSource = hashPartnerCR.get(100).amtSource.subtract(montoME);
+                                hashPartnerCR.get(100).amtAcct = hashPartnerCR.get(100).amtAcct.subtract(pagoResguardo.getAmtAllocationMT());
+                            }
+                        }
                     }
                 }
 
