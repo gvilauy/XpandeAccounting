@@ -531,7 +531,14 @@ public class MZDifCambio extends X_Z_DifCambio implements DocAction, DocOptions 
 
 			MAcctSchema acctSchema = (MAcctSchema) this.getC_AcctSchema();
 
-		    sql = " select fa.fact_acct_id, fa.account_id, fa.c_currency_id, coalesce(fa.amtsourcedr,0) as amtsourcedr, coalesce(fa.amtsourcecr,0) as amtsourcecr," +
+			// Cargo tasa de cambio del día inicial
+			BigDecimal rateInicial = CurrencyUtils.getCurrencyRate(getCtx(), this.getAD_Client_ID(), 0, this.getC_Currency_ID(), acctSchema.getC_Currency_ID(),
+					114, this.getStartDate(), get_TrxName());
+			if (rateInicial == null){
+				return "No hay Tasa de Cambio cargada en el sistema para moneda y fecha desde indicada.";
+			}
+
+			sql = " select fa.fact_acct_id, fa.account_id, fa.c_currency_id, coalesce(fa.amtsourcedr,0) as amtsourcedr, coalesce(fa.amtsourcecr,0) as amtsourcecr," +
 					" coalesce(fa.amtacctdr,0) as amtacctdr, coalesce(fa.amtacctcr,0) as amtacctcr, " +
 					" fa.dateacct, fa.currencyrate, fa.c_doctype_id, fa.documentnoref, fa.c_bpartner_id " +
 					" from fact_acct fa  " +
@@ -542,6 +549,7 @@ public class MZDifCambio extends X_Z_DifCambio implements DocAction, DocOptions 
 					" and fa.c_currency_id =" + this.getC_Currency_ID() +
 					" and fa.dateacct between '" + this.getStartDate() + "' and '" + this.getDateDoc() + "' " +
 					" and fa.ad_table_id !=" + this.get_Table_ID() +
+					//" and fa.C_DocType_ID=1000114 " +
 					" and ev.AccountType IN ('A','L') " +
 					" and ev.isforeigncurrency ='Y' " +
 					" order by ev.value, fa.dateacct ";
@@ -571,6 +579,20 @@ public class MZDifCambio extends X_Z_DifCambio implements DocAction, DocOptions 
 				}
 
 				BigDecimal rate = rs.getBigDecimal("currencyrate");
+
+				// Si la fecha de este documento es anterior o igual a la fecha de inicio
+				if (!difCambioDet.getDateAcct().after(this.getStartDate())){
+					// Tasa de cambio es la de la fecha desde
+					rate = rateInicial;
+
+					// Calculo saldos en moneda nacional con esta tasa de cambio y no la que orginalmente esta en el asiento
+					if (difCambioDet.getAmtSourceDr().compareTo(Env.ZERO) != 0){
+						difCambioDet.setAmtAcctDr(difCambioDet.getAmtSourceDr().multiply(rate).setScale(2, RoundingMode.HALF_UP));
+					}
+					else{
+						difCambioDet.setAmtAcctCr(difCambioDet.getAmtSourceCr().multiply(rate).setScale(2, RoundingMode.HALF_UP));
+					}
+				}
 
 				/*
 				// Busco tasa de cambio en proceso anterior de diferencia de cambio para este registro contable.

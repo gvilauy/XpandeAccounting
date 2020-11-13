@@ -1,9 +1,6 @@
 package org.compiere.acct;
 
-import org.compiere.model.MAccount;
-import org.compiere.model.MAcctSchema;
-import org.compiere.model.MBankAccount;
-import org.compiere.model.MDocType;
+import org.compiere.model.*;
 import org.compiere.util.Env;
 import org.xpande.acct.model.MZAcctFactDet;
 import org.xpande.acct.model.X_Z_AcctFactDet;
@@ -122,6 +119,51 @@ public class Doc_MovBanco extends Doc {
 
         BigDecimal grossAmt = getAmount(Doc.AMTTYPE_Gross);
 
+        // CR - Total del documento - Cuenta contable de la cuenta bancaria destino del movimiento
+        int accountID = AccountUtils.getBankValidCombinationID(getCtx(), Doc.ACCTTYPE_BankAsset, this.movBanco.getC_BankAccount_ID(), as, null);;
+        if (accountID <= 0){
+            MBankAccount bankAccount = (MBankAccount) this.movBanco.getC_BankAccount();
+            p_Error = "No se obtuvo Cuenta Contable (BankAsset) asociada a la Cuenta Bancaria : " + bankAccount.getName();
+            log.log(Level.SEVERE, p_Error);
+            fact = null;
+            facts.add(fact);
+            return facts;
+        }
+        MAccount acctBankCr = MAccount.get(getCtx(), accountID);
+        FactLine fl1 = fact.createLine (null, acctBankCr, getC_Currency_ID(), null, grossAmt);
+        if (fl1 != null){
+            fl1.setAD_Org_ID(this.movBanco.getAD_Org_ID());
+        }
+
+        // DR - Monto de Lineas del documento - Cuenta contable del cargo
+        for (int i = 0; i < p_lines.length; i++){
+
+            MZMovBancoLin mzMovBancoLin = new MZMovBancoLin(getCtx(), p_lines[i].get_ID(), this.getTrxName());
+
+            BigDecimal amtSource = mzMovBancoLin.getTotalAmt();
+            BigDecimal amtMT = mzMovBancoLin.getTotalAmtMT();
+
+            MAccount acctCharge = MCharge.getAccount(mzMovBancoLin.getC_Charge_ID(), as, amtSource);
+            if ((acctCharge == null) || (acctCharge.get_ID() <= 0)){
+                MCharge charge = (MCharge) mzMovBancoLin.getC_Charge();
+                p_Error = "No se obtuvo Cuenta Contable asociada al Cargo Contable : " + charge.getName();
+                log.log(Level.SEVERE, p_Error);
+                fact = null;
+                facts.add(fact);
+                return facts;
+            }
+
+            FactLine fl2 = fact.createLine(p_lines[i], acctCharge, mzMovBancoLin.getC_Currency_ID(), amtSource);
+            if (fl2 != null){
+                fl2.setAD_Org_ID(this.movBanco.getAD_Org_ID());
+
+                /*
+                if (mzMovBancoLin.getC_Currency_ID() != as.getC_Currency_ID()){
+                    fl2.setAmtAcctDr(amtMT);
+                }
+                */
+            }
+        }
 
         facts.add(fact);
         return facts;
