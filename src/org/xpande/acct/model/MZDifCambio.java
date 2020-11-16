@@ -579,13 +579,24 @@ public class MZDifCambio extends X_Z_DifCambio implements DocAction, DocOptions 
 				}
 
 				BigDecimal rate = rs.getBigDecimal("currencyrate");
-				boolean recalcularSaldoMN = true;
 
+				/*
 				// Si la fecha de este documento es anterior o igual a la fecha de inicio
 				if (!difCambioDet.getDateAcct().after(this.getStartDate())){
 					// Tasa de cambio es la de la fecha desde
 					rate = rateInicial;
+
+
+					// Calculo saldos en moneda nacional con tasa de cambio obtenida
+					if (difCambioDet.getAmtSourceDr().compareTo(Env.ZERO) != 0){
+						difCambioDet.setAmtAcctDr(difCambioDet.getAmtSourceDr().multiply(rate).setScale(2, RoundingMode.HALF_UP));
+					}
+					else{
+						difCambioDet.setAmtAcctCr(difCambioDet.getAmtSourceCr().multiply(rate).setScale(2, RoundingMode.HALF_UP));
+					}
 				}
+
+				 */
 
 				/*
 				// Busco tasa de cambio en proceso anterior de diferencia de cambio para este registro contable.
@@ -601,7 +612,6 @@ public class MZDifCambio extends X_Z_DifCambio implements DocAction, DocOptions 
 					rate = CurrencyUtils.getCurrencyRate(getCtx(), this.getAD_Client_ID(), 0, this.getC_Currency_ID(), acctSchema.getC_Currency_ID(),
 									114, difCambioDet.getDateAcct(), get_TrxName());
 					if ((rate == null) || (rate.compareTo(Env.ZERO) == 0)){
-						recalcularSaldoMN = false;
 						if (difCambioDet.getAmtSourceDr().compareTo(Env.ZERO) != 0){
 							rate = difCambioDet.getAmtAcctDr().divide(difCambioDet.getAmtSourceDr(), 3, RoundingMode.HALF_UP);
 						}
@@ -611,16 +621,6 @@ public class MZDifCambio extends X_Z_DifCambio implements DocAction, DocOptions 
 					}
 				}
 				difCambioDet.setMultiplyRate(rate.setScale(3, RoundingMode.HALF_UP));
-
-				// Calculo saldos en moneda nacional con tasa de cambio obtenida
-				if (recalcularSaldoMN){
-					if (difCambioDet.getAmtSourceDr().compareTo(Env.ZERO) != 0){
-						difCambioDet.setAmtAcctDr(difCambioDet.getAmtSourceDr().multiply(rate).setScale(2, RoundingMode.HALF_UP));
-					}
-					else{
-						difCambioDet.setAmtAcctCr(difCambioDet.getAmtSourceCr().multiply(rate).setScale(2, RoundingMode.HALF_UP));
-					}
-				}
 
 				// Diferencia debitos-creditos MO
 				BigDecimal difSourceDR = Env.ZERO, difSourceCR = Env.ZERO;
@@ -645,7 +645,6 @@ public class MZDifCambio extends X_Z_DifCambio implements DocAction, DocOptions 
 
 				difCambioDet.setAmtAcctDrDif(difAcctDR);
 				difCambioDet.setAmtAcctCrDif(difAcctCR);
-
 
 				// Asiento DifCambio Debitos - Creditos
 				BigDecimal difSourceDRAcct = Env.ZERO;
