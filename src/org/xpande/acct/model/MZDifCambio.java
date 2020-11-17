@@ -554,6 +554,7 @@ public class MZDifCambio extends X_Z_DifCambio implements DocAction, DocOptions 
 					" and ev.isforeigncurrency ='Y' " +
 					" order by ev.value, fa.dateacct ";
 
+
 			pstmt = DB.prepareStatement(sql, get_TrxName());
 			rs = pstmt.executeQuery();
 
