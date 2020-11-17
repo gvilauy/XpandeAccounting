@@ -485,6 +485,7 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 			action = " update z_acctcierre set totalacctdr =" + totalAcctDr + ", " +
 						" totalacctcr =" + totalAcctCr +
 						" where z_acctcierre_id =" + this.get_ID();
+
 			DB.executeUpdateEx(action, get_TrxName());
 
 			// Actualizo monto de Resultado del Ejercicio para cierre de cuentas integrales
