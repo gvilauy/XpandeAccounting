@@ -579,48 +579,18 @@ public class MZDifCambio extends X_Z_DifCambio implements DocAction, DocOptions 
 					difCambioDet.setC_BPartner_ID(rs.getInt("c_bpartner_id"));
 				}
 
-				BigDecimal rate = rs.getBigDecimal("currencyrate");
-
-				/*
-				// Si la fecha de este documento es anterior o igual a la fecha de inicio
-				if (!difCambioDet.getDateAcct().after(this.getStartDate())){
-					// Tasa de cambio es la de la fecha desde
-					rate = rateInicial;
-
-
-					// Calculo saldos en moneda nacional con tasa de cambio obtenida
-					if (difCambioDet.getAmtSourceDr().compareTo(Env.ZERO) != 0){
-						difCambioDet.setAmtAcctDr(difCambioDet.getAmtSourceDr().multiply(rate).setScale(2, RoundingMode.HALF_UP));
-					}
-					else{
-						difCambioDet.setAmtAcctCr(difCambioDet.getAmtSourceCr().multiply(rate).setScale(2, RoundingMode.HALF_UP));
-					}
+				BigDecimal rate = null;
+				if (difCambioDet.getAmtSourceDr().compareTo(Env.ZERO) != 0){
+					rate = difCambioDet.getAmtAcctDr().divide(difCambioDet.getAmtSourceDr(), 3, RoundingMode.HALF_UP);
+				}
+				else if (difCambioDet.getAmtSourceCr().compareTo(Env.ZERO) != 0){
+					rate = difCambioDet.getAmtAcctCr().divide(difCambioDet.getAmtSourceCr(), 3, RoundingMode.HALF_UP);
+				}
+				else{
+					// No tengo monto al debe y tampoco al haber, no considero esta linea.
+					continue;
 				}
 
-				 */
-
-				/*
-				// Busco tasa de cambio en proceso anterior de diferencia de cambio para este registro contable.
-				MZAcctFactDifCam factDifCam = MZAcctFactDifCam.getLastByFactID(getCtx(), rs.getInt("fact_acct_id"), this.getStartDate(), null);
-				if ((factDifCam != null) && (factDifCam.get_ID() > 0)){
-					rate = factDifCam.getCurrencyRate();
-				}
-				*/
-
-				// Redondeo tasa de cambio
-				if ((rate == null) || (rate.compareTo(Env.ZERO) <= 0)){
-					// Obtengo tasa de cambio para ese dia
-					rate = CurrencyUtils.getCurrencyRate(getCtx(), this.getAD_Client_ID(), 0, this.getC_Currency_ID(), acctSchema.getC_Currency_ID(),
-									114, difCambioDet.getDateAcct(), get_TrxName());
-					if ((rate == null) || (rate.compareTo(Env.ZERO) == 0)){
-						if (difCambioDet.getAmtSourceDr().compareTo(Env.ZERO) != 0){
-							rate = difCambioDet.getAmtAcctDr().divide(difCambioDet.getAmtSourceDr(), 3, RoundingMode.HALF_UP);
-						}
-						else{
-							rate = difCambioDet.getAmtAcctCr().divide(difCambioDet.getAmtSourceCr(), 3, RoundingMode.HALF_UP);
-						}
-					}
-				}
 				difCambioDet.setMultiplyRate(rate.setScale(3, RoundingMode.HALF_UP));
 
 				// Diferencia debitos-creditos MO
