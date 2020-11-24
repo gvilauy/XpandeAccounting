@@ -1,6 +1,7 @@
 package org.xpande.acct.report;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.webui.desktop.TabbedDesktop;
 import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MDocType;
@@ -91,6 +92,8 @@ public class BalanceContable {
             this.getData();
             this.updateData();
 
+            this.updateTotalesPresentacion();
+
         }
         catch (Exception e){
             throw new AdempiereException(e);
@@ -98,7 +101,6 @@ public class BalanceContable {
 
         return message;
     }
-
 
     /***
      * Elimina información anterior para este usuario de la tabla del reporte.
@@ -189,6 +191,9 @@ public class BalanceContable {
 
             // Actualizo saldos de cuentas totalizadoras
             this.updateDataBalanceSummary();
+
+            // Actualizo signos según capitulo contable: dar vuelta signos de pasivo, patrimonio e ingresos.
+            this.updateSignoCapitulos();
 
         }
         catch (Exception e){
@@ -543,6 +548,29 @@ public class BalanceContable {
         }
     }
 
+
+    /***
+     * Doy vuelta signo de saldos de cuentas de capitulos: pasivo, patrimonio e ingresos.
+     * Xpande. Created by Gabriel Vila on 11/24/20.
+     */
+    private void updateSignoCapitulos(){
+
+        String action;
+
+        try{
+            // Doy vuelta signo
+            action = " update " + TABLA_REPORTE +
+                    " set amtTotal1 = (coalesce(amtTotal1,0) * -1), " +
+                    " amtTotal2 = (coalesce(amtTotal2,0) * -1) " +
+                    " where ad_user_id =" + this.adUserID +
+                    " and accounttype in ('L', 'O', 'R') ";
+            DB.executeUpdateEx(action, null);
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+    }
+
     /***
      * Actualiza cuentas totalizadoras de manera recursiva.
      * Xpande. Created by Gabriel Vila on 3/12/19.
@@ -624,6 +652,135 @@ public class BalanceContable {
         finally {
             DB.close(rs, pstmt);
             rs = null; pstmt = null;
+        }
+    }
+
+    /***
+     * ACtualiza totales para la presentanción de cuadros totalizadores del Balance.
+     * Xpande. Created by Gabriel Vila on 11/24/20.
+     */
+    private void updateTotalesPresentacion() {
+
+        String sql, action;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try{
+
+            // Total Activoa
+            BigDecimal sumActivosM1 = Env.ZERO, sumActivosM2 = Env.ZERO;
+            sql = " select round(sum(amttotal1),2) as amttotal1, round(sum(amttotal2),2) amttotal2 " +
+                    " from " + TABLA_REPORTE +
+                    " where ad_user_id =" + this.adUserID +
+                    " and accounttype ='A' " +
+                    " and issummary='N' ";
+
+            pstmt = DB.prepareStatement(sql, null);
+        	rs = pstmt.executeQuery();
+        	if(rs.next()){
+                sumActivosM1 = rs.getBigDecimal("amttotal1");
+                sumActivosM2 = rs.getBigDecimal("amttotal2");
+                if (sumActivosM1 == null) sumActivosM1 = Env.ZERO;
+                if (sumActivosM2 == null) sumActivosM2 = Env.ZERO;
+        	}
+            DB.close(rs, pstmt);
+
+            // Total Pasivos
+            BigDecimal sumPasivosM1 = Env.ZERO, sumPasivosM2 = Env.ZERO;
+            sql = " select round(sum(amttotal1),2) as amttotal1, round(sum(amttotal2),2) amttotal2 " +
+                    " from " + TABLA_REPORTE +
+                    " where ad_user_id =" + this.adUserID +
+                    " and accounttype ='L' " +
+                    " and issummary='N' ";
+
+            pstmt = DB.prepareStatement(sql, null);
+            rs = pstmt.executeQuery();
+            if(rs.next()){
+                sumPasivosM1 = rs.getBigDecimal("amttotal1");
+                sumPasivosM2 = rs.getBigDecimal("amttotal2");
+                if (sumPasivosM1 == null) sumPasivosM1 = Env.ZERO;
+                if (sumPasivosM2 == null) sumPasivosM2 = Env.ZERO;
+            }
+            DB.close(rs, pstmt);
+
+            // Total Patrimonio
+            BigDecimal sumPatriM1 = Env.ZERO, sumPatriM2 = Env.ZERO;
+            sql = " select round(sum(amttotal1),2) as amttotal1, round(sum(amttotal2),2) amttotal2 " +
+                    " from " + TABLA_REPORTE +
+                    " where ad_user_id =" + this.adUserID +
+                    " and accounttype ='O' " +
+                    " and issummary='N' ";
+
+            pstmt = DB.prepareStatement(sql, null);
+            rs = pstmt.executeQuery();
+            if(rs.next()){
+                sumPatriM1 = rs.getBigDecimal("amttotal1");
+                sumPatriM2 = rs.getBigDecimal("amttotal2");
+                if (sumPatriM1 == null) sumPatriM1 = Env.ZERO;
+                if (sumPatriM2 == null) sumPatriM2 = Env.ZERO;
+            }
+            DB.close(rs, pstmt);
+
+            // Total Ingresos
+            BigDecimal sumIngresosM1 = Env.ZERO, sumIngresosM2 = Env.ZERO;
+            sql = " select round(sum(amttotal1),2) as amttotal1, round(sum(amttotal2),2) amttotal2 " +
+                    " from " + TABLA_REPORTE +
+                    " where ad_user_id =" + this.adUserID +
+                    " and accounttype ='R' " +
+                    " and issummary='N' ";
+
+            pstmt = DB.prepareStatement(sql, null);
+            rs = pstmt.executeQuery();
+            if(rs.next()){
+                sumIngresosM1 = rs.getBigDecimal("amttotal1");
+                sumIngresosM2 = rs.getBigDecimal("amttotal2");
+                if (sumIngresosM1 == null) sumIngresosM1 = Env.ZERO;
+                if (sumIngresosM2 == null) sumIngresosM2 = Env.ZERO;
+            }
+            DB.close(rs, pstmt);
+
+            // Total Egresos
+            BigDecimal sumEgresosM1 = Env.ZERO, sumEgresosM2 = Env.ZERO;
+            sql = " select round(sum(amttotal1),2) as amttotal1, round(sum(amttotal2),2) amttotal2 " +
+                    " from " + TABLA_REPORTE +
+                    " where ad_user_id =" + this.adUserID +
+                    " and accounttype ='E' " +
+                    " and issummary='N' ";
+
+            pstmt = DB.prepareStatement(sql, null);
+            rs = pstmt.executeQuery();
+            if(rs.next()){
+                sumEgresosM1 = rs.getBigDecimal("amttotal1");
+                sumEgresosM2 = rs.getBigDecimal("amttotal2");
+                if (sumEgresosM1 == null) sumEgresosM1 = Env.ZERO;
+                if (sumEgresosM2 == null) sumEgresosM2 = Env.ZERO;
+            }
+            DB.close(rs, pstmt);
+
+            // Rsultados
+            BigDecimal resultadoActPasPat1 = sumActivosM1.subtract(sumPasivosM1.add(sumPatriM1));
+            BigDecimal resultadoActPasPat2 = sumActivosM2.subtract(sumPasivosM2.add(sumPatriM2));
+            BigDecimal resultadoIngEgre1 = sumIngresosM1.subtract(sumEgresosM1);
+            BigDecimal resultadoIngEgre2 = sumIngresosM2.subtract(sumEgresosM2);
+
+            action = " update " + TABLA_REPORTE +
+                    " set TotalActivoM1 =" + sumActivosM1 + ", TotalActivoM2 =" + sumActivosM2 + ", " +
+                    " TotalPasivoM1 =" + sumPasivosM1 + ", TotalPasivoM2 =" + sumPasivosM2 + ", " +
+                    " TotalPatrimonioM1 =" + sumPatriM1 + ", TotalPatrimonioM2 =" + sumPatriM2 + ", " +
+                    " TotalIngresosM1 =" + sumIngresosM1 + ", TotalIngresosM2 =" + sumIngresosM2 + ", " +
+                    " TotalEgresosM1 =" + sumEgresosM1 + ", TotalEgresosM2 =" + sumEgresosM2 + ", " +
+                    " TotalResult1M1 =" + resultadoActPasPat1 + ", TotalResult1M2 =" + resultadoActPasPat2 + ", " +
+                    " TotalResult2M1 =" + resultadoIngEgre1 + ", TotalResult2M2 =" + resultadoIngEgre2 +
+                    " where ad_user_id =" + this.adUserID;
+
+            DB.executeUpdateEx(action, null);
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+        finally {
+            DB.close(rs, pstmt);
+        	rs = null; pstmt = null;
         }
     }
 
