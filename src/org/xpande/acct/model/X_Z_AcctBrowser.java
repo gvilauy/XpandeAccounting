@@ -31,7 +31,7 @@ public class X_Z_AcctBrowser extends PO implements I_Z_AcctBrowser, I_Persistent
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20190312L;
+	private static final long serialVersionUID = 20201126L;
 
     /** Standard Constructor */
     public X_Z_AcctBrowser (Properties ctx, int Z_AcctBrowser_ID, String trxName)
@@ -41,6 +41,8 @@ public class X_Z_AcctBrowser extends PO implements I_Z_AcctBrowser, I_Persistent
         {
 			setC_AcctSchema_ID (0);
 			setC_Currency_ID (0);
+			setEditable (true);
+// Y
 			setIncCtaSaldoSinMov (true);
 // Y
 			setIncCtaSinSaldoConMov (true);
@@ -61,8 +63,14 @@ public class X_Z_AcctBrowser extends PO implements I_Z_AcctBrowser, I_Persistent
 // N
 			setIncInfoTax (false);
 // N
+			setIncSaldoInicial (true);
+// Y
 			setIncTotMensual (false);
 // N
+			setIsCierreDiferencial (true);
+// Y
+			setIsCierreIntegral (true);
+// Y
 			setTipoAcctBrowser (null);
 // MAYOR
 			setTipoBalanceAcct (null);
@@ -178,6 +186,30 @@ public class X_Z_AcctBrowser extends PO implements I_Z_AcctBrowser, I_Persistent
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Editable.
+		@param Editable 
+		SI un registro es o no editable
+	  */
+	public void setEditable (boolean Editable)
+	{
+		set_Value (COLUMNNAME_Editable, Boolean.valueOf(Editable));
+	}
+
+	/** Get Editable.
+		@return SI un registro es o no editable
+	  */
+	public boolean isEditable () 
+	{
+		Object oo = get_Value(COLUMNNAME_Editable);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	/** Set End Date.
@@ -437,6 +469,30 @@ public class X_Z_AcctBrowser extends PO implements I_Z_AcctBrowser, I_Persistent
 		return false;
 	}
 
+	/** Set IncSaldoInicial.
+		@param IncSaldoInicial 
+		Si se incluye o no el saldo inicial
+	  */
+	public void setIncSaldoInicial (boolean IncSaldoInicial)
+	{
+		set_Value (COLUMNNAME_IncSaldoInicial, Boolean.valueOf(IncSaldoInicial));
+	}
+
+	/** Get IncSaldoInicial.
+		@return Si se incluye o no el saldo inicial
+	  */
+	public boolean isIncSaldoInicial () 
+	{
+		Object oo = get_Value(COLUMNNAME_IncSaldoInicial);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set IncTotMensual.
 		@param IncTotMensual 
 		Si incluye o no totales mensuales en informe
@@ -452,6 +508,54 @@ public class X_Z_AcctBrowser extends PO implements I_Z_AcctBrowser, I_Persistent
 	public boolean isIncTotMensual () 
 	{
 		Object oo = get_Value(COLUMNNAME_IncTotMensual);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set IsCierreDiferencial.
+		@param IsCierreDiferencial 
+		Si se considera o no cierre de cuentas diferenciales
+	  */
+	public void setIsCierreDiferencial (boolean IsCierreDiferencial)
+	{
+		set_Value (COLUMNNAME_IsCierreDiferencial, Boolean.valueOf(IsCierreDiferencial));
+	}
+
+	/** Get IsCierreDiferencial.
+		@return Si se considera o no cierre de cuentas diferenciales
+	  */
+	public boolean isCierreDiferencial () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsCierreDiferencial);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set IsCierreIntegral.
+		@param IsCierreIntegral 
+		Si considera o no cierra y apertura de cuentas integrales
+	  */
+	public void setIsCierreIntegral (boolean IsCierreIntegral)
+	{
+		set_Value (COLUMNNAME_IsCierreIntegral, Boolean.valueOf(IsCierreIntegral));
+	}
+
+	/** Get IsCierreIntegral.
+		@return Si considera o no cierra y apertura de cuentas integrales
+	  */
+	public boolean isCierreIntegral () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsCierreIntegral);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 
@@ -577,12 +681,12 @@ public class X_Z_AcctBrowser extends PO implements I_Z_AcctBrowser, I_Persistent
 		return (String)get_Value(COLUMNNAME_TextoFiltro2);
 	}
 
-	/** TipoAcctBrowser AD_Reference_ID=1000039 */
-	public static final int TIPOACCTBROWSER_AD_Reference_ID=1000039;
-	/** MAYOR CONTABLE = MAYOR */
-	public static final String TIPOACCTBROWSER_MAYORCONTABLE = "MAYOR";
+	/** TipoAcctBrowser AD_Reference_ID=1000051 */
+	public static final int TIPOACCTBROWSER_AD_Reference_ID=1000051;
 	/** BALANCE CONTABLE = BALANCE */
 	public static final String TIPOACCTBROWSER_BALANCECONTABLE = "BALANCE";
+	/** MAYOR CONTABLE = MAYOR */
+	public static final String TIPOACCTBROWSER_MAYORCONTABLE = "MAYOR";
 	/** Set TipoAcctBrowser.
 		@param TipoAcctBrowser 
 		Tipo de consulta en el Navegador Contable
@@ -601,10 +705,14 @@ public class X_Z_AcctBrowser extends PO implements I_Z_AcctBrowser, I_Persistent
 		return (String)get_Value(COLUMNNAME_TipoAcctBrowser);
 	}
 
-	/** TipoBalanceAcct AD_Reference_ID=1000050 */
-	public static final int TIPOBALANCEACCT_AD_Reference_ID=1000050;
+	/** TipoBalanceAcct AD_Reference_ID=1000039 */
+	public static final int TIPOBALANCEACCT_AD_Reference_ID=1000039;
 	/** BALANCE COMPLETO = COMPLETO */
 	public static final String TIPOBALANCEACCT_BALANCECOMPLETO = "COMPLETO";
+	/** ESTADO DE RESULTADOS = RESULTADO */
+	public static final String TIPOBALANCEACCT_ESTADODERESULTADOS = "RESULTADO";
+	/** ESTADO DE SITUACIÓN PATRIMONIAL = PATRIMONIAL */
+	public static final String TIPOBALANCEACCT_ESTADODESITUACIÓNPATRIMONIAL = "PATRIMONIAL";
 	/** Set TipoBalanceAcct.
 		@param TipoBalanceAcct 
 		Tipo de Balance Contable
@@ -623,8 +731,8 @@ public class X_Z_AcctBrowser extends PO implements I_Z_AcctBrowser, I_Persistent
 		return (String)get_Value(COLUMNNAME_TipoBalanceAcct);
 	}
 
-	/** TipoFiltroMonAcct AD_Reference_ID=1000040 */
-	public static final int TIPOFILTROMONACCT_AD_Reference_ID=1000040;
+	/** TipoFiltroMonAcct AD_Reference_ID=1000052 */
+	public static final int TIPOFILTROMONACCT_AD_Reference_ID=1000052;
 	/** DOS MONEDAS = DOS_MONEDAS */
 	public static final String TIPOFILTROMONACCT_DOSMONEDAS = "DOS_MONEDAS";
 	/** UNA MONEDA = UNA_MONEDA */
@@ -647,8 +755,8 @@ public class X_Z_AcctBrowser extends PO implements I_Z_AcctBrowser, I_Persistent
 		return (String)get_Value(COLUMNNAME_TipoFiltroMonAcct);
 	}
 
-	/** TipoMayorAcct AD_Reference_ID=1000041 */
-	public static final int TIPOMAYORACCT_AD_Reference_ID=1000041;
+	/** TipoMayorAcct AD_Reference_ID=1000053 */
+	public static final int TIPOMAYORACCT_AD_Reference_ID=1000053;
 	/** MAYOR ANALITICO = ANALITICO */
 	public static final String TIPOMAYORACCT_MAYORANALITICO = "ANALITICO";
 	/** Set TipoMayorAcct.

@@ -31,7 +31,7 @@ public interface I_Z_AcctBrowser
     /** TableName=Z_AcctBrowser */
     public static final String Table_Name = "Z_AcctBrowser";
 
-    /** AD_Table_ID=1000221 */
+    /** AD_Table_ID=1000292 */
     public static final int Table_ID = MTable.getTable_ID(Table_Name);
 
     KeyNamePair Model = new KeyNamePair(Table_ID, Table_Name);
@@ -56,7 +56,7 @@ public interface I_Z_AcctBrowser
 	/** Set Organization.
 	  * Organizational entity within client
 	  */
-	public void setAD_Org_ID(int AD_Org_ID);
+	public void setAD_Org_ID (int AD_Org_ID);
 
 	/** Get Organization.
 	  * Organizational entity within client
@@ -69,7 +69,7 @@ public interface I_Z_AcctBrowser
 	/** Set Accounting Schema.
 	  * Rules for accounting
 	  */
-	public void setC_AcctSchema_ID(int C_AcctSchema_ID);
+	public void setC_AcctSchema_ID (int C_AcctSchema_ID);
 
 	/** Get Accounting Schema.
 	  * Rules for accounting
@@ -84,7 +84,7 @@ public interface I_Z_AcctBrowser
 	/** Set C_Currency_2_ID.
 	  * Moneda secundaria para procesos
 	  */
-	public void setC_Currency_2_ID(int C_Currency_2_ID);
+	public void setC_Currency_2_ID (int C_Currency_2_ID);
 
 	/** Get C_Currency_2_ID.
 	  * Moneda secundaria para procesos
@@ -97,7 +97,7 @@ public interface I_Z_AcctBrowser
 	/** Set Currency.
 	  * The Currency for this record
 	  */
-	public void setC_Currency_ID(int C_Currency_ID);
+	public void setC_Currency_ID (int C_Currency_ID);
 
 	/** Get Currency.
 	  * The Currency for this record
@@ -122,13 +122,26 @@ public interface I_Z_AcctBrowser
 	  */
 	public int getCreatedBy();
 
+    /** Column name Editable */
+    public static final String COLUMNNAME_Editable = "Editable";
+
+	/** Set Editable.
+	  * SI un registro es o no editable
+	  */
+	public void setEditable (boolean Editable);
+
+	/** Get Editable.
+	  * SI un registro es o no editable
+	  */
+	public boolean isEditable();
+
     /** Column name EndDate */
     public static final String COLUMNNAME_EndDate = "EndDate";
 
 	/** Set End Date.
 	  * Last effective date (inclusive)
 	  */
-	public void setEndDate(Timestamp EndDate);
+	public void setEndDate (Timestamp EndDate);
 
 	/** Get End Date.
 	  * Last effective date (inclusive)
@@ -141,7 +154,7 @@ public interface I_Z_AcctBrowser
 	/** Set IncCtaSaldoSinMov.
 	  * Incluye cuentas contables con saldo sin movimientos
 	  */
-	public void setIncCtaSaldoSinMov(boolean IncCtaSaldoSinMov);
+	public void setIncCtaSaldoSinMov (boolean IncCtaSaldoSinMov);
 
 	/** Get IncCtaSaldoSinMov.
 	  * Incluye cuentas contables con saldo sin movimientos
@@ -154,7 +167,7 @@ public interface I_Z_AcctBrowser
 	/** Set IncCtaSinSaldoConMov.
 	  * Incluye cuentas contables sin saldo con movimientos
 	  */
-	public void setIncCtaSinSaldoConMov(boolean IncCtaSinSaldoConMov);
+	public void setIncCtaSinSaldoConMov (boolean IncCtaSinSaldoConMov);
 
 	/** Get IncCtaSinSaldoConMov.
 	  * Incluye cuentas contables sin saldo con movimientos
@@ -167,7 +180,7 @@ public interface I_Z_AcctBrowser
 	/** Set IncCtaSinSaldoSinMov.
 	  * Incluye cuentas contables sin saldo sin movimiento
 	  */
-	public void setIncCtaSinSaldoSinMov(boolean IncCtaSinSaldoSinMov);
+	public void setIncCtaSinSaldoSinMov (boolean IncCtaSinSaldoSinMov);
 
 	/** Get IncCtaSinSaldoSinMov.
 	  * Incluye cuentas contables sin saldo sin movimiento
@@ -180,7 +193,7 @@ public interface I_Z_AcctBrowser
 	/** Set IncInfoAuditoria.
 	  * Incluye información de auditoría
 	  */
-	public void setIncInfoAuditoria(boolean IncInfoAuditoria);
+	public void setIncInfoAuditoria (boolean IncInfoAuditoria);
 
 	/** Get IncInfoAuditoria.
 	  * Incluye información de auditoría
@@ -193,7 +206,7 @@ public interface I_Z_AcctBrowser
 	/** Set IncInfoDocumento.
 	  * Incluye información de documentos
 	  */
-	public void setIncInfoDocumento(boolean IncInfoDocumento);
+	public void setIncInfoDocumento (boolean IncInfoDocumento);
 
 	/** Get IncInfoDocumento.
 	  * Incluye información de documentos
@@ -206,7 +219,7 @@ public interface I_Z_AcctBrowser
 	/** Set IncInfoMedioPago.
 	  * Incluye información de medios de pago
 	  */
-	public void setIncInfoMedioPago(boolean IncInfoMedioPago);
+	public void setIncInfoMedioPago (boolean IncInfoMedioPago);
 
 	/** Get IncInfoMedioPago.
 	  * Incluye información de medios de pago
@@ -219,7 +232,7 @@ public interface I_Z_AcctBrowser
 	/** Set IncInfoPartner.
 	  * Incluye información de socios de negocio
 	  */
-	public void setIncInfoPartner(boolean IncInfoPartner);
+	public void setIncInfoPartner (boolean IncInfoPartner);
 
 	/** Get IncInfoPartner.
 	  * Incluye información de socios de negocio
@@ -232,7 +245,7 @@ public interface I_Z_AcctBrowser
 	/** Set IncInfoProd.
 	  * Incluye información de productos
 	  */
-	public void setIncInfoProd(boolean IncInfoProd);
+	public void setIncInfoProd (boolean IncInfoProd);
 
 	/** Get IncInfoProd.
 	  * Incluye información de productos
@@ -245,7 +258,7 @@ public interface I_Z_AcctBrowser
 	/** Set IncInfoRetencion.
 	  * Incluye información de retenciones
 	  */
-	public void setIncInfoRetencion(boolean IncInfoRetencion);
+	public void setIncInfoRetencion (boolean IncInfoRetencion);
 
 	/** Get IncInfoRetencion.
 	  * Incluye información de retenciones
@@ -258,12 +271,25 @@ public interface I_Z_AcctBrowser
 	/** Set IncInfoTax.
 	  * Incluye información de impuestos
 	  */
-	public void setIncInfoTax(boolean IncInfoTax);
+	public void setIncInfoTax (boolean IncInfoTax);
 
 	/** Get IncInfoTax.
 	  * Incluye información de impuestos
 	  */
 	public boolean isIncInfoTax();
+
+    /** Column name IncSaldoInicial */
+    public static final String COLUMNNAME_IncSaldoInicial = "IncSaldoInicial";
+
+	/** Set IncSaldoInicial.
+	  * Si se incluye o no el saldo inicial
+	  */
+	public void setIncSaldoInicial (boolean IncSaldoInicial);
+
+	/** Get IncSaldoInicial.
+	  * Si se incluye o no el saldo inicial
+	  */
+	public boolean isIncSaldoInicial();
 
     /** Column name IncTotMensual */
     public static final String COLUMNNAME_IncTotMensual = "IncTotMensual";
@@ -271,7 +297,7 @@ public interface I_Z_AcctBrowser
 	/** Set IncTotMensual.
 	  * Si incluye o no totales mensuales en informe
 	  */
-	public void setIncTotMensual(boolean IncTotMensual);
+	public void setIncTotMensual (boolean IncTotMensual);
 
 	/** Get IncTotMensual.
 	  * Si incluye o no totales mensuales en informe
@@ -284,12 +310,38 @@ public interface I_Z_AcctBrowser
 	/** Set Active.
 	  * The record is active in the system
 	  */
-	public void setIsActive(boolean IsActive);
+	public void setIsActive (boolean IsActive);
 
 	/** Get Active.
 	  * The record is active in the system
 	  */
 	public boolean isActive();
+
+    /** Column name IsCierreDiferencial */
+    public static final String COLUMNNAME_IsCierreDiferencial = "IsCierreDiferencial";
+
+	/** Set IsCierreDiferencial.
+	  * Si se considera o no cierre de cuentas diferenciales
+	  */
+	public void setIsCierreDiferencial (boolean IsCierreDiferencial);
+
+	/** Get IsCierreDiferencial.
+	  * Si se considera o no cierre de cuentas diferenciales
+	  */
+	public boolean isCierreDiferencial();
+
+    /** Column name IsCierreIntegral */
+    public static final String COLUMNNAME_IsCierreIntegral = "IsCierreIntegral";
+
+	/** Set IsCierreIntegral.
+	  * Si considera o no cierra y apertura de cuentas integrales
+	  */
+	public void setIsCierreIntegral (boolean IsCierreIntegral);
+
+	/** Get IsCierreIntegral.
+	  * Si considera o no cierra y apertura de cuentas integrales
+	  */
+	public boolean isCierreIntegral();
 
     /** Column name Name */
     public static final String COLUMNNAME_Name = "Name";
@@ -297,7 +349,7 @@ public interface I_Z_AcctBrowser
 	/** Set Name.
 	  * Alphanumeric identifier of the entity
 	  */
-	public void setName(String Name);
+	public void setName (String Name);
 
 	/** Get Name.
 	  * Alphanumeric identifier of the entity
@@ -308,7 +360,7 @@ public interface I_Z_AcctBrowser
     public static final String COLUMNNAME_ProcessButton = "ProcessButton";
 
 	/** Set ProcessButton	  */
-	public void setProcessButton(String ProcessButton);
+	public void setProcessButton (String ProcessButton);
 
 	/** Get ProcessButton	  */
 	public String getProcessButton();
@@ -319,7 +371,7 @@ public interface I_Z_AcctBrowser
 	/** Set ProcessButton2.
 	  * Botón de Proceso
 	  */
-	public void setProcessButton2(String ProcessButton2);
+	public void setProcessButton2 (String ProcessButton2);
 
 	/** Get ProcessButton2.
 	  * Botón de Proceso
@@ -332,7 +384,7 @@ public interface I_Z_AcctBrowser
 	/** Set ProcessButton3.
 	  * Botón para proceso
 	  */
-	public void setProcessButton3(String ProcessButton3);
+	public void setProcessButton3 (String ProcessButton3);
 
 	/** Get ProcessButton3.
 	  * Botón para proceso
@@ -345,7 +397,7 @@ public interface I_Z_AcctBrowser
 	/** Set Start Date.
 	  * First effective day (inclusive)
 	  */
-	public void setStartDate(Timestamp StartDate);
+	public void setStartDate (Timestamp StartDate);
 
 	/** Get Start Date.
 	  * First effective day (inclusive)
@@ -358,7 +410,7 @@ public interface I_Z_AcctBrowser
 	/** Set TextoFiltro.
 	  * Texto genérico para filtro de valores
 	  */
-	public void setTextoFiltro(String TextoFiltro);
+	public void setTextoFiltro (String TextoFiltro);
 
 	/** Get TextoFiltro.
 	  * Texto genérico para filtro de valores
@@ -371,7 +423,7 @@ public interface I_Z_AcctBrowser
 	/** Set TextoFiltro2.
 	  * Texto genérico para filtro de valores
 	  */
-	public void setTextoFiltro2(String TextoFiltro2);
+	public void setTextoFiltro2 (String TextoFiltro2);
 
 	/** Get TextoFiltro2.
 	  * Texto genérico para filtro de valores
@@ -384,7 +436,7 @@ public interface I_Z_AcctBrowser
 	/** Set TipoAcctBrowser.
 	  * Tipo de consulta en el Navegador Contable
 	  */
-	public void setTipoAcctBrowser(String TipoAcctBrowser);
+	public void setTipoAcctBrowser (String TipoAcctBrowser);
 
 	/** Get TipoAcctBrowser.
 	  * Tipo de consulta en el Navegador Contable
@@ -397,7 +449,7 @@ public interface I_Z_AcctBrowser
 	/** Set TipoBalanceAcct.
 	  * Tipo de Balance Contable
 	  */
-	public void setTipoBalanceAcct(String TipoBalanceAcct);
+	public void setTipoBalanceAcct (String TipoBalanceAcct);
 
 	/** Get TipoBalanceAcct.
 	  * Tipo de Balance Contable
@@ -410,7 +462,7 @@ public interface I_Z_AcctBrowser
 	/** Set TipoFiltroMonAcct.
 	  * Tipo filtro de moneda para reportes contables
 	  */
-	public void setTipoFiltroMonAcct(String TipoFiltroMonAcct);
+	public void setTipoFiltroMonAcct (String TipoFiltroMonAcct);
 
 	/** Get TipoFiltroMonAcct.
 	  * Tipo filtro de moneda para reportes contables
@@ -423,7 +475,7 @@ public interface I_Z_AcctBrowser
 	/** Set TipoMayorAcct.
 	  * Tipo de Mayor Contable
 	  */
-	public void setTipoMayorAcct(String TipoMayorAcct);
+	public void setTipoMayorAcct (String TipoMayorAcct);
 
 	/** Get TipoMayorAcct.
 	  * Tipo de Mayor Contable
@@ -452,7 +504,7 @@ public interface I_Z_AcctBrowser
 	/** Set Immutable Universally Unique Identifier.
 	  * Immutable Universally Unique Identifier
 	  */
-	public void setUUID(String UUID);
+	public void setUUID (String UUID);
 
 	/** Get Immutable Universally Unique Identifier.
 	  * Immutable Universally Unique Identifier
@@ -463,7 +515,7 @@ public interface I_Z_AcctBrowser
     public static final String COLUMNNAME_Z_AcctBrowser_ID = "Z_AcctBrowser_ID";
 
 	/** Set Z_AcctBrowser ID	  */
-	public void setZ_AcctBrowser_ID(int Z_AcctBrowser_ID);
+	public void setZ_AcctBrowser_ID (int Z_AcctBrowser_ID);
 
 	/** Get Z_AcctBrowser ID	  */
 	public int getZ_AcctBrowser_ID();

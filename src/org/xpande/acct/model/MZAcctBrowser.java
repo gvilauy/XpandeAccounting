@@ -215,8 +215,6 @@ public class MZAcctBrowser extends X_Z_AcctBrowser {
                     " c_doctype_id, documentnoref, currencyrate, duedate, estadomediopago, nromediopago, z_mediopago_id, z_retencionsocio_id, " +
                     " c_activity_id, Z_AcctBrowserBal_ID) ";
 
-
-
             // Falta : currencyrate, duedate, estadomediopago, nromediopago, z_mediopago_id, z_retencionsocio_id
             sql = " select nextid(" + sequence.get_ID() + ",'N'), f.ad_client_id, f.ad_org_id, f.isactive, f.created, f.createdby, f.updated, f.updatedby," +
                     this.get_ID() + ", f.ad_table_id, f.record_id, f.account_id, f.c_currency_id, f.amtsourcedr, f.amtsourcecr, f.amtacctdr, f.amtacctcr, " +

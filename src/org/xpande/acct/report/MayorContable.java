@@ -49,6 +49,7 @@ public class MayorContable {
     private BigDecimal currencyRate = Env.ONE;
     private MAcctSchema acctSchema = null;
 
+    public int zAcctBrowserID = 0;
 
     /***
      * Constructor
@@ -66,8 +67,6 @@ public class MayorContable {
      * @return
      */
     public String executeReport(){
-
-        String message = null;
 
         try{
 
@@ -99,7 +98,7 @@ public class MayorContable {
             throw new AdempiereException(e);
         }
 
-        return message;
+        return null;
     }
 
 
@@ -140,28 +139,38 @@ public class MayorContable {
             }
 
             // Cuentas Contables
-            // Si tengo cuentas contables para filtrar, agrego condición
-            if ((this.textoFiltroCuentas != null) && (!this.textoFiltroCuentas.trim().equalsIgnoreCase(""))){
-
-                this.setCuentasFiltro();
-
-                whereClause += " and f.account_id in (select distinct(c_elementvalue_id) " +
-                        " from " + TABLA_FILTRO_CTA + " where ad_user_id =" + this.adUserID + ") ";
-
-                /*
-                sql = " select count(*) from " + TABLA_FILTRO_CTA + " where ad_user_id =" + this.adUserID;
+            // Si viene desde el navegador contable, tomo los filtros de cuenta desde ahí
+            if (this.zAcctBrowserID > 0){
+                sql = " select count(*) from Z_AcctBrowFiltroCta where Z_AcctBrowser_ID =" + this.zAcctBrowserID;
                 int contadorCta = DB.getSQLValueEx(null, sql);
                 if (contadorCta > 0) {
                     whereClause += " and f.account_id in (select distinct(c_elementvalue_id) " +
+                            " from Z_AcctBrowFiltroCta where Z_AcctBrowser_ID =" + this.zAcctBrowserID + ") ";
+                }
+            }
+            else{
+                // Si tengo cuentas contables para filtrar, agrego condición
+                if ((this.textoFiltroCuentas != null) && (!this.textoFiltroCuentas.trim().equalsIgnoreCase(""))){
+                    this.setCuentasFiltro();
+                    whereClause += " and f.account_id in (select distinct(c_elementvalue_id) " +
                             " from " + TABLA_FILTRO_CTA + " where ad_user_id =" + this.adUserID + ") ";
                 }
-
-                 */
             }
 
             // Socio de Negocio
-            if (this.cBPartnerID > 0){
-                whereClause += " and f.c_bpartner_id =" + this.cBPartnerID;
+            // Si viene desde el navegador contable, tomo los filtros de cuenta desde ahí
+            if (this.zAcctBrowserID > 0){
+                sql = " select count(*) from Z_AcctBrowFiltroBP where Z_AcctBrowser_ID =" + this.zAcctBrowserID;
+                int contadorBP = DB.getSQLValueEx(null, sql);
+                if (contadorBP > 0) {
+                    whereClause += " and f.c_bpartner_id in (select distinct(c_bpartner_id) " +
+                            " from Z_AcctBrowFiltroBP where Z_AcctBrowser_ID =" + this.zAcctBrowserID + ") ";
+                }
+            }
+            else{
+                if (this.cBPartnerID > 0){
+                    whereClause += " and f.c_bpartner_id =" + this.cBPartnerID;
+                }
             }
 
             // Producto
