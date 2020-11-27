@@ -47,7 +47,8 @@ public class MayorContableNavRV extends SvrProcess {
             }
         }
 
-        MZAcctBrowser acctBrowser = new MZAcctBrowser(getCtx(), this.mayorProcessor.zAcctBrowserID, null);
+        MZAcctBrowser acctBrowser = new MZAcctBrowser(getCtx(), this.getRecord_ID(), null);
+        this.mayorProcessor.zAcctBrowserID = acctBrowser.get_ID();
 
         this.mayorProcessor.adUserID = this.getAD_User_ID();
         this.mayorProcessor.adClientID = acctBrowser.getAD_Client_ID();
