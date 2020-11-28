@@ -153,10 +153,10 @@ public class BalanceContable {
                     " case when f.accounttype='O' then '3' else " +
                     " case when f.accounttype='R' then '4' else '9' end end end end end as nrocapituloacct, " +
                     " case when f.accounttype='A' then 'ACTIVO' else " +
-                    " case when f.accounttype='E' then 'GASTOS' else " +
+                    " case when f.accounttype='E' then 'EGRESOS' else " +
                     " case when f.accounttype='L' then 'PASIVO' else " +
                     " case when f.accounttype='O' then 'PATRIMONIO' else " +
-                    " case when f.accounttype='R' then 'GANANCIAS' else 'OTROS' end end end end end as nomcapituloacct, " +
+                    " case when f.accounttype='R' then 'INGRESOS' else 'OTROS' end end end end end as nomcapituloacct, " +
                     " f.parent_id, f.node_id, f.seqno, f.nrofila, 0, 0, " + this.cAcctSchemaID + ", '" + this.tipoBalanceAcct + "', '" +
                     this.endDate + "', '" + this.tipoFiltroMonAcct + "', '" + this.incCtaSaldoSinMov + "', '" +
                     this.incCierreDiferencial + "', '" + this.incCierreIntegral + "' " +
