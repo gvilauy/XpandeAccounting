@@ -158,7 +158,7 @@ public class MayorContable {
             }
 
             // Socio de Negocio
-            // Si viene desde el navegador contable, tomo los filtros de cuenta desde ahí
+            // Si viene desde el navegador contable, tomo los filtros de socio de negocio desde ahí
             if (this.zAcctBrowserID > 0){
                 sql = " select count(*) from Z_AcctBrowFiltroBP where Z_AcctBrowser_ID =" + this.zAcctBrowserID;
                 int contadorBP = DB.getSQLValueEx(null, sql);
@@ -174,13 +174,63 @@ public class MayorContable {
             }
 
             // Producto
-            if (this.mProductID > 0){
-                whereClause += " and f.m_product_id =" + this.cBPartnerID;
+            // Si viene desde el navegador contable, tomo los filtros de producto desde ahí
+            if (this.zAcctBrowserID > 0){
+                sql = " select count(*) from Z_AcctBrowFiltroProd where Z_AcctBrowser_ID =" + this.zAcctBrowserID;
+                int contadorProd = DB.getSQLValueEx(null, sql);
+                if (contadorProd > 0) {
+                    whereClause += " and f.m_product_id in (select distinct(m_product_id) " +
+                            " from Z_AcctBrowFiltroProd where Z_AcctBrowser_ID =" + this.zAcctBrowserID + ") ";
+                }
+            }
+            else{
+                if (this.mProductID > 0){
+                    whereClause += " and f.m_product_id =" + this.cBPartnerID;
+                }
             }
 
             // Centro de Costos
             if (this.cActivityID > 0){
                 whereClause += " and f.c_activity_id =" + this.cBPartnerID;
+            }
+
+            // Si viene desde el navegador contable, tomo los demas filtros
+            if (this.zAcctBrowserID > 0){
+
+                // Si tengo impuestos para filtrar, agrego condición
+                sql = " select count(*) from Z_AcctBrowFiltroTax where Z_AcctBrowser_ID =" + this.zAcctBrowserID;
+                int contadorTax = DB.getSQLValueEx(null, sql);
+                if (contadorTax > 0) {
+                    whereClause += " and f.c_tax_id in (select distinct(c_tax_id) " +
+                            " from Z_AcctBrowFiltroTax where Z_AcctBrowser_ID =" + this.zAcctBrowserID + ") ";
+                }
+
+                // Si tengo documento para filtrar, agrego condición
+                sql = " select count(*) from Z_AcctBrowFiltroDoc where Z_AcctBrowser_ID =" + this.zAcctBrowserID;
+                int contadorDoc = DB.getSQLValueEx(null, sql);
+                if (contadorDoc > 0) {
+                    whereClause += " and f.c_doctype_id in (select distinct(c_doctype_id) " +
+                            " from Z_AcctBrowFiltroDoc where Z_AcctBrowser_ID =" + this.zAcctBrowserID + ") ";
+                }
+
+                // Si tengo retenciones para filtrar, agrego condición
+                sql = " select count(*) from Z_AcctBrowFiltroRet where Z_AcctBrowser_ID =" + this.zAcctBrowserID;
+                int contadorRet = DB.getSQLValueEx(null, sql);
+                if (contadorRet > 0) {
+                    whereClause += " and f.fact_acct_id in (select fact_acct_id from z_acctfactdet " +
+                            " where z_retencionsocio_id in (select distinct(z_retencionsocio_id) " +
+                            " from Z_AcctBrowFiltroRet where Z_AcctBrowser_ID =" + this.zAcctBrowserID + ")) ";
+                }
+
+                // Si tengo medios de pago para filtrar, agrego condición
+                sql = " select count(*) from Z_AcctBrowFiltroMPago where Z_AcctBrowser_ID =" + this.zAcctBrowserID;
+                int contadorMPago = DB.getSQLValueEx(null, sql);
+                if (contadorMPago > 0) {
+                    whereClause += " and f.fact_acct_id in (select fact_acct_id from z_acctfactdet " +
+                            " where z_mediopago_id in (select distinct(z_mediopago_id) " +
+                            " from Z_AcctBrowFiltroMPago where Z_AcctBrowser_ID =" + this.zAcctBrowserID + ")) ";
+                }
+
             }
 
             // Considerar cierre de cuentas diferenciales

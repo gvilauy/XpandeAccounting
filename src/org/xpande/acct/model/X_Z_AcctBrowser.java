@@ -31,7 +31,7 @@ public class X_Z_AcctBrowser extends PO implements I_Z_AcctBrowser, I_Persistent
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20201126L;
+	private static final long serialVersionUID = 20201206L;
 
     /** Standard Constructor */
     public X_Z_AcctBrowser (Properties ctx, int Z_AcctBrowser_ID, String trxName)
@@ -43,6 +43,8 @@ public class X_Z_AcctBrowser extends PO implements I_Z_AcctBrowser, I_Persistent
 			setC_Currency_ID (0);
 			setEditable (true);
 // Y
+			setFiltroManual (false);
+// N
 			setIncCtaSaldoSinMov (true);
 // Y
 			setIncCtaSinSaldoConMov (true);
@@ -109,6 +111,38 @@ public class X_Z_AcctBrowser extends PO implements I_Z_AcctBrowser, I_Persistent
       return sb.toString();
     }
 
+	/** AccountType AD_Reference_ID=117 */
+	public static final int ACCOUNTTYPE_AD_Reference_ID=117;
+	/** Asset = A */
+	public static final String ACCOUNTTYPE_Asset = "A";
+	/** Liability = L */
+	public static final String ACCOUNTTYPE_Liability = "L";
+	/** Revenue = R */
+	public static final String ACCOUNTTYPE_Revenue = "R";
+	/** Expense = E */
+	public static final String ACCOUNTTYPE_Expense = "E";
+	/** Owner's Equity = O */
+	public static final String ACCOUNTTYPE_OwnerSEquity = "O";
+	/** Memo = M */
+	public static final String ACCOUNTTYPE_Memo = "M";
+	/** Set Account Type.
+		@param AccountType 
+		Indicates the type of account
+	  */
+	public void setAccountType (String AccountType)
+	{
+
+		set_Value (COLUMNNAME_AccountType, AccountType);
+	}
+
+	/** Get Account Type.
+		@return Indicates the type of account
+	  */
+	public String getAccountType () 
+	{
+		return (String)get_Value(COLUMNNAME_AccountType);
+	}
+
 	public I_C_AcctSchema getC_AcctSchema() throws RuntimeException
     {
 		return (I_C_AcctSchema)MTable.get(getCtx(), I_C_AcctSchema.Table_Name)
@@ -132,6 +166,34 @@ public class X_Z_AcctBrowser extends PO implements I_Z_AcctBrowser, I_Persistent
 	public int getC_AcctSchema_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_AcctSchema_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	public I_C_BP_Group getC_BP_Group() throws RuntimeException
+    {
+		return (I_C_BP_Group)MTable.get(getCtx(), I_C_BP_Group.Table_Name)
+			.getPO(getC_BP_Group_ID(), get_TrxName());	}
+
+	/** Set Business Partner Group.
+		@param C_BP_Group_ID 
+		Business Partner Group
+	  */
+	public void setC_BP_Group_ID (int C_BP_Group_ID)
+	{
+		if (C_BP_Group_ID < 1) 
+			set_Value (COLUMNNAME_C_BP_Group_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BP_Group_ID, Integer.valueOf(C_BP_Group_ID));
+	}
+
+	/** Get Business Partner Group.
+		@return Business Partner Group
+	  */
+	public int getC_BP_Group_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_Group_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -227,6 +289,30 @@ public class X_Z_AcctBrowser extends PO implements I_Z_AcctBrowser, I_Persistent
 	public Timestamp getEndDate () 
 	{
 		return (Timestamp)get_Value(COLUMNNAME_EndDate);
+	}
+
+	/** Set FiltroManual.
+		@param FiltroManual 
+		Si se indica o no filtros de información de manera manual
+	  */
+	public void setFiltroManual (boolean FiltroManual)
+	{
+		set_Value (COLUMNNAME_FiltroManual, Boolean.valueOf(FiltroManual));
+	}
+
+	/** Get FiltroManual.
+		@return Si se indica o no filtros de información de manera manual
+	  */
+	public boolean isFiltroManual () 
+	{
+		Object oo = get_Value(COLUMNNAME_FiltroManual);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	/** Set IncCtaSaldoSinMov.
@@ -565,6 +651,34 @@ public class X_Z_AcctBrowser extends PO implements I_Z_AcctBrowser, I_Persistent
 		return false;
 	}
 
+	public I_M_Product_Category getM_Product_Category() throws RuntimeException
+    {
+		return (I_M_Product_Category)MTable.get(getCtx(), I_M_Product_Category.Table_Name)
+			.getPO(getM_Product_Category_ID(), get_TrxName());	}
+
+	/** Set Product Category.
+		@param M_Product_Category_ID 
+		Category of a Product
+	  */
+	public void setM_Product_Category_ID (int M_Product_Category_ID)
+	{
+		if (M_Product_Category_ID < 1) 
+			set_Value (COLUMNNAME_M_Product_Category_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Product_Category_ID, Integer.valueOf(M_Product_Category_ID));
+	}
+
+	/** Get Product Category.
+		@return Category of a Product
+	  */
+	public int getM_Product_Category_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_Category_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** Set Name.
 		@param Name 
 		Alphanumeric identifier of the entity
@@ -628,6 +742,53 @@ public class X_Z_AcctBrowser extends PO implements I_Z_AcctBrowser, I_Persistent
 	public String getProcessButton3 () 
 	{
 		return (String)get_Value(COLUMNNAME_ProcessButton3);
+	}
+
+	/** Set ProcessButton4.
+		@param ProcessButton4 
+		Botón de Proceso
+	  */
+	public void setProcessButton4 (String ProcessButton4)
+	{
+		set_Value (COLUMNNAME_ProcessButton4, ProcessButton4);
+	}
+
+	/** Get ProcessButton4.
+		@return Botón de Proceso
+	  */
+	public String getProcessButton4 () 
+	{
+		return (String)get_Value(COLUMNNAME_ProcessButton4);
+	}
+
+	/** ProductType AD_Reference_ID=270 */
+	public static final int PRODUCTTYPE_AD_Reference_ID=270;
+	/** Item = I */
+	public static final String PRODUCTTYPE_Item = "I";
+	/** Service = S */
+	public static final String PRODUCTTYPE_Service = "S";
+	/** Resource = R */
+	public static final String PRODUCTTYPE_Resource = "R";
+	/** Expense type = E */
+	public static final String PRODUCTTYPE_ExpenseType = "E";
+	/** Online = O */
+	public static final String PRODUCTTYPE_Online = "O";
+	/** Set Product Type.
+		@param ProductType 
+		Type of product
+	  */
+	public void setProductType (String ProductType)
+	{
+
+		set_Value (COLUMNNAME_ProductType, ProductType);
+	}
+
+	/** Get Product Type.
+		@return Type of product
+	  */
+	public String getProductType () 
+	{
+		return (String)get_Value(COLUMNNAME_ProductType);
 	}
 
 	/** Set Start Date.
@@ -809,6 +970,26 @@ public class X_Z_AcctBrowser extends PO implements I_Z_AcctBrowser, I_Persistent
 	public int getZ_AcctBrowser_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Z_AcctBrowser_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Z_DataFiltro ID.
+		@param Z_DataFiltro_ID Z_DataFiltro ID	  */
+	public void setZ_DataFiltro_ID (int Z_DataFiltro_ID)
+	{
+		if (Z_DataFiltro_ID < 1) 
+			set_Value (COLUMNNAME_Z_DataFiltro_ID, null);
+		else 
+			set_Value (COLUMNNAME_Z_DataFiltro_ID, Integer.valueOf(Z_DataFiltro_ID));
+	}
+
+	/** Get Z_DataFiltro ID.
+		@return Z_DataFiltro ID	  */
+	public int getZ_DataFiltro_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_DataFiltro_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

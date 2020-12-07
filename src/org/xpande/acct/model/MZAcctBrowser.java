@@ -5,10 +5,12 @@ import org.compiere.model.MAcctSchema;
 import org.compiere.model.MSequence;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.xpande.core.model.*;
 
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -203,6 +205,48 @@ public class MZAcctBrowser extends X_Z_AcctBrowser {
             if (contadorBP > 0) {
                 whereClause += " and f.c_bpartner_id in (select distinct(c_bpartner_id) " +
                         " from Z_AcctBrowFiltroBP where Z_AcctBrowser_ID =" + this.get_ID() + ") ";
+            }
+
+            // Si tengo productos para filtrar, agrego condición
+            sql = " select count(*) from Z_AcctBrowFiltroProd where Z_AcctBrowser_ID =" + this.get_ID();
+            int contadorProd = DB.getSQLValueEx(get_TrxName(), sql);
+            if (contadorProd > 0) {
+                whereClause += " and f.m_product_id in (select distinct(m_product_id) " +
+                        " from Z_AcctBrowFiltroProd where Z_AcctBrowser_ID =" + this.get_ID() + ") ";
+            }
+
+            // Si tengo impuestos para filtrar, agrego condición
+            sql = " select count(*) from Z_AcctBrowFiltroTax where Z_AcctBrowser_ID =" + this.get_ID();
+            int contadorTax = DB.getSQLValueEx(get_TrxName(), sql);
+            if (contadorTax > 0) {
+                whereClause += " and f.c_tax_id in (select distinct(c_tax_id) " +
+                        " from Z_AcctBrowFiltroTax where Z_AcctBrowser_ID =" + this.get_ID() + ") ";
+            }
+
+            // Si tengo documento para filtrar, agrego condición
+            sql = " select count(*) from Z_AcctBrowFiltroDoc where Z_AcctBrowser_ID =" + this.get_ID();
+            int contadorDoc = DB.getSQLValueEx(get_TrxName(), sql);
+            if (contadorDoc > 0) {
+                whereClause += " and f.c_doctype_id in (select distinct(c_doctype_id) " +
+                        " from Z_AcctBrowFiltroDoc where Z_AcctBrowser_ID =" + this.get_ID() + ") ";
+            }
+
+            // Si tengo retenciones para filtrar, agrego condición
+            sql = " select count(*) from Z_AcctBrowFiltroRet where Z_AcctBrowser_ID =" + this.get_ID();
+            int contadorRet = DB.getSQLValueEx(get_TrxName(), sql);
+            if (contadorRet > 0) {
+                whereClause += " and f.fact_acct_id in (select fact_acct_id from z_acctfactdet " +
+                        " where z_retencionsocio_id in (select distinct(z_retencionsocio_id) " +
+                        " from Z_AcctBrowFiltroRet where Z_AcctBrowser_ID =" + this.get_ID() + ")) ";
+            }
+
+            // Si tengo medios de pago para filtrar, agrego condición
+            sql = " select count(*) from Z_AcctBrowFiltroMPago where Z_AcctBrowser_ID =" + this.get_ID();
+            int contadorMPago = DB.getSQLValueEx(get_TrxName(), sql);
+            if (contadorMPago > 0) {
+                whereClause += " and f.fact_acct_id in (select fact_acct_id from z_acctfactdet " +
+                        " where z_mediopago_id in (select distinct(z_mediopago_id) " +
+                        " from Z_AcctBrowFiltroMPago where Z_AcctBrowser_ID =" + this.get_ID() + ")) ";
             }
 
             // Secuencia de tabla de detalle de consulta de mayor contable
@@ -771,6 +815,95 @@ public class MZAcctBrowser extends X_Z_AcctBrowser {
         return true;
     }
 
+    @Override
+    protected boolean afterSave(boolean newRecord, boolean success) {
+
+        if (!success) return false;
+
+        // Si tengo tipo de filtro de informe, cargo datos del mismo.
+        if (this.getZ_DataFiltro_ID() > 0){
+            // Cargo filtros del cabezal
+            MZDataFiltro dataFiltro = new MZDataFiltro(getCtx(), this.getZ_DataFiltro_ID(), get_TrxName());
+            if (dataFiltro.getAccountType() != null){
+                this.setAccountType(dataFiltro.getAccountType());
+            }
+            if (dataFiltro.getC_BP_Group_ID() > 0){
+                this.setC_BP_Group_ID(dataFiltro.getC_BP_Group_ID());
+            }
+            if (dataFiltro.getM_Product_Category_ID() > 0){
+                this.setM_Product_Category_ID(dataFiltro.getM_Product_Category_ID());
+            }
+            if (dataFiltro.getProductType() != null){
+                this.setProductType(dataFiltro.getProductType());
+            }
+
+            // Cuentas contables
+            List<MZDataFiltroAcct> acctList = dataFiltro.getFiltrosAcct();
+            for (MZDataFiltroAcct filtroAcct: acctList){
+                MZAcctBrowFiltroCta filtroCta = new MZAcctBrowFiltroCta(getCtx(), 0, get_TrxName());
+                filtroCta.setC_ElementValue_ID(filtroAcct.getC_ElementValue_ID());
+                filtroCta.setZ_AcctBrowser_ID(this.get_ID());
+                filtroCta.saveEx();
+            }
+
+            // Socios de negocio
+            List<MZDataFiltroBP> bpList = dataFiltro.getFiltrosBP();
+            for (MZDataFiltroBP filtroBP: bpList){
+                MZAcctBrowFiltroBP browFiltroBP = new MZAcctBrowFiltroBP(getCtx(), 0, get_TrxName());
+                browFiltroBP.setC_BPartner_ID(filtroBP.getC_BPartner_ID());
+                browFiltroBP.setZ_AcctBrowser_ID(this.get_ID());
+                browFiltroBP.saveEx();
+            }
+
+            // Productos
+            List<MZDataFiltroProd> prodList = dataFiltro.getFiltrosProd();
+            for (MZDataFiltroProd filtroProd: prodList){
+                MZAcctBrowFiltroProd browFiltroProd = new MZAcctBrowFiltroProd(getCtx(), 0, get_TrxName());
+                browFiltroProd.setM_Product_ID(filtroProd.getM_Product_ID());
+                browFiltroProd.setZ_AcctBrowser_ID(this.get_ID());
+                browFiltroProd.saveEx();
+            }
+
+            // Impuestos
+            List<MZDataFiltroTax> taxList = dataFiltro.getFiltrosTax();
+            for (MZDataFiltroTax filtroTax: taxList){
+                MZAcctBrowFiltroTax browFiltroTax = new MZAcctBrowFiltroTax(getCtx(), 0, get_TrxName());
+                browFiltroTax.setC_Tax_ID(filtroTax.getC_Tax_ID());
+                browFiltroTax.setZ_AcctBrowser_ID(this.get_ID());
+                browFiltroTax.saveEx();
+            }
+
+            // Retenciones
+            List<MZDataFiltroRet> retList = dataFiltro.getFiltrosRet();
+            for (MZDataFiltroRet filtroRet: retList){
+                MZAcctBrowFiltroRet browFiltroRet = new MZAcctBrowFiltroRet(getCtx(), 0, get_TrxName());
+                browFiltroRet.setZ_RetencionSocio_ID(filtroRet.getZ_RetencionSocio_ID());
+                browFiltroRet.setZ_AcctBrowser_ID(this.get_ID());
+                browFiltroRet.saveEx();
+            }
+
+            // Documentos
+            List<MZDataFiltroDoc> docList = dataFiltro.getFiltrosDoc();
+            for (MZDataFiltroDoc filtroDoc: docList){
+                MZAcctBrowFiltroDoc browFiltroDoc = new MZAcctBrowFiltroDoc(getCtx(), 0, get_TrxName());
+                browFiltroDoc.setC_DocType_ID(filtroDoc.getC_DocType_ID());
+                browFiltroDoc.setZ_AcctBrowser_ID(this.get_ID());
+                browFiltroDoc.saveEx();
+            }
+
+            // Medios de Pago
+            List<MZDataFiltroMPago> mpagoList = dataFiltro.getFiltrosMPago();
+            for (MZDataFiltroMPago filtroMPago: mpagoList){
+                MZAcctBrowFiltroMPago browFiltroMPago = new MZAcctBrowFiltroMPago(getCtx(), 0, get_TrxName());
+                browFiltroMPago.setZ_MedioPago_ID(filtroMPago.getZ_MedioPago_ID());
+                browFiltroMPago.setZ_AcctBrowser_ID(this.get_ID());
+                browFiltroMPago.saveEx();
+            }
+        }
+
+        return true;
+    }
+
     /***
      * Interpreta texto de filtro de cuentas contables e inserta el resultado en la tabla de filtro de cuentas.
      * Xpande. Created by Gabriel Vila on 7/26/18.
@@ -778,12 +911,10 @@ public class MZAcctBrowser extends X_Z_AcctBrowser {
      */
     public String setCuentasFiltro(){
 
-        String message = null;
-
         try{
 
             if ((this.getTextoFiltro() == null) || (this.getTextoFiltro().trim().equalsIgnoreCase(""))){
-                return message;
+                return null;
             }
 
             // Split por separadores de cuentas
@@ -806,7 +937,7 @@ public class MZAcctBrowser extends X_Z_AcctBrowser {
             throw new AdempiereException(e);
         }
 
-        return message;
+        return null;
     }
 
     /***

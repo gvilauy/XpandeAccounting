@@ -42,6 +42,19 @@ public interface I_Z_AcctBrowser
 
     /** Load Meta Data */
 
+    /** Column name AccountType */
+    public static final String COLUMNNAME_AccountType = "AccountType";
+
+	/** Set Account Type.
+	  * Indicates the type of account
+	  */
+	public void setAccountType (String AccountType);
+
+	/** Get Account Type.
+	  * Indicates the type of account
+	  */
+	public String getAccountType();
+
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
@@ -77,6 +90,21 @@ public interface I_Z_AcctBrowser
 	public int getC_AcctSchema_ID();
 
 	public I_C_AcctSchema getC_AcctSchema() throws RuntimeException;
+
+    /** Column name C_BP_Group_ID */
+    public static final String COLUMNNAME_C_BP_Group_ID = "C_BP_Group_ID";
+
+	/** Set Business Partner Group.
+	  * Business Partner Group
+	  */
+	public void setC_BP_Group_ID (int C_BP_Group_ID);
+
+	/** Get Business Partner Group.
+	  * Business Partner Group
+	  */
+	public int getC_BP_Group_ID();
+
+	public I_C_BP_Group getC_BP_Group() throws RuntimeException;
 
     /** Column name C_Currency_2_ID */
     public static final String COLUMNNAME_C_Currency_2_ID = "C_Currency_2_ID";
@@ -147,6 +175,19 @@ public interface I_Z_AcctBrowser
 	  * Last effective date (inclusive)
 	  */
 	public Timestamp getEndDate();
+
+    /** Column name FiltroManual */
+    public static final String COLUMNNAME_FiltroManual = "FiltroManual";
+
+	/** Set FiltroManual.
+	  * Si se indica o no filtros de información de manera manual
+	  */
+	public void setFiltroManual (boolean FiltroManual);
+
+	/** Get FiltroManual.
+	  * Si se indica o no filtros de información de manera manual
+	  */
+	public boolean isFiltroManual();
 
     /** Column name IncCtaSaldoSinMov */
     public static final String COLUMNNAME_IncCtaSaldoSinMov = "IncCtaSaldoSinMov";
@@ -343,6 +384,21 @@ public interface I_Z_AcctBrowser
 	  */
 	public boolean isCierreIntegral();
 
+    /** Column name M_Product_Category_ID */
+    public static final String COLUMNNAME_M_Product_Category_ID = "M_Product_Category_ID";
+
+	/** Set Product Category.
+	  * Category of a Product
+	  */
+	public void setM_Product_Category_ID (int M_Product_Category_ID);
+
+	/** Get Product Category.
+	  * Category of a Product
+	  */
+	public int getM_Product_Category_ID();
+
+	public I_M_Product_Category getM_Product_Category() throws RuntimeException;
+
     /** Column name Name */
     public static final String COLUMNNAME_Name = "Name";
 
@@ -390,6 +446,32 @@ public interface I_Z_AcctBrowser
 	  * Botón para proceso
 	  */
 	public String getProcessButton3();
+
+    /** Column name ProcessButton4 */
+    public static final String COLUMNNAME_ProcessButton4 = "ProcessButton4";
+
+	/** Set ProcessButton4.
+	  * Botón de Proceso
+	  */
+	public void setProcessButton4 (String ProcessButton4);
+
+	/** Get ProcessButton4.
+	  * Botón de Proceso
+	  */
+	public String getProcessButton4();
+
+    /** Column name ProductType */
+    public static final String COLUMNNAME_ProductType = "ProductType";
+
+	/** Set Product Type.
+	  * Type of product
+	  */
+	public void setProductType (String ProductType);
+
+	/** Get Product Type.
+	  * Type of product
+	  */
+	public String getProductType();
 
     /** Column name StartDate */
     public static final String COLUMNNAME_StartDate = "StartDate";
@@ -519,4 +601,13 @@ public interface I_Z_AcctBrowser
 
 	/** Get Z_AcctBrowser ID	  */
 	public int getZ_AcctBrowser_ID();
+
+    /** Column name Z_DataFiltro_ID */
+    public static final String COLUMNNAME_Z_DataFiltro_ID = "Z_DataFiltro_ID";
+
+	/** Set Z_DataFiltro ID	  */
+	public void setZ_DataFiltro_ID (int Z_DataFiltro_ID);
+
+	/** Get Z_DataFiltro ID	  */
+	public int getZ_DataFiltro_ID();
 }
