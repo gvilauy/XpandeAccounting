@@ -165,7 +165,7 @@ public class MZAcctBrowser extends X_Z_AcctBrowser {
      */
     private void getDataMayor(MZAcctBrowserBal acctBrowserBal) {
 
-        String action = "", sql = "";
+        String action, sql;
 
         try{
 
@@ -294,7 +294,7 @@ public class MZAcctBrowser extends X_Z_AcctBrowser {
      */
     private void getDataBalance() {
 
-        String action = "", sql = "";
+        String action, sql;
 
         try{
 
@@ -329,7 +329,7 @@ public class MZAcctBrowser extends X_Z_AcctBrowser {
      */
     private void updateDataMayor() {
 
-        String action = "";
+        String action;
 
         try{
 
@@ -429,7 +429,7 @@ public class MZAcctBrowser extends X_Z_AcctBrowser {
      */
     private void updateDataBalanceNotSummary() {
 
-        String sql = "", action = "";
+        String sql, action;
         PreparedStatement pstmt = null;
         ResultSet rs = null;
 
@@ -512,7 +512,7 @@ public class MZAcctBrowser extends X_Z_AcctBrowser {
      */
     private void updateDataBalanceSummary() {
 
-        String sql = "", action = "";
+        String sql;
         PreparedStatement pstmt = null;
         ResultSet rs = null;
 
@@ -550,7 +550,7 @@ public class MZAcctBrowser extends X_Z_AcctBrowser {
      */
     private void updateDataBalRecursive(int cElementValueID, int nivel){
 
-        String sql = "", action = "";
+        String sql, action;
         PreparedStatement pstmt = null;
         ResultSet rs = null;
 
@@ -626,7 +626,7 @@ public class MZAcctBrowser extends X_Z_AcctBrowser {
      */
     private void getDataSumMayor() {
 
-        String action = "", sql = "";
+        String action, sql;
 
         try{
             // Secuencia de tabla sumarizada de consulta de mayor contable
@@ -667,9 +667,9 @@ public class MZAcctBrowser extends X_Z_AcctBrowser {
      */
     private void updateDataSumMayor() {
 
-        String action = "";
+        String action;
 
-        String sql = "";
+        String sql;
         PreparedStatement pstmt = null;
         ResultSet rs = null;
 
@@ -812,6 +812,38 @@ public class MZAcctBrowser extends X_Z_AcctBrowser {
             }
         }
 
+        // Si tengo tipo de filtro de informe, cargo datos del mismo.
+        if (this.getZ_DataFiltro_ID() > 0) {
+            // Cargo filtros del cabezal
+            MZDataFiltro dataFiltro = new MZDataFiltro(getCtx(), this.getZ_DataFiltro_ID(), get_TrxName());
+            if (dataFiltro.getAccountType() != null) {
+                this.setAccountType(dataFiltro.getAccountType());
+            }
+            if (dataFiltro.getC_BP_Group_ID() > 0) {
+                this.setC_BP_Group_ID(dataFiltro.getC_BP_Group_ID());
+            }
+            if (dataFiltro.getM_Product_Category_ID() > 0) {
+                this.setM_Product_Category_ID(dataFiltro.getM_Product_Category_ID());
+            }
+            if (dataFiltro.getProductType() != null) {
+                this.setProductType(dataFiltro.getProductType());
+            }
+
+            // Atributos de Retail que me quedaron enganchados
+            if (dataFiltro.get_ValueAsInt("Z_ProductoSeccion_ID") > 0){
+                this.set_Value("Z_ProductoSeccion_ID", dataFiltro.get_ValueAsInt("Z_ProductoSeccion_ID"));
+            }
+            if (dataFiltro.get_ValueAsInt("Z_ProductoRubro_ID") > 0){
+                this.set_Value("Z_ProductoRubro_ID", dataFiltro.get_ValueAsInt("Z_ProductoRubro_ID"));
+            }
+            if (dataFiltro.get_ValueAsInt("Z_ProductoFamilia_ID") > 0){
+                this.set_Value("Z_ProductoFamilia_ID", dataFiltro.get_ValueAsInt("Z_ProductoFamilia_ID"));
+            }
+            if (dataFiltro.get_ValueAsInt("Z_ProductoSubfamilia_ID") > 0){
+                this.set_Value("Z_ProductoSubfamilia_ID", dataFiltro.get_ValueAsInt("Z_ProductoSubfamilia_ID"));
+            }
+        }
+
         return true;
     }
 
@@ -822,20 +854,8 @@ public class MZAcctBrowser extends X_Z_AcctBrowser {
 
         // Si tengo tipo de filtro de informe, cargo datos del mismo.
         if (this.getZ_DataFiltro_ID() > 0){
-            // Cargo filtros del cabezal
+
             MZDataFiltro dataFiltro = new MZDataFiltro(getCtx(), this.getZ_DataFiltro_ID(), get_TrxName());
-            if (dataFiltro.getAccountType() != null){
-                this.setAccountType(dataFiltro.getAccountType());
-            }
-            if (dataFiltro.getC_BP_Group_ID() > 0){
-                this.setC_BP_Group_ID(dataFiltro.getC_BP_Group_ID());
-            }
-            if (dataFiltro.getM_Product_Category_ID() > 0){
-                this.setM_Product_Category_ID(dataFiltro.getM_Product_Category_ID());
-            }
-            if (dataFiltro.getProductType() != null){
-                this.setProductType(dataFiltro.getProductType());
-            }
 
             // Cuentas contables
             List<MZDataFiltroAcct> acctList = dataFiltro.getFiltrosAcct();
