@@ -63,8 +63,6 @@ public class MZAcctBrowser extends X_Z_AcctBrowser {
      */
     private String executeMayor(){
 
-        String message = null;
-
         try{
 
             this.deleteDataMayor();
@@ -83,7 +81,7 @@ public class MZAcctBrowser extends X_Z_AcctBrowser {
             throw new AdempiereException(e);
         }
 
-        return message;
+        return null;
     }
 
 
@@ -175,13 +173,14 @@ public class MZAcctBrowser extends X_Z_AcctBrowser {
                 zAcctBrowserBalID = acctBrowserBal.get_ID();
             }
 
+            StringBuilder whereClause = new StringBuilder("");
+
             // Armo condiciones según filtros
-            String whereClause = "";
             if (this.getStartDate() != null){
-                whereClause += " and f.dateacct >='" + this.getStartDate() + "'" ;
+                whereClause.append(" and f.dateacct >='" + this.getStartDate() + "' ");
             }
             if (this.getEndDate() != null){
-                whereClause += " and f.dateacct <='" + this.getEndDate() + "'" ;
+                whereClause.append(" and f.dateacct <='" + this.getEndDate() + "' ");
             }
 
             // Filtro cuentas siempre y cuando no reciba cuenta de balance
@@ -190,63 +189,30 @@ public class MZAcctBrowser extends X_Z_AcctBrowser {
                 sql = " select count(*) from Z_AcctBrowFiltroCta where Z_AcctBrowser_ID =" + this.get_ID();
                 int contadorCta = DB.getSQLValueEx(get_TrxName(), sql);
                 if (contadorCta > 0) {
-                    whereClause += " and f.account_id in (select distinct(c_elementvalue_id) " +
-                            " from Z_AcctBrowFiltroCta where Z_AcctBrowser_ID =" + this.get_ID() + ") ";
+                    whereClause.append(" and f.account_id in (select distinct(c_elementvalue_id) " +
+                            " from Z_AcctBrowFiltroCta where Z_AcctBrowser_ID =" + this.get_ID() + ") ");
                 }
             }
             else{
                 // Solo considero cuenta contable recibida en cuenta de balance
-                whereClause += " and f.account_id =" + acctBrowserBal.getC_ElementValue_ID();
+                whereClause.append(" and f.account_id =" + acctBrowserBal.getC_ElementValue_ID());
             }
 
-            // Si tengo socios de negocio para filtrar, agrego condición
-            sql = " select count(*) from Z_AcctBrowFiltroBP where Z_AcctBrowser_ID =" + this.get_ID();
-            int contadorBP = DB.getSQLValueEx(get_TrxName(), sql);
-            if (contadorBP > 0) {
-                whereClause += " and f.c_bpartner_id in (select distinct(c_bpartner_id) " +
-                        " from Z_AcctBrowFiltroBP where Z_AcctBrowser_ID =" + this.get_ID() + ") ";
-            }
+            whereClause.append(this.getFiltrosMayor());
 
-            // Si tengo productos para filtrar, agrego condición
-            sql = " select count(*) from Z_AcctBrowFiltroProd where Z_AcctBrowser_ID =" + this.get_ID();
-            int contadorProd = DB.getSQLValueEx(get_TrxName(), sql);
-            if (contadorProd > 0) {
-                whereClause += " and f.m_product_id in (select distinct(m_product_id) " +
-                        " from Z_AcctBrowFiltroProd where Z_AcctBrowser_ID =" + this.get_ID() + ") ";
+            // Considerar cierre de cuentas diferenciales
+            if ((!this.isCierreDiferencial()) && (!this.isCierreIntegral())){
+                whereClause.append(" and doc.docbasetype not in ('CJD','CJI') ");
             }
-
-            // Si tengo impuestos para filtrar, agrego condición
-            sql = " select count(*) from Z_AcctBrowFiltroTax where Z_AcctBrowser_ID =" + this.get_ID();
-            int contadorTax = DB.getSQLValueEx(get_TrxName(), sql);
-            if (contadorTax > 0) {
-                whereClause += " and f.c_tax_id in (select distinct(c_tax_id) " +
-                        " from Z_AcctBrowFiltroTax where Z_AcctBrowser_ID =" + this.get_ID() + ") ";
-            }
-
-            // Si tengo documento para filtrar, agrego condición
-            sql = " select count(*) from Z_AcctBrowFiltroDoc where Z_AcctBrowser_ID =" + this.get_ID();
-            int contadorDoc = DB.getSQLValueEx(get_TrxName(), sql);
-            if (contadorDoc > 0) {
-                whereClause += " and f.c_doctype_id in (select distinct(c_doctype_id) " +
-                        " from Z_AcctBrowFiltroDoc where Z_AcctBrowser_ID =" + this.get_ID() + ") ";
-            }
-
-            // Si tengo retenciones para filtrar, agrego condición
-            sql = " select count(*) from Z_AcctBrowFiltroRet where Z_AcctBrowser_ID =" + this.get_ID();
-            int contadorRet = DB.getSQLValueEx(get_TrxName(), sql);
-            if (contadorRet > 0) {
-                whereClause += " and f.fact_acct_id in (select fact_acct_id from z_acctfactdet " +
-                        " where z_retencionsocio_id in (select distinct(z_retencionsocio_id) " +
-                        " from Z_AcctBrowFiltroRet where Z_AcctBrowser_ID =" + this.get_ID() + ")) ";
-            }
-
-            // Si tengo medios de pago para filtrar, agrego condición
-            sql = " select count(*) from Z_AcctBrowFiltroMPago where Z_AcctBrowser_ID =" + this.get_ID();
-            int contadorMPago = DB.getSQLValueEx(get_TrxName(), sql);
-            if (contadorMPago > 0) {
-                whereClause += " and f.fact_acct_id in (select fact_acct_id from z_acctfactdet " +
-                        " where z_mediopago_id in (select distinct(z_mediopago_id) " +
-                        " from Z_AcctBrowFiltroMPago where Z_AcctBrowser_ID =" + this.get_ID() + ")) ";
+            else{
+                if (!this.isCierreDiferencial()){
+                    whereClause.append(" and doc.docbasetype <>'CJD' ");
+                }
+                else{
+                    if (!this.isCierreIntegral()){
+                        whereClause.append(" and doc.docbasetype <>'CJI' ");
+                    }
+                }
             }
 
             // Secuencia de tabla de detalle de consulta de mayor contable
@@ -267,11 +233,14 @@ public class MZAcctBrowser extends X_Z_AcctBrowser {
                     " f.currencyrate, f.duedate, det.estadomediopago, det.nromediopago, det.z_mediopago_id, det.z_retencionsocio_id, f.c_activity_id, " +
                     ((zAcctBrowserBalID > 0) ? Integer.toString(zAcctBrowserBalID) : "null") +
                     " from fact_acct f " +
+                    " inner join c_elementvalue ev on f.account_id = ev.c_elementvalue_id " +
                     " left outer join c_bpartner bp on f.c_bpartner_id = bp.c_bpartner_id " +
+                    " left outer join m_product prod on f.m_product_id = prod.m_product_id " +
                     " left outer join z_acctfactdet det on f.fact_acct_id = det.fact_acct_id " +
+                    " left outer join z_mediopagoitem mpi on det.z_mediopagoitem_id = mpi.z_mediopagoitem_id " +
                     " where f.ad_client_id =" + this.getAD_Client_ID() +
                     " and f.ad_org_id =" + this.getAD_Org_ID() +
-                    " and f.c_acctschema_id =" + this.getC_AcctSchema_ID() + whereClause +
+                    " and f.c_acctschema_id =" + this.getC_AcctSchema_ID() + whereClause.toString() +
                     " order by f.account_id, f.dateacct ";
             DB.executeUpdateEx(action + sql, get_TrxName());
 
@@ -285,6 +254,184 @@ public class MZAcctBrowser extends X_Z_AcctBrowser {
         catch (Exception e){
             throw new AdempiereException(e);
         }
+    }
+
+    public StringBuilder getFiltrosMayor() {
+
+        StringBuilder whereClause = new StringBuilder("");
+
+        try{
+
+
+            if (this.getAccountType() != null){
+                whereClause.append(" and ev.AccountType ='" + this.getAccountType() + "' ");
+            }
+
+            if (this.getC_BP_Group_ID() > 0){
+                whereClause.append(" and bp.c_bp_group_id =" + this.getC_BP_Group_ID());
+            }
+
+            if (this.getM_Product_Category_ID() > 0){
+                whereClause.append(" and prod.m_product_category_id =" + this.getM_Product_Category_ID());
+            }
+
+            if (this.getProductType() != null){
+                whereClause.append(" and prod.ProductType ='" + this.getProductType() + "' ");
+            }
+
+            whereClause.append(this.getFiltrosRetail());
+            whereClause.append(this.getFiltroEstadoMPago());
+
+
+            // Si tengo socios de negocio para filtrar, agrego condición
+            String sql = " select count(*) from Z_AcctBrowFiltroBP where Z_AcctBrowser_ID =" + this.get_ID();
+            int contadorBP = DB.getSQLValueEx(get_TrxName(), sql);
+            if (contadorBP > 0) {
+                whereClause.append(" and f.c_bpartner_id in (select distinct(c_bpartner_id) " +
+                        " from Z_AcctBrowFiltroBP where Z_AcctBrowser_ID =" + this.get_ID() + ") ");
+            }
+
+            // Si tengo productos para filtrar, agrego condición
+            sql = " select count(*) from Z_AcctBrowFiltroProd where Z_AcctBrowser_ID =" + this.get_ID();
+            int contadorProd = DB.getSQLValueEx(get_TrxName(), sql);
+            if (contadorProd > 0) {
+                whereClause.append(" and f.m_product_id in (select distinct(m_product_id) " +
+                        " from Z_AcctBrowFiltroProd where Z_AcctBrowser_ID =" + this.get_ID() + ") ");
+            }
+
+            // Si tengo impuestos para filtrar, agrego condición
+            sql = " select count(*) from Z_AcctBrowFiltroTax where Z_AcctBrowser_ID =" + this.get_ID();
+            int contadorTax = DB.getSQLValueEx(get_TrxName(), sql);
+            if (contadorTax > 0) {
+                whereClause.append(" and f.c_tax_id in (select distinct(c_tax_id) " +
+                        " from Z_AcctBrowFiltroTax where Z_AcctBrowser_ID =" + this.get_ID() + ") ");
+            }
+
+            // Si tengo documento para filtrar, agrego condición
+            sql = " select count(*) from Z_AcctBrowFiltroDoc where Z_AcctBrowser_ID =" + this.get_ID();
+            int contadorDoc = DB.getSQLValueEx(get_TrxName(), sql);
+            if (contadorDoc > 0) {
+                whereClause.append(" and f.c_doctype_id in (select distinct(c_doctype_id) " +
+                        " from Z_AcctBrowFiltroDoc where Z_AcctBrowser_ID =" + this.get_ID() + ") ");
+            }
+
+            // Si tengo retenciones para filtrar, agrego condición
+            sql = " select count(*) from Z_AcctBrowFiltroRet where Z_AcctBrowser_ID =" + this.get_ID();
+            int contadorRet = DB.getSQLValueEx(get_TrxName(), sql);
+            if (contadorRet > 0) {
+                whereClause.append(" and f.fact_acct_id in (select fact_acct_id from z_acctfactdet " +
+                        " where z_retencionsocio_id in (select distinct(z_retencionsocio_id) " +
+                        " from Z_AcctBrowFiltroRet where Z_AcctBrowser_ID =" + this.get_ID() + ")) ");
+            }
+
+            // Si tengo medios de pago para filtrar, agrego condición
+            sql = " select count(*) from Z_AcctBrowFiltroMPago where Z_AcctBrowser_ID =" + this.get_ID();
+            int contadorMPago = DB.getSQLValueEx(get_TrxName(), sql);
+            if (contadorMPago > 0) {
+                whereClause.append(" and f.fact_acct_id in (select fact_acct_id from z_acctfactdet " +
+                        " where z_mediopago_id in (select distinct(z_mediopago_id) " +
+                        " from Z_AcctBrowFiltroMPago where Z_AcctBrowser_ID =" + this.get_ID() + ")) ");
+            }
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+        return whereClause;
+    }
+
+    private String getFiltroEstadoMPago() {
+
+        String whereClause = "";
+
+        try{
+
+            if (this.isFiltroEstadoMPago()){
+
+                if (this.isEmitido()){
+                    whereClause += " and (mpi.emitido ='Y' ";
+                }
+                else {
+                    whereClause += " and (mpi.emitido ='N' ";
+                }
+
+                if (this.isEntregado()){
+                    whereClause += " and mpi.entregado ='Y' ";
+                }
+                else {
+                    whereClause += " and mpi.entregado ='N' ";
+                }
+
+                if (this.isDepositado()){
+                    whereClause += " and mpi.depositado ='Y' ";
+                }
+                else {
+                    whereClause += " and mpi.depositado ='N' ";
+                }
+
+                if (this.isConciliado()){
+                    whereClause += " and mpi.conciliado ='Y' ";
+                }
+                else {
+                    whereClause += " and mpi.conciliado ='N' ";
+                }
+
+                if (this.isReemplazado()){
+                    whereClause += " and mpi.reemplazado ='Y' ";
+                }
+                else {
+                    whereClause += " and mpi.reemplazado ='N' ";
+                }
+
+                if (this.isAnulado()){
+                    whereClause += " and mpi.anulado ='Y') ";
+                }
+                else {
+                    whereClause += " and mpi.anulado ='N') ";
+                }
+
+            }
+
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+
+        return whereClause;
+    }
+
+    private String getFiltrosRetail() {
+
+        String whereClause = "";
+
+        try{
+
+            int zProductoSeccionID = this.get_ValueAsInt("Z_ProductoSeccion_ID");
+            int zProductoRubroID = this.get_ValueAsInt("Z_ProductoRubro_ID");
+            int zProductoFamiliaID = this.get_ValueAsInt("Z_ProductoFamilia_ID");
+            int zProductoSubfamiliaID = this.get_ValueAsInt("Z_ProductoSubfamilia_ID");
+
+            if (zProductoSeccionID > 0){
+                whereClause += " and prod.z_productoseccion_id =" + zProductoSeccionID;
+            }
+
+            if (zProductoRubroID > 0){
+                whereClause += " and prod.z_productorubro_id =" + zProductoRubroID;
+            }
+
+            if (zProductoFamiliaID > 0){
+                whereClause += " and prod.z_productofamilia_id =" + zProductoFamiliaID;
+            }
+
+            if (zProductoSubfamiliaID > 0){
+                whereClause += " and prod.z_productosubfamilia_id =" + zProductoSubfamiliaID;
+            }
+
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+
+        return whereClause;
     }
 
 
@@ -737,12 +884,34 @@ public class MZAcctBrowser extends X_Z_AcctBrowser {
                 whereClause += " and f.dateacct <'" + this.getStartDate() + "'" ;
             }
 
+            whereClause += this.getFiltrosMayor().toString();
+
+            // Considerar cierre de cuentas diferenciales
+            if ((!this.isCierreDiferencial()) && (!this.isCierreIntegral())){
+                whereClause += " and doc.docbasetype not in ('CJD','CJI') ";
+            }
+            else{
+                if (!this.isCierreDiferencial()){
+                    whereClause += " and doc.docbasetype <>'CJD' ";
+                }
+                else{
+                    if (!this.isCierreIntegral()){
+                        whereClause += " and doc.docbasetype <>'CJI' ";
+                    }
+                }
+            }
+
             BigDecimal amtSchemaCurrency = Env.ZERO, amtNotSchemaCurrency = Env.ZERO;
 
             // Si la moneda uno es igual a la moneda del esquema contable
             if (schema.getC_Currency_ID() == cCurrencyID){
                 sql = " select sum(f.amtacctdr - f.amtacctcr) " +
                         " from fact_acct f " +
+                        " inner join c_elementvalue ev on f.account_id = ev.c_elementvalue_id " +
+                        " left outer join c_bpartner bp on f.c_bpartner_id = bp.c_bpartner_id " +
+                        " left outer join m_product prod on f.m_product_id = prod.m_product_id " +
+                        " left outer join z_acctfactdet det on f.fact_acct_id = det.fact_acct_id " +
+                        " left outer join z_mediopagoitem mpi on det.z_mediopagoitem_id = mpi.z_mediopagoitem_id " +
                         " where f.ad_client_id =" + this.getAD_Client_ID() +
                         " and f.ad_org_id =" + this.getAD_Org_ID() +
                         " and f.c_acctschema_id =" + this.getC_AcctSchema_ID() +
@@ -755,6 +924,11 @@ public class MZAcctBrowser extends X_Z_AcctBrowser {
 
                 sql = " select sum(f.amtsourcedr - f.amtsourcecr) " +
                         " from fact_acct f " +
+                        " inner join c_elementvalue ev on f.account_id = ev.c_elementvalue_id " +
+                        " left outer join c_bpartner bp on f.c_bpartner_id = bp.c_bpartner_id " +
+                        " left outer join m_product prod on f.m_product_id = prod.m_product_id " +
+                        " left outer join z_acctfactdet det on f.fact_acct_id = det.fact_acct_id " +
+                        " left outer join z_mediopagoitem mpi on det.z_mediopagoitem_id = mpi.z_mediopagoitem_id " +
                         " where f.ad_client_id =" + this.getAD_Client_ID() +
                         " and f.ad_org_id =" + this.getAD_Org_ID() +
                         " and f.c_acctschema_id =" + this.getC_AcctSchema_ID() +
@@ -766,6 +940,11 @@ public class MZAcctBrowser extends X_Z_AcctBrowser {
 
                 sql = " select sum(round(((f.amtsourcedr - f.amtsourcecr) * currencyrate(c_currency_id," + cCurrencyID + ", dateacct, 114, ad_client_id, ad_org_id)),2)) " +
                         " from fact_acct f " +
+                        " inner join c_elementvalue ev on f.account_id = ev.c_elementvalue_id " +
+                        " left outer join c_bpartner bp on f.c_bpartner_id = bp.c_bpartner_id " +
+                        " left outer join m_product prod on f.m_product_id = prod.m_product_id " +
+                        " left outer join z_acctfactdet det on f.fact_acct_id = det.fact_acct_id " +
+                        " left outer join z_mediopagoitem mpi on det.z_mediopagoitem_id = mpi.z_mediopagoitem_id " +
                         " where f.ad_client_id =" + this.getAD_Client_ID() +
                         " and f.ad_org_id =" + this.getAD_Org_ID() +
                         " and f.c_acctschema_id =" + this.getC_AcctSchema_ID() +
@@ -828,6 +1007,14 @@ public class MZAcctBrowser extends X_Z_AcctBrowser {
             if (dataFiltro.getProductType() != null) {
                 this.setProductType(dataFiltro.getProductType());
             }
+
+            this.setFiltroEstadoMPago(dataFiltro.isFiltroEstadoMPago());
+            this.setEmitido(dataFiltro.isEmitido());
+            this.setEntregado(dataFiltro.isEntregado());
+            this.setDepositado(dataFiltro.isDepositado());
+            this.setConciliado(dataFiltro.isConciliado());
+            this.setReemplazado(dataFiltro.isReemplazado());
+            this.setAnulado(dataFiltro.isAnulado());
 
             // Atributos de Retail que me quedaron enganchados
             if (dataFiltro.get_ValueAsInt("Z_ProductoSeccion_ID") > 0){

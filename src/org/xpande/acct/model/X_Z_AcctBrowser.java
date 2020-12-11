@@ -31,7 +31,7 @@ public class X_Z_AcctBrowser extends PO implements I_Z_AcctBrowser, I_Persistent
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20201206L;
+	private static final long serialVersionUID = 20201209L;
 
     /** Standard Constructor */
     public X_Z_AcctBrowser (Properties ctx, int Z_AcctBrowser_ID, String trxName)
@@ -39,10 +39,22 @@ public class X_Z_AcctBrowser extends PO implements I_Z_AcctBrowser, I_Persistent
       super (ctx, Z_AcctBrowser_ID, trxName);
       /** if (Z_AcctBrowser_ID == 0)
         {
+			setAnulado (true);
+// Y
 			setC_AcctSchema_ID (0);
 			setC_Currency_ID (0);
+			setConciliado (true);
+// Y
+			setDepositado (true);
+// Y
 			setEditable (true);
 // Y
+			setEmitido (true);
+// Y
+			setEntregado (true);
+// Y
+			setFiltroEstadoMPago (false);
+// N
 			setFiltroManual (false);
 // N
 			setIncCtaSaldoSinMov (true);
@@ -72,6 +84,8 @@ public class X_Z_AcctBrowser extends PO implements I_Z_AcctBrowser, I_Persistent
 			setIsCierreDiferencial (true);
 // Y
 			setIsCierreIntegral (true);
+// Y
+			setReemplazado (true);
 // Y
 			setTipoAcctBrowser (null);
 // MAYOR
@@ -141,6 +155,30 @@ public class X_Z_AcctBrowser extends PO implements I_Z_AcctBrowser, I_Persistent
 	public String getAccountType () 
 	{
 		return (String)get_Value(COLUMNNAME_AccountType);
+	}
+
+	/** Set Anulado.
+		@param Anulado 
+		Si esta anulado o no
+	  */
+	public void setAnulado (boolean Anulado)
+	{
+		set_Value (COLUMNNAME_Anulado, Boolean.valueOf(Anulado));
+	}
+
+	/** Get Anulado.
+		@return Si esta anulado o no
+	  */
+	public boolean isAnulado () 
+	{
+		Object oo = get_Value(COLUMNNAME_Anulado);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	public I_C_AcctSchema getC_AcctSchema() throws RuntimeException
@@ -250,6 +288,54 @@ public class X_Z_AcctBrowser extends PO implements I_Z_AcctBrowser, I_Persistent
 		return ii.intValue();
 	}
 
+	/** Set Conciliado.
+		@param Conciliado 
+		Conciliado si o no
+	  */
+	public void setConciliado (boolean Conciliado)
+	{
+		set_Value (COLUMNNAME_Conciliado, Boolean.valueOf(Conciliado));
+	}
+
+	/** Get Conciliado.
+		@return Conciliado si o no
+	  */
+	public boolean isConciliado () 
+	{
+		Object oo = get_Value(COLUMNNAME_Conciliado);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Depositado.
+		@param Depositado 
+		Si esta o no depositado
+	  */
+	public void setDepositado (boolean Depositado)
+	{
+		set_Value (COLUMNNAME_Depositado, Boolean.valueOf(Depositado));
+	}
+
+	/** Get Depositado.
+		@return Si esta o no depositado
+	  */
+	public boolean isDepositado () 
+	{
+		Object oo = get_Value(COLUMNNAME_Depositado);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Editable.
 		@param Editable 
 		SI un registro es o no editable
@@ -274,6 +360,30 @@ public class X_Z_AcctBrowser extends PO implements I_Z_AcctBrowser, I_Persistent
 		return false;
 	}
 
+	/** Set Emitido.
+		@param Emitido 
+		Documento emitido
+	  */
+	public void setEmitido (boolean Emitido)
+	{
+		set_Value (COLUMNNAME_Emitido, Boolean.valueOf(Emitido));
+	}
+
+	/** Get Emitido.
+		@return Documento emitido
+	  */
+	public boolean isEmitido () 
+	{
+		Object oo = get_Value(COLUMNNAME_Emitido);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set End Date.
 		@param EndDate 
 		Last effective date (inclusive)
@@ -289,6 +399,54 @@ public class X_Z_AcctBrowser extends PO implements I_Z_AcctBrowser, I_Persistent
 	public Timestamp getEndDate () 
 	{
 		return (Timestamp)get_Value(COLUMNNAME_EndDate);
+	}
+
+	/** Set Entregado.
+		@param Entregado 
+		Si esta entregado o no
+	  */
+	public void setEntregado (boolean Entregado)
+	{
+		set_Value (COLUMNNAME_Entregado, Boolean.valueOf(Entregado));
+	}
+
+	/** Get Entregado.
+		@return Si esta entregado o no
+	  */
+	public boolean isEntregado () 
+	{
+		Object oo = get_Value(COLUMNNAME_Entregado);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set FiltroEstadoMPago.
+		@param FiltroEstadoMPago 
+		Si se desea filtrar o no información según estado de medios de pago
+	  */
+	public void setFiltroEstadoMPago (boolean FiltroEstadoMPago)
+	{
+		set_Value (COLUMNNAME_FiltroEstadoMPago, Boolean.valueOf(FiltroEstadoMPago));
+	}
+
+	/** Get FiltroEstadoMPago.
+		@return Si se desea filtrar o no información según estado de medios de pago
+	  */
+	public boolean isFiltroEstadoMPago () 
+	{
+		Object oo = get_Value(COLUMNNAME_FiltroEstadoMPago);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	/** Set FiltroManual.
@@ -789,6 +947,30 @@ public class X_Z_AcctBrowser extends PO implements I_Z_AcctBrowser, I_Persistent
 	public String getProductType () 
 	{
 		return (String)get_Value(COLUMNNAME_ProductType);
+	}
+
+	/** Set Reemplazado.
+		@param Reemplazado 
+		Reemplazado si o no
+	  */
+	public void setReemplazado (boolean Reemplazado)
+	{
+		set_Value (COLUMNNAME_Reemplazado, Boolean.valueOf(Reemplazado));
+	}
+
+	/** Get Reemplazado.
+		@return Reemplazado si o no
+	  */
+	public boolean isReemplazado () 
+	{
+		Object oo = get_Value(COLUMNNAME_Reemplazado);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	/** Set Start Date.
