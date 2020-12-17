@@ -804,7 +804,7 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 			MZAcctApertura acctApertura = new MZAcctApertura(getCtx(), 0, get_TrxName());
 			acctApertura.setAD_Org_ID(this.getAD_Org_ID());
 			acctApertura.setC_DocType_ID(docType.get_ID());
-			acctApertura.setDateDoc(this.getDateDoc());
+			acctApertura.setDateDoc(dateAcct);
 			acctApertura.setDateAcct(dateAcct);
 			acctApertura.setC_AcctSchema_ID(this.getC_AcctSchema_ID());
 			acctApertura.setDescription("Generada Automaticamente desde Cierre de Saldos Contables número :" + this.getDocumentNo());
