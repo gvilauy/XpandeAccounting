@@ -120,7 +120,12 @@ public class Doc_MovCaja extends Doc{
 
         BigDecimal grossAmt = getAmount(Doc.AMTTYPE_Gross);
 
-        // CR - Total del documento - Cuenta contable de la caja destino del movimiento
+        boolean debitoCaja = true;
+        if (this.docType.getDocBaseType().equalsIgnoreCase("CCR")){
+            debitoCaja = false;
+        }
+
+        // Total del documento - Cuenta contable de la caja destino del movimiento
         int accountID = AccountUtils.getBankValidCombinationID(getCtx(), Doc.ACCTTYPE_CashExpense, this.movCaja.getC_CashBook_ID(), as, null);;
         if (accountID <= 0){
             MCashBook cashBook = (MCashBook) this.movCaja.getC_CashBook();
@@ -130,12 +135,20 @@ public class Doc_MovCaja extends Doc{
             return facts;
         }
         MAccount acctCr = MAccount.get(getCtx(), accountID);
-        FactLine fl1 = fact.createLine (null, acctCr, getC_Currency_ID(), null, grossAmt);
+
+        FactLine fl1 = null;
+        if (debitoCaja){
+            fl1 = fact.createLine (null, acctCr, getC_Currency_ID(), null, grossAmt);
+        }
+        else {
+            fl1 = fact.createLine (null, acctCr, getC_Currency_ID(), grossAmt, null);
+        }
+
         if (fl1 != null){
             fl1.setAD_Org_ID(this.movCaja.getAD_Org_ID());
         }
 
-        // DR - Monto de Lineas del documento - Cuenta contable del cargo
+        // Monto de Lineas del documento - Cuenta contable del cargo
         for (int i = 0; i < p_lines.length; i++){
 
             MZMovCajaLin mzMovCajaLin = new MZMovCajaLin(getCtx(), p_lines[i].get_ID(), this.getTrxName());
@@ -152,7 +165,14 @@ public class Doc_MovCaja extends Doc{
                 return facts;
             }
 
-            FactLine fl2 = fact.createLine(p_lines[i], acctCharge, mzMovCajaLin.getC_Currency_ID(), amtSource);
+            FactLine fl2 = null;
+            if (debitoCaja){
+                fl2 = fact.createLine(p_lines[i], acctCharge, mzMovCajaLin.getC_Currency_ID(), amtSource, null);
+            }
+            else {
+                fl2 = fact.createLine(p_lines[i], acctCharge, mzMovCajaLin.getC_Currency_ID(), null, amtSource);
+            }
+
             if (fl2 != null){
                 fl2.setAD_Org_ID(this.movCaja.getAD_Org_ID());
             }

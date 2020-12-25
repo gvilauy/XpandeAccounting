@@ -119,7 +119,12 @@ public class Doc_MovBanco extends Doc {
 
         BigDecimal grossAmt = getAmount(Doc.AMTTYPE_Gross);
 
-        // CR - Total del documento - Cuenta contable de la cuenta bancaria destino del movimiento
+        boolean debitoBancario = true;
+        if (this.docType.getDocBaseType().equalsIgnoreCase("BCR")){
+            debitoBancario = false;
+        }
+
+        // Total del documento - Cuenta contable de la cuenta bancaria destino del movimiento
         int accountID = AccountUtils.getBankValidCombinationID(getCtx(), Doc.ACCTTYPE_BankAsset, this.movBanco.getC_BankAccount_ID(), as, null);;
         if (accountID <= 0){
             MBankAccount bankAccount = (MBankAccount) this.movBanco.getC_BankAccount();
@@ -130,12 +135,20 @@ public class Doc_MovBanco extends Doc {
             return facts;
         }
         MAccount acctBankCr = MAccount.get(getCtx(), accountID);
-        FactLine fl1 = fact.createLine (null, acctBankCr, getC_Currency_ID(), null, grossAmt);
+
+        FactLine fl1 = null;
+        if (debitoBancario){
+            fl1 = fact.createLine (null, acctBankCr, getC_Currency_ID(), null, grossAmt);
+        }
+        else{
+            fl1 = fact.createLine (null, acctBankCr, getC_Currency_ID(),  grossAmt, null);
+        }
+
         if (fl1 != null){
             fl1.setAD_Org_ID(this.movBanco.getAD_Org_ID());
         }
 
-        // DR - Monto de Lineas del documento - Cuenta contable del cargo
+        // Monto de Lineas del documento - Cuenta contable del cargo
         for (int i = 0; i < p_lines.length; i++){
 
             MZMovBancoLin mzMovBancoLin = new MZMovBancoLin(getCtx(), p_lines[i].get_ID(), this.getTrxName());
@@ -153,15 +166,16 @@ public class Doc_MovBanco extends Doc {
                 return facts;
             }
 
-            FactLine fl2 = fact.createLine(p_lines[i], acctCharge, mzMovBancoLin.getC_Currency_ID(), amtSource);
+            FactLine fl2 = null;
+            if (debitoBancario){
+                fl2 = fact.createLine(p_lines[i], acctCharge, mzMovBancoLin.getC_Currency_ID(), amtSource, null);
+            }
+            else{
+                fl2 = fact.createLine(p_lines[i], acctCharge, mzMovBancoLin.getC_Currency_ID(), null, amtSource);
+            }
+
             if (fl2 != null){
                 fl2.setAD_Org_ID(this.movBanco.getAD_Org_ID());
-
-                /*
-                if (mzMovBancoLin.getC_Currency_ID() != as.getC_Currency_ID()){
-                    fl2.setAmtAcctDr(amtMT);
-                }
-                */
             }
         }
 
