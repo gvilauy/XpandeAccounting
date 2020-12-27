@@ -191,6 +191,12 @@ public class Doc_Pago extends Doc {
         BigDecimal grossAmt = getAmount(Doc.AMTTYPE_Gross);
 
         try{
+            BigDecimal amtMediosPago = this.pago.getTotalMediosPago();
+            BigDecimal amtDocumentos = this.pago.getPayAmt();
+            if (amtMediosPago == null) amtMediosPago = Env.ZERO;
+            if (amtDocumentos == null) amtDocumentos = Env.ZERO;
+
+
             BigDecimal montoAnticipos = this.pago.getAmtAnticipo();
             if (montoAnticipos == null) montoAnticipos = Env.ZERO;
             if (this.pago.isReciboAnticipo()) montoAnticipos = Env.ZERO;
@@ -201,7 +207,13 @@ public class Doc_Pago extends Doc {
             for (MZPagoLin pagoLin: pagoLinList){
                 // Sumarizo por moneda para contabilizacion CR por cuenta de Socio de Negocio y Moneda,
                 // No considero documentos de anticipos aca, ya que luego se hace un asiento al CR para los mismos.
-                if (pagoLin.getRef_Pago_ID() <= 0){
+                boolean consideraLinea = true;
+                if (pagoLin.getRef_Pago_ID() > 0){
+                    if (montoAnticipos.compareTo(Env.ZERO) != 0){
+                        consideraLinea = false;
+                    }
+                }
+                if (consideraLinea){
                     if (!hashPartnerCR.containsKey(pagoLin.getC_Currency_ID())){
                         hashPartnerCR.put(pagoLin.getC_Currency_ID(), new InfoMultiCurrency());
                         hashPartnerCR.get(pagoLin.getC_Currency_ID()).cuurencyID = pagoLin.getC_Currency_ID();
@@ -245,32 +257,26 @@ public class Doc_Pago extends Doc {
             // DR : Cuenta Acreedores del Socio de Negocio según moneda
             for (HashMap.Entry<Integer, InfoMultiCurrency> entry : hashPartnerCR.entrySet()){
 
+                // No considero montos en CERO
+                if (entry.getValue().amtSource.compareTo(Env.ZERO) == 0){
+                    continue;
+                }
+
                 if (entry.getValue().cuurencyID != pago.getC_Currency_ID()){
                     this.setIsMultiCurrency(true);
                 }
 
                 this.setC_Currency_ID(entry.getValue().cuurencyID);
 
-                int acctPartnerID = -1;
-                if (!this.pago.isAnticipoDirecto()){
-                    acctPartnerID = getValidCombination_ID (Doc.ACCTTYPE_V_Liability, as);
-                    if (acctPartnerID <= 0){
-                        MCurrency currency = new MCurrency(getCtx(), this.getC_Currency_ID(), null);
-                        p_Error = "Falta parametrizar Cuenta Contable para CxP del Proveedor en moneda: " + currency.getISO_Code();
-                        log.log(Level.SEVERE, p_Error);
-                        return null;
-                    }
-                }
-                else{
-                    acctPartnerID = getValidCombination_ID (Doc.ACCTTYPE_V_Prepayment, as);
-                    if (acctPartnerID <= 0){
-                        p_Error = "Falta parametrizar Cuenta Contable para Anticipo a Proveedor en moneda de este Documento.";
-                        log.log(Level.SEVERE, p_Error);
-                        return null;
-                    }
+                int acctPartnerID = getValidCombination_ID (Doc.ACCTTYPE_V_Liability, as);
+                if (acctPartnerID <= 0){
+                    MCurrency currency = new MCurrency(getCtx(), this.getC_Currency_ID(), null);
+                    p_Error = "Falta parametrizar Cuenta Contable para CxP del Proveedor en moneda: " + currency.getISO_Code();
+                    log.log(Level.SEVERE, p_Error);
+                    return null;
                 }
 
-                FactLine fl2 = null;
+                FactLine fl2;
                 if (!pago.isExtornarAcct()){
                     if (getC_Currency_ID() == as.getC_Currency_ID()){
                         fl2 = fact.createLine(null, MAccount.get(getCtx(), acctPartnerID), getC_Currency_ID(), entry.getValue().amtSource, null);
@@ -348,6 +354,22 @@ public class Doc_Pago extends Doc {
                 }
                 if (fl2 != null){
                     fl2.setAD_Org_ID(this.pago.getAD_Org_ID());
+                }
+
+                // Si no tengo medios de pago y no tengo monto de anticipos, se trata de una afectacion y por lo tanto tengo que dar vuelta el asiento.
+                if ((amtMediosPago.compareTo(Env.ZERO) == 0) && (montoAnticipos.compareTo(Env.ZERO) == 0)){
+                    FactLine fl3;
+                    if ((fl2.getAmtSourceDr() != null) && (fl2.getAmtSourceDr().compareTo(Env.ZERO) != 0)){
+                        fl3 = fact.createLine(null, MAccount.get(getCtx(), acctPartnerID), getC_Currency_ID(), null, fl2.getAmtSourceCr());
+                    }
+                    else{
+                        fl3 = fact.createLine(null, MAccount.get(getCtx(), acctPartnerID), getC_Currency_ID(), fl2.getAmtSourceCr(), null);
+                    }
+                    if (fl3 != null){
+                        fl3.setAD_Org_ID(fl2.getAD_Org_ID());
+                        fl3.setAmtAcctDr(fl2.getAmtAcctCr());
+                        fl3.setAmtAcctCr(fl2.getAmtAcctDr());
+                    }
                 }
             }
             this.setC_Currency_ID(pago.getC_Currency_ID());
@@ -690,6 +712,10 @@ public class Doc_Pago extends Doc {
         BigDecimal grossAmt = getAmount(Doc.AMTTYPE_Gross);
 
         try{
+
+            BigDecimal amtMediosPago = this.pago.getTotalMediosPago();
+            if (amtMediosPago == null) amtMediosPago = Env.ZERO;
+
             // CR - Deudores comerciales por el total del cobro
             int receivables_ID = getValidCombination_ID(Doc.ACCTTYPE_C_Receivable, as);
 
@@ -705,6 +731,20 @@ public class Doc_Pago extends Doc {
             if (fl3 != null){
                 fl3.setAD_Org_ID(this.pago.getAD_Org_ID());
                 fl3.saveEx();
+            }
+
+            // Si no tengo medios de pago, se trata de una afectacion y por lo tanto tengo que dar vuelta el asiento.
+            if (amtMediosPago.compareTo(Env.ZERO) == 0){
+                FactLine fl4;
+                if ((fl3.getAmtSourceDr() != null) && (fl3.getAmtSourceDr().compareTo(Env.ZERO) != 0)){
+                    fl4 = fact.createLine(null, MAccount.get(getCtx(), receivables_ID), getC_Currency_ID(), null, fl3.getAmtSourceCr());
+                }
+                else{
+                    fl4 = fact.createLine(null, MAccount.get(getCtx(), receivables_ID), getC_Currency_ID(), fl3.getAmtSourceCr(), null);
+                }
+                if (fl4 != null){
+                    fl4.setAD_Org_ID(fl3.getAD_Org_ID());
+                }
             }
 
             // DR - Lineas de Medios de Pago - Monto de cada linea.
