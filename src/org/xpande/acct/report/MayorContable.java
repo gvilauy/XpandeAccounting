@@ -198,7 +198,8 @@ public class MayorContable {
                     " c_activity_id, codigocuenta, nombrecuenta, C_AcctSchema_ID, TextoFiltro, TipoFiltroMonAcct, " +
                     " C_Currency_1_ID, C_Currency_2_ID, IncSaldoInicial, IsCierreDiferencial, IsCierreIntegral) ";
 
-            sql = " select f.ad_client_id, f.ad_org_id, " + this.adUserID + ", f.fact_acct_id, f.created, f.createdby, f.ad_table_id, f.record_id, f.account_id, f.c_currency_id, " +
+            sql = " select f.ad_client_id, f.ad_org_id, " + this.adUserID + ", f.fact_acct_id, f.created, f.createdby, f.ad_table_id, " +
+                    " f.record_id, f.account_id, f.c_currency_id, " +
                     " f.amtsourcedr, f.amtsourcecr, f.amtacctdr, f.amtacctcr, " +
                     " f.c_period_id, f.dateacct, f.datetrx, f.description, f.c_bpartner_id, f.m_product_id, f.c_tax_id, f.qty, bp.taxid, " +
                     " f.c_doctype_id, f.documentnoref, " +
@@ -598,7 +599,7 @@ public class MayorContable {
                 amtNotSchemaCurrency = DB.getSQLValueBDEx(null, sql);
                 if (amtNotSchemaCurrency == null) amtNotSchemaCurrency = Env.ZERO;
 
-                sql = " select sum(round(((f.amtsourcedr - f.amtsourcecr) / currencyrate(" + cCurrencyID + ", c_currency_id, dateacct, 114, ad_client_id, ad_org_id)),2)) " +
+                sql = " select sum(round(((f.amtsourcedr - f.amtsourcecr) / currencyrate(" + cCurrencyID + ", f.c_currency_id, f.dateacct, 114, f.ad_client_id, f.ad_org_id)),2)) " +
                         " from fact_acct f " +
                         " inner join c_elementvalue ev on f.account_id = ev.c_elementvalue_id " +
                         " left outer join c_bpartner bp on f.c_bpartner_id = bp.c_bpartner_id " +

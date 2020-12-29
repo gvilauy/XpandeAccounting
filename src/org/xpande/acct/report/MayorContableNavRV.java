@@ -59,11 +59,8 @@ public class MayorContableNavRV extends SvrProcess {
         this.mayorProcessor.tipoFiltroMonAcct = acctBrowser.getTipoFiltroMonAcct();
         this.mayorProcessor.textoFiltroCuentas = acctBrowser.getTextoFiltro();
         this.mayorProcessor.consideraSaldoInicial = acctBrowser.isIncSaldoInicial();
-        this.mayorProcessor.incSaldoInicial = (acctBrowser.isIncSaldoInicial()) ? "Y" : "N";
         this.mayorProcessor.isCierreDiferencial = acctBrowser.isCierreDiferencial();
-        this.mayorProcessor.incCierreDiferencial = (acctBrowser.isCierreDiferencial()) ? "Y" : "N";
         this.mayorProcessor.isCierreIntegral = acctBrowser.isCierreIntegral();
-        this.mayorProcessor.incCierreIntegral = (acctBrowser.isCierreIntegral()) ? "Y" : "N";
         this.mayorProcessor.startDate = acctBrowser.getStartDate();
         this.mayorProcessor.endDate = acctBrowser.getEndDate();
     }

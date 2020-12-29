@@ -119,16 +119,29 @@ public class Doc_DepositoMedioPago extends Doc {
 
         BigDecimal grossAmt = getAmount(Doc.AMTTYPE_Gross);
 
-        // DR - Total del documento - Cuenta contable de la cuenta bancaria destino del deposito
-        int accountID = AccountUtils.getBankValidCombinationID(getCtx(), Doc.ACCTTYPE_BankAsset, this.depositoMedioPago.getC_BankAccount_ID(), as, null);;
-        if (accountID <= 0){
-            MBankAccount bankAccount = (MBankAccount) this.depositoMedioPago.getC_BankAccount();
-            p_Error = "No se obtuvo Cuenta Contable (BankAsset) asociada a la Cuenta Bancaria : " + bankAccount.getName();
-            log.log(Level.SEVERE, p_Error);
-            fact = null;
-            facts.add(fact);
-            return facts;
+        // DR - Total del documento - Cuenta contable de la cuenta bancaria o caja destino del deposito
+        int accountID = -1;
+        if (this.depositoMedioPago.getC_BankAccount_ID() > 0){
+            accountID = AccountUtils.getBankValidCombinationID(getCtx(), Doc.ACCTTYPE_BankAsset, this.depositoMedioPago.getC_BankAccount_ID(), as, null);;
+            if (accountID <= 0){
+                MBankAccount bankAccount = (MBankAccount) this.depositoMedioPago.getC_BankAccount();
+                p_Error = "No se obtuvo Cuenta Contable (BankAsset) asociada a la Cuenta Bancaria : " + bankAccount.getName();
+                log.log(Level.SEVERE, p_Error);
+                facts.add(null);
+                return facts;
+            }
         }
+        else if (this.depositoMedioPago.getC_CashBook_ID() > 0){
+            accountID = AccountUtils.getBankValidCombinationID(getCtx(), Doc.ACCTTYPE_CashExpense, this.depositoMedioPago.getC_CashBook_ID(), as, null);;
+            if (accountID <= 0){
+                MCashBook cashBook = (MCashBook) this.depositoMedioPago.getC_CashBook();
+                p_Error = "No se obtuvo Cuenta Contable (CashExpense) asociada a la caja : " + cashBook.getName();
+                log.log(Level.SEVERE, p_Error);
+                facts.add(null);
+                return facts;
+            }
+        }
+
         MAccount acctBankCr = MAccount.get(getCtx(), accountID);
         FactLine fl1 = fact.createLine (null, acctBankCr, getC_Currency_ID(), grossAmt, null);
         if (fl1 != null){

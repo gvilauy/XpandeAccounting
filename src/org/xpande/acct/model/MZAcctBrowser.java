@@ -938,7 +938,7 @@ public class MZAcctBrowser extends X_Z_AcctBrowser {
                 amtNotSchemaCurrency = DB.getSQLValueBDEx(get_TrxName(), sql);
                 if (amtNotSchemaCurrency == null) amtNotSchemaCurrency = Env.ZERO;
 
-                sql = " select sum(round(((f.amtsourcedr - f.amtsourcecr) * currencyrate(c_currency_id," + cCurrencyID + ", dateacct, 114, ad_client_id, ad_org_id)),2)) " +
+                sql = " select sum(round(((f.amtsourcedr - f.amtsourcecr) * currencyrate(f.c_currency_id," + cCurrencyID + ", f.dateacct, 114, f.ad_client_id, f.ad_org_id)),2)) " +
                         " from fact_acct f " +
                         " inner join c_elementvalue ev on f.account_id = ev.c_elementvalue_id " +
                         " left outer join c_bpartner bp on f.c_bpartner_id = bp.c_bpartner_id " +
