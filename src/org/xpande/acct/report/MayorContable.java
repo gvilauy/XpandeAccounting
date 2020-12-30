@@ -193,17 +193,22 @@ public class MayorContable {
             // Inserto en tabla de reporte
             action = " insert into " + TABLA_REPORTE + " (ad_client_id, ad_org_id, ad_user_id, fact_acct_id, created, createdby, " +
                     " ad_table_id, record_id, c_elementvalue_id, c_currency_id, amtsourcedr, amtsourcecr, amtacctdr, amtacctcr, " +
-                    " c_period_id, dateacct, datedoc, description, c_bpartner_id, m_product_id, c_tax_id, qty, taxid, " +
+                    " c_period_id, dateacct, datedoc, description, c_bpartner_id, m_product_id, m_product_category_id, producttype, " +
+                    " c_tax_id, qty, taxid, c_bp_group_id, accounttype, " +
                     " c_doctype_id, documentnoref, currencyrate, duedate, estadomediopago, nromediopago, z_mediopago_id, z_retencionsocio_id, " +
+                    " codigoretencion, " +
                     " c_activity_id, codigocuenta, nombrecuenta, C_AcctSchema_ID, TextoFiltro, TipoFiltroMonAcct, " +
                     " C_Currency_1_ID, C_Currency_2_ID, IncSaldoInicial, IsCierreDiferencial, IsCierreIntegral) ";
 
             sql = " select f.ad_client_id, f.ad_org_id, " + this.adUserID + ", f.fact_acct_id, f.created, f.createdby, f.ad_table_id, " +
                     " f.record_id, f.account_id, f.c_currency_id, " +
                     " f.amtsourcedr, f.amtsourcecr, f.amtacctdr, f.amtacctcr, " +
-                    " f.c_period_id, f.dateacct, f.datetrx, f.description, f.c_bpartner_id, f.m_product_id, f.c_tax_id, f.qty, bp.taxid, " +
+                    " f.c_period_id, f.dateacct, f.datetrx, f.description, f.c_bpartner_id, f.m_product_id, " +
+                    " prod.m_product_category_id, prod.producttype, " +
+                    " coalesce(det.c_tax_id, f.c_tax_id) as c_tax_id, f.qty, bp.taxid, bp.c_bp_group_id, ev.accounttype, " +
                     " f.c_doctype_id, f.documentnoref, " +
                     " f.currencyrate, f.duedate, det.estadomediopago, det.nromediopago, det.z_mediopago_id, det.z_retencionsocio_id, " +
+                    " ret.codigodgi, " +
                     " f.c_activity_id, ev.value, ev.name, " + this.cAcctSchemaID + ",'" + this.textoFiltroCuentas + "','" +
                     this.tipoFiltroMonAcct + "', " + this.cCurrencyID + ", " + this.cCurrencyID_2 + ",'" +
                     this.incSaldoInicial + "', '" + this.incCierreDiferencial + "', '" + this.incCierreIntegral + "' " +
@@ -213,11 +218,12 @@ public class MayorContable {
                     " left outer join m_product prod on f.m_product_id = prod.m_product_id " +
                     " left outer join z_acctfactdet det on f.fact_acct_id = det.fact_acct_id " +
                     " left outer join z_mediopagoitem mpi on det.z_mediopagoitem_id = mpi.z_mediopagoitem_id " +
+                    " left outer join z_retencionsocio ret on det.z_retencionsocio_id = ret.z_retencionsocio_id " +
                     " left outer join c_doctype doc on f.c_doctype_id = doc.c_doctype_id " +
                     " where f.ad_client_id =" + this.adClientID +
                     " and f.ad_org_id =" + this.adOrgID +
-                    " and f.c_acctschema_id =" + this.cAcctSchemaID + whereClause +
-                    " order by f.account_id, f.dateacct ";
+                    " and f.c_acctschema_id =" + this.cAcctSchemaID + whereClause;
+                    //" order by f.account_id, f.dateacct ";
             DB.executeUpdateEx(action + sql, null);
 
             // Elimino registros sin importe en DR y CR (ejemplo Factura Bonificacion)
@@ -419,7 +425,7 @@ public class MayorContable {
         ResultSet rs = null;
 
         try{
-            sql = " select c_elementvalue_id, codigocuenta, dateacct, fact_acct_id, " +
+            sql = " select c_elementvalue_id, codigocuenta, dateacct, fact_acct_id, c_doctype_id, c_tax_id, " +
                     " coalesce(amtdr1,0) as amtdr1, coalesce(amtcr1,0) as amtcr1, " +
                     " coalesce(amtdr2,0) as amtdr2, coalesce(amtcr2,0) as amtcr2 " +
                     " from " + TABLA_REPORTE +
@@ -486,6 +492,22 @@ public class MayorContable {
                     amtAcumulado2 = amtAcumulado2.subtract(rs.getBigDecimal("amtcr2"));
                 }
 
+                // Obetngo Rubro de DGI para impuesto si es que tengo uno.
+                // Como un impuesto puede estar en un rubro de compra y uno de venta al mismo tiempo,
+                // debo considerar si el documento que originó este asiento contable es de venta o de compra.
+                int cDocTypeID = rs.getInt("c_doctype_id");
+                int cTaxID = rs.getInt("c_tax_id");
+                if (cTaxID > 0){
+                    if (cDocTypeID > 0){
+                        sql = " select issotrx from c_doctype where c_doctype_id =" + cDocTypeID;
+                        String isSOTrx = DB.getSQLValueStringEx(null, sql);
+                        if (isSOTrx != null){
+                            // Actualizo info de rubro impositiva para este asiento
+                            this.updateRubroIVA(rs.getInt("fact_acct_id"), cTaxID, isSOTrx);
+                        }
+                    }
+                }
+
                 // Actualizo montos acumulados en tabla del reporte
                 action = " update " + TABLA_REPORTE + " set AmtAcumulado1 =" + amtAcumulado1 + ", " +
                         " AmtAcumulado2 =" + amtAcumulado2 + ", " +
@@ -504,6 +526,40 @@ public class MayorContable {
         finally {
             DB.close(rs, pstmt);
             rs = null; pstmt = null;
+        }
+    }
+
+    private void updateRubroIVA(int factAcctID, int cTaxID, String isSOTrx) {
+
+        String sql, action;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try{
+            sql = " select b.value, b.name " +
+                    "from z_rubrodgitax a " +
+                    "inner join z_acctconfigrubrodgi b on a.z_acctconfigrubrodgi_id = b.z_acctconfigrubrodgi_id " +
+                    "where a.c_tax_id =" + cTaxID +
+                    "and b.issotrx ='" + isSOTrx + "' ";
+
+        	pstmt = DB.prepareStatement(sql, this.trxName);
+        	rs = pstmt.executeQuery();
+
+        	if (rs.next()){
+
+                action = " update " + TABLA_REPORTE + " set CodigoRubroIVA ='" + rs.getString("value") + "', " +
+                        " NomRubroIVA ='" + rs.getString("name") + "' " +
+                        " where ad_user_id =" + this.adUserID +
+                        " and fact_acct_id =" + factAcctID;
+                DB.executeUpdateEx(action, null);
+            }
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+        finally {
+            DB.close(rs, pstmt);
+        	rs = null; pstmt = null;
         }
     }
 
