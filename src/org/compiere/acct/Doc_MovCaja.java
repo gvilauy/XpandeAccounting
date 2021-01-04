@@ -54,6 +54,7 @@ public class Doc_MovCaja extends Doc{
         setDateDoc(this.movCaja.getDateDoc());
         setDateAcct(this.movCaja.getDateAcct());
         setAmount(Doc.AMTTYPE_Gross, this.movCaja.getTotalAmt());
+        setC_CashBook_ID(this.movCaja.getC_CashBook_ID());
 
         this.docType = (MDocType) this.movCaja.getC_DocType();
         setDocumentType(docType.getDocBaseType());
@@ -126,7 +127,7 @@ public class Doc_MovCaja extends Doc{
         }
 
         // Total del documento - Cuenta contable de la caja destino del movimiento
-        int accountID = AccountUtils.getBankValidCombinationID(getCtx(), Doc.ACCTTYPE_CashExpense, this.movCaja.getC_CashBook_ID(), as, null);;
+        int accountID = getValidCombination_ID(Doc.ACCTTYPE_CashExpense, as);
         if (accountID <= 0){
             MCashBook cashBook = (MCashBook) this.movCaja.getC_CashBook();
             p_Error = "No se obtuvo Cuenta Contable (CashExpense) asociada a la caja : " + cashBook.getName();

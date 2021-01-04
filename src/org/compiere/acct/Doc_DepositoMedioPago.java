@@ -54,6 +54,10 @@ public class Doc_DepositoMedioPago extends Doc {
         setDateAcct(this.depositoMedioPago.getDateAcct());
         setAmount(Doc.AMTTYPE_Gross, this.depositoMedioPago.getTotalAmt());
 
+        if (this.depositoMedioPago.getC_CashBook_ID() > 0){
+            setC_CashBook_ID(this.depositoMedioPago.getC_CashBook_ID());
+        }
+
         this.docType = (MDocType) this.depositoMedioPago.getC_DocType();
         setDocumentType(docType.getDocBaseType());
 
@@ -132,7 +136,7 @@ public class Doc_DepositoMedioPago extends Doc {
             }
         }
         else if (this.depositoMedioPago.getC_CashBook_ID() > 0){
-            accountID = AccountUtils.getBankValidCombinationID(getCtx(), Doc.ACCTTYPE_CashExpense, this.depositoMedioPago.getC_CashBook_ID(), as, null);;
+            accountID = getValidCombination_ID(Doc.ACCTTYPE_CashExpense, as);
             if (accountID <= 0){
                 MCashBook cashBook = (MCashBook) this.depositoMedioPago.getC_CashBook();
                 p_Error = "No se obtuvo Cuenta Contable (CashExpense) asociada a la caja : " + cashBook.getName();
