@@ -886,7 +886,7 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 		    throw new AdempiereException(e);
 		}
 
-		return message;
+		return null;
 	}
 
 

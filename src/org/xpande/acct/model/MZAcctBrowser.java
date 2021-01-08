@@ -237,6 +237,7 @@ public class MZAcctBrowser extends X_Z_AcctBrowser {
                     " left outer join c_bpartner bp on f.c_bpartner_id = bp.c_bpartner_id " +
                     " left outer join m_product prod on f.m_product_id = prod.m_product_id " +
                     " left outer join z_acctfactdet det on f.fact_acct_id = det.fact_acct_id " +
+                    " left outer join c_doctype doc on f.c_doctype_id = doc.c_doctype_id " +
                     " left outer join z_mediopagoitem mpi on det.z_mediopagoitem_id = mpi.z_mediopagoitem_id " +
                     " where f.ad_client_id =" + this.getAD_Client_ID() +
                     " and f.ad_org_id =" + this.getAD_Org_ID() +
@@ -910,6 +911,7 @@ public class MZAcctBrowser extends X_Z_AcctBrowser {
                         " inner join c_elementvalue ev on f.account_id = ev.c_elementvalue_id " +
                         " left outer join c_bpartner bp on f.c_bpartner_id = bp.c_bpartner_id " +
                         " left outer join m_product prod on f.m_product_id = prod.m_product_id " +
+                        " left outer join c_doctype doc on f.c_doctype_id = doc.c_doctype_id " +
                         " left outer join z_acctfactdet det on f.fact_acct_id = det.fact_acct_id " +
                         " left outer join z_mediopagoitem mpi on det.z_mediopagoitem_id = mpi.z_mediopagoitem_id " +
                         " where f.ad_client_id =" + this.getAD_Client_ID() +
@@ -927,6 +929,7 @@ public class MZAcctBrowser extends X_Z_AcctBrowser {
                         " inner join c_elementvalue ev on f.account_id = ev.c_elementvalue_id " +
                         " left outer join c_bpartner bp on f.c_bpartner_id = bp.c_bpartner_id " +
                         " left outer join m_product prod on f.m_product_id = prod.m_product_id " +
+                        " left outer join c_doctype doc on f.c_doctype_id = doc.c_doctype_id " +
                         " left outer join z_acctfactdet det on f.fact_acct_id = det.fact_acct_id " +
                         " left outer join z_mediopagoitem mpi on det.z_mediopagoitem_id = mpi.z_mediopagoitem_id " +
                         " where f.ad_client_id =" + this.getAD_Client_ID() +
@@ -943,6 +946,7 @@ public class MZAcctBrowser extends X_Z_AcctBrowser {
                         " inner join c_elementvalue ev on f.account_id = ev.c_elementvalue_id " +
                         " left outer join c_bpartner bp on f.c_bpartner_id = bp.c_bpartner_id " +
                         " left outer join m_product prod on f.m_product_id = prod.m_product_id " +
+                        " left outer join c_doctype doc on f.c_doctype_id = doc.c_doctype_id " +
                         " left outer join z_acctfactdet det on f.fact_acct_id = det.fact_acct_id " +
                         " left outer join z_mediopagoitem mpi on det.z_mediopagoitem_id = mpi.z_mediopagoitem_id " +
                         " where f.ad_client_id =" + this.getAD_Client_ID() +
