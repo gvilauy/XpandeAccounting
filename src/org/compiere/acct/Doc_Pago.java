@@ -736,10 +736,10 @@ public class Doc_Pago extends Doc {
                     MZPagoMoneda pagoMoneda = MZPagoMoneda.getByCurrencyPago(getCtx(), this.pago.get_ID(), as.getC_Currency_ID(), null);
                     if ((pagoMoneda != null) && (pagoMoneda.get_ID() > 0)){
                         if (grossAmt.compareTo(Env.ZERO) >= 0){
-                            fl3.setAmtAcctCr(grossAmt.multiply(pagoMoneda.getMultiplyRate()).setScale(0, RoundingMode.HALF_UP));
+                            fl3.setAmtAcctCr(grossAmt.multiply(pagoMoneda.getMultiplyRate()).setScale(2, RoundingMode.HALF_UP));
                         }
                         else {
-                            fl3.setAmtAcctDr(grossAmt.negate().multiply(pagoMoneda.getMultiplyRate()).setScale(0, RoundingMode.HALF_UP));
+                            fl3.setAmtAcctDr(grossAmt.negate().multiply(pagoMoneda.getMultiplyRate()).setScale(2, RoundingMode.HALF_UP));
                         }
                     }
                 }
@@ -828,12 +828,14 @@ public class Doc_Pago extends Doc {
                         fl1.setM_Product_ID(mProductID);
                     }
 
-                    if (medioPagoItem.getC_Currency_ID() != this.pago.getC_Currency_ID()){
-                        if (amt.compareTo(Env.ZERO) >= 0){
-                            fl1.setAmtAcctDr(pagoMedioPago.getTotalAmt());
-                        }
-                        else {
-                            fl1.setAmtAcctCr(pagoMedioPago.getTotalAmt().negate());
+                    if (pagoMedioPago.getC_Currency_ID() != this.pago.getC_Currency_ID()){
+                        if (pagoMedioPago.getC_Currency_ID() == as.getC_Currency_ID()){
+                            if (amt.compareTo(Env.ZERO) >= 0){
+                                fl1.setAmtAcctDr(pagoMedioPago.getTotalAmt());
+                            }
+                            else {
+                                fl1.setAmtAcctCr(pagoMedioPago.getTotalAmt().negate());
+                            }
                         }
                     }
                     fl1.saveEx();
