@@ -742,6 +742,11 @@ public class Doc_Pago extends Doc {
                             fl3.setAmtAcctDr(grossAmt.negate().multiply(pagoMoneda.getMultiplyRate()).setScale(2, RoundingMode.HALF_UP));
                         }
                     }
+                    else{
+                        p_Error = "Debe indicar Tasa de Cambio para moneda Nacional. Debe ingredarlo en la pestaña: Monedas";
+                        log.log(Level.SEVERE, p_Error);
+                        return null;
+                    }
                 }
                 fl3.saveEx();
             }
