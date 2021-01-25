@@ -785,11 +785,8 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 	private String setAsientoAperturaIntegrales() {
 
 		String message = null;
-		HashMap<Integer, BigDecimal> hashRates = new HashMap<Integer, BigDecimal>();
 
 		try{
-
-			MAcctSchema acctSchema = (MAcctSchema) this.getC_AcctSchema();
 
 			MDocType[] docTypes = MDocType.getOfDocBaseType(getCtx(), "AJI");
 			if (docTypes.length <= 0){
@@ -821,49 +818,17 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 				aperturaLin.setCodigoCuenta(cierreLin.getCodigoCuenta());
 				aperturaLin.setC_Currency_ID(cierreLin.getC_Currency_ID());
 
-				// Tasa de cambio para moneda cuando es moneda extrañjera
-				BigDecimal rate =  Env.ONE;
-				if (aperturaLin.getC_Currency_ID() != acctSchema.getC_Currency_ID()){
-					if (!hashRates.containsKey(aperturaLin.getC_Currency_ID())) {
-						// Obtengo tasa de cambio para fecha contable del documento de apertura
-						rate = CurrencyUtils.getCurrencyRate(getCtx(), this.getAD_Client_ID(), 0,
-								aperturaLin.getC_Currency_ID(), acctSchema.getC_Currency_ID(),114,
-								dateAcct, get_TrxName());
-						if ((rate == null) || (rate.compareTo(Env.ZERO) == 0)) {
-							MCurrency currency = (MCurrency) aperturaLin.getC_Currency();
-							return "No se pudo obtener Tasa de Cambio para fecha de asiento de apertura y moneda " + currency.getISO_Code();
-						}
-
-						// Agrego tasa a hash para no volver a calcular
-						hashRates.put(aperturaLin.getC_Currency_ID(), rate);
-					}
-					else{
-						rate = hashRates.get(aperturaLin.getC_Currency_ID());
-					}
-				}
-
-				aperturaLin.setCurrencyRate(rate);
-
 				if (this.isBPartner()){
 					aperturaLin.setC_BPartner_ID(cierreLin.getC_BPartner_ID());
 				}
 
-				// Doy vuelta el asiento cuando
-				// Si moneda es igual a la moneda del esquema contable
-				if (aperturaLin.getC_Currency_ID() == acctSchema.getC_Currency_ID()){
-					aperturaLin.setAmtAcctDr(cierreLin.getAmtAcctCrTo());
-					aperturaLin.setAmtAcctCr(cierreLin.getAmtAcctDrTo());
-				}
-				else{
-					// Caluclo montons en moneda del esquema contable, considerando moneda origen y tasa de cambio ya obtenida
-					BigDecimal amtAcctDr = cierreLin.getAmtSourceCrTo().multiply(aperturaLin.getCurrencyRate()).setScale(2, RoundingMode.HALF_UP);
-					BigDecimal amtAcctCr = cierreLin.getAmtSourceDrTo().multiply(aperturaLin.getCurrencyRate()).setScale(2, RoundingMode.HALF_UP);
+				// Doy vuelta el asiento
+				aperturaLin.setAmtAcctDr(cierreLin.getAmtAcctCrTo());
+				aperturaLin.setAmtAcctCr(cierreLin.getAmtAcctDrTo());
 
-					aperturaLin.setAmtAcctDr(amtAcctDr);
-					aperturaLin.setAmtAcctCr(amtAcctCr);
-				}
+				aperturaLin.setCurrencyRate(cierreLin.getCurrencyRate());
 
-				// Doy vuelta el asiento en moneda origen
+				// Doy vuelta el asiento
 				aperturaLin.setAmtSourceDr(cierreLin.getAmtSourceCrTo());
 				aperturaLin.setAmtSourceCr(cierreLin.getAmtSourceDrTo());
 

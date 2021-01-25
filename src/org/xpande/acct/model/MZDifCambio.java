@@ -617,6 +617,7 @@ public class MZDifCambio extends X_Z_DifCambio implements DocAction, DocOptions 
 				difCambioDet.setAmtAcctDrDif(difAcctDR);
 				difCambioDet.setAmtAcctCrDif(difAcctCR);
 
+
 				// Asiento DifCambio Debitos - Creditos
 				BigDecimal difSourceDRAcct = Env.ZERO;
 				if (difSourceDR.compareTo(Env.ZERO) > 0){

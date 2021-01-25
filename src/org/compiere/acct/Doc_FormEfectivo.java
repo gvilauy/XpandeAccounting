@@ -198,6 +198,11 @@ public class Doc_FormEfectivo extends Doc {
                 }
                 if (f1 != null){
                     f1.setAD_Org_ID(this.formEfectivo.getAD_Org_ID());
+
+                    if (forEfeAcct.get_ValueAsInt("C_Activity_ID") > 0){
+                        f1.setC_Activity_ID(forEfeAcct.get_ValueAsInt("C_Activity_ID"));
+                        f1.saveEx();
+                    }
                 }
             }
 
@@ -223,6 +228,11 @@ public class Doc_FormEfectivo extends Doc {
                 }
                 if (f1 != null){
                     f1.setAD_Org_ID(this.formEfectivo.getAD_Org_ID());
+
+                    if (forEfeAcct.get_ValueAsInt("C_Activity_ID") > 0){
+                        f1.setC_Activity_ID(forEfeAcct.get_ValueAsInt("C_Activity_ID"));
+                        f1.saveEx();
+                    }
                 }
             }
         }
@@ -258,9 +268,19 @@ public class Doc_FormEfectivo extends Doc {
                 }
                 if (f1 != null){
                     f1.setAD_Org_ID(this.formEfectivo.getAD_Org_ID());
+
+                    if (forEfeAcct.get_ValueAsInt("C_Activity_ID") > 0){
+                        f1.setC_Activity_ID(forEfeAcct.get_ValueAsInt("C_Activity_ID"));
+                        f1.saveEx();
+                    }
                 }
                 if (f2 != null){
                     f2.setAD_Org_ID(this.formEfectivo.getAD_Org_ID());
+
+                    if (forEfeAcct.get_ValueAsInt("C_Activity_ID") > 0){
+                        f2.setC_Activity_ID(forEfeAcct.get_ValueAsInt("C_Activity_ID"));
+                        f2.saveEx();
+                    }
                 }
             }
 
@@ -294,9 +314,19 @@ public class Doc_FormEfectivo extends Doc {
                 }
                 if (f1 != null){
                     f1.setAD_Org_ID(this.formEfectivo.getAD_Org_ID());
+
+                    if (forEfeAcct.get_ValueAsInt("C_Activity_ID") > 0){
+                        f1.setC_Activity_ID(forEfeAcct.get_ValueAsInt("C_Activity_ID"));
+                        f1.saveEx();
+                    }
                 }
                 if (f2 != null){
                     f2.setAD_Org_ID(this.formEfectivo.getAD_Org_ID());
+
+                    if (forEfeAcct.get_ValueAsInt("C_Activity_ID") > 0){
+                        f2.setC_Activity_ID(forEfeAcct.get_ValueAsInt("C_Activity_ID"));
+                        f2.saveEx();
+                    }
                 }
             }
         }
