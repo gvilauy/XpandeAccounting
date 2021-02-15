@@ -777,7 +777,7 @@ public class Doc_Pago extends Doc {
 
                     if (entry.getValue().cuurencyID != as.getC_Currency_ID()){
                         // Si tengo tasa de cambio ingresada, tomo esa.
-                        MZPagoMoneda pagoMoneda = MZPagoMoneda.getByCurrencyPago(getCtx(), this.pago.get_ID(), as.getC_Currency_ID(), null);
+                        MZPagoMoneda pagoMoneda = MZPagoMoneda.getByCurrencyPago(getCtx(), this.pago.get_ID(), as.getC_Currency_ID(), getTrxName());
                         if ((pagoMoneda != null) && (pagoMoneda.get_ID() > 0)){
                             if (grossAmt.compareTo(Env.ZERO) >= 0){
                                 fl3.setAmtAcctCr(entry.getValue().amtSource.multiply(pagoMoneda.getMultiplyRate()).setScale(2, RoundingMode.HALF_UP));
