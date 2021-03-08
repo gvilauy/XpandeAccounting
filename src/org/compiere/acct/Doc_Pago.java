@@ -202,6 +202,8 @@ public class Doc_Pago extends Doc {
             if (this.pago.isReciboAnticipo()) montoAnticipos = Env.ZERO;
 
             HashMap<Integer, InfoMultiCurrency> hashPartnerCR = new HashMap<Integer, InfoMultiCurrency>();
+            HashMap<Integer, InfoMultiCurrency> hashAnticipo = new HashMap<Integer, InfoMultiCurrency>();
+
             MZPago pago = (MZPago) getPO();
             List<MZPagoLin> pagoLinList = pago.getSelectedLines();
             for (MZPagoLin pagoLin: pagoLinList){
@@ -211,6 +213,12 @@ public class Doc_Pago extends Doc {
                 if (pagoLin.getRef_Pago_ID() > 0){
                     if (montoAnticipos.compareTo(Env.ZERO) != 0){
                         consideraLinea = false;
+                        if (!hashAnticipo.containsKey(pagoLin.getC_Currency_ID())){
+                            hashAnticipo.put(pagoLin.getC_Currency_ID(), new InfoMultiCurrency());
+                            hashAnticipo.get(pagoLin.getC_Currency_ID()).cuurencyID = pagoLin.getC_Currency_ID();
+                        }
+                        hashAnticipo.get(pagoLin.getC_Currency_ID()).amtSource = hashAnticipo.get(pagoLin.getC_Currency_ID()).amtSource.add(pagoLin.getAmtAllocation().negate());
+                        hashAnticipo.get(pagoLin.getC_Currency_ID()).amtAcct = hashAnticipo.get(pagoLin.getC_Currency_ID()).amtAcct.add(pagoLin.getAmtAllocationMT().negate());
                     }
                 }
                 if (consideraLinea){
@@ -313,7 +321,6 @@ public class Doc_Pago extends Doc {
                             }
                         }
                     }
-
                 }
                 else{
                     if (getC_Currency_ID() == as.getC_Currency_ID()){
@@ -673,23 +680,72 @@ public class Doc_Pago extends Doc {
             // Si tengo importe de anticipos afectados en este recibo, hago el asiento correspondiente
             if ((!this.pago.isReciboAnticipo()) && (this.pago.getAmtAnticipo() != null) && (this.pago.getAmtAnticipo().compareTo(Env.ZERO) != 0)){
 
-                // CR : Monto total anticipos - Cuenta Anticipo del Socio de Negocio
-                int acctAnticipoID = getValidCombination_ID (Doc.ACCTTYPE_V_Prepayment, as);
-                if (acctAnticipoID <= 0){
-                    p_Error = "Falta parametrizar Cuenta Contable para Anticipo a Proveedor en moneda de este Documento.";
-                    log.log(Level.SEVERE, p_Error);
-                    return null;
-                }
-                FactLine fl1 = null;
-                if (!pago.isExtornarAcct()){
-                    fl1 = fact.createLine(null, MAccount.get(getCtx(), acctAnticipoID), getC_Currency_ID(), null, this.pago.getAmtAnticipo());
-                }
-                else{
-                    fl1 = fact.createLine(null, MAccount.get(getCtx(), acctAnticipoID), getC_Currency_ID(),  this.pago.getAmtAnticipo(), null);
-                }
+                // DR : Cuenta Acreedores del Socio de Negocio según moneda
+                for (HashMap.Entry<Integer, InfoMultiCurrency> entry : hashAnticipo.entrySet()) {
 
-                if (fl1 != null){
-                    fl1.setAD_Org_ID(this.pago.getAD_Org_ID());
+                    // No considero montos en CERO
+                    if (entry.getValue().amtSource.compareTo(Env.ZERO) == 0) {
+                        continue;
+                    }
+
+                    if (entry.getValue().cuurencyID != pago.getC_Currency_ID()) {
+                        this.setIsMultiCurrency(true);
+                    }
+
+                    this.setC_Currency_ID(entry.getValue().cuurencyID);
+
+                    // CR : Monto total anticipos - Cuenta Anticipo del Socio de Negocio
+                    int acctAnticipoID = getValidCombination_ID (Doc.ACCTTYPE_V_Prepayment, as);
+                    if (acctAnticipoID <= 0){
+                        p_Error = "Falta parametrizar Cuenta Contable para Anticipo a Proveedor en moneda de este Documento.";
+                        log.log(Level.SEVERE, p_Error);
+                        return null;
+                    }
+                    FactLine fl1 = null;
+                    if (!pago.isExtornarAcct()){
+                        if (getC_Currency_ID() == as.getC_Currency_ID()){
+                            fl1 = fact.createLine(null, MAccount.get(getCtx(), acctAnticipoID), getC_Currency_ID(), null, entry.getValue().amtSource);
+                        }
+                        else{
+                            fl1 = fact.createLine(null, MAccount.get(getCtx(), acctAnticipoID), getC_Currency_ID(), null, entry.getValue().amtSource);
+                            if (fl1 != null){
+                                if (this.isMultiCurrency()){
+                                    fl1.setAmtAcctCr(entry.getValue().amtAcct);
+                                }
+                                else{
+                                    MZPagoMoneda pagoMoneda = MZPagoMoneda.getByCurrencyPago(getCtx(), this.pago.get_ID(), as.getC_Currency_ID(), getTrxName());
+                                    if ((pagoMoneda != null) && (pagoMoneda.get_ID() > 0)){
+                                        BigDecimal amtAcct = entry.getValue().amtSource.multiply(pagoMoneda.getMultiplyRate()).setScale(2, RoundingMode.HALF_UP);
+                                        fl1.setAmtAcctCr(amtAcct);
+                                    }
+                                }
+                            }
+
+                        }
+                    }
+                    else{
+                        if (getC_Currency_ID() == as.getC_Currency_ID()){
+                            fl1 = fact.createLine(null, MAccount.get(getCtx(), acctAnticipoID), getC_Currency_ID(),  entry.getValue().amtSource, null);
+                        }
+                        else{
+                            fl1 = fact.createLine(null, MAccount.get(getCtx(), acctAnticipoID), getC_Currency_ID(),  entry.getValue().amtSource, null);
+                            if (fl1 != null){
+                                if (this.isMultiCurrency()){
+                                    fl1.setAmtAcctDr(entry.getValue().amtAcct);
+                                }
+                                else{
+                                    MZPagoMoneda pagoMoneda = MZPagoMoneda.getByCurrencyPago(getCtx(), this.pago.get_ID(), as.getC_Currency_ID(), getTrxName());
+                                    if ((pagoMoneda != null) && (pagoMoneda.get_ID() > 0)){
+                                        BigDecimal amtAcct = entry.getValue().amtSource.multiply(pagoMoneda.getMultiplyRate()).setScale(2, RoundingMode.HALF_UP);
+                                        fl1.setAmtAcctDr(amtAcct);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if (fl1 != null){
+                        fl1.setAD_Org_ID(this.pago.getAD_Org_ID());
+                    }
                 }
             }
         }
