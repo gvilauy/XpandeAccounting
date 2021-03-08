@@ -748,6 +748,7 @@ public class Doc_Pago extends Doc {
                     }
                 }
             }
+            
         }
         catch (Exception e){
             throw new AdempiereException(e);
