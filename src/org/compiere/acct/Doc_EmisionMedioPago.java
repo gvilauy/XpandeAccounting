@@ -71,6 +71,19 @@ public class Doc_EmisionMedioPago extends Doc {
         ArrayList<Fact> facts = new ArrayList<Fact>();
         Fact fact = new Fact(this, as, Fact.POST_Actual);
 
+        // Si el tipo de medio de pago utilizado en esta emisión, esta marcado para no contabilizarse,
+        // entonces no contabilizo esta emsión. Esto por ahora solo para medios de pago propios.
+        MZMedioPagoItem pagoItem = (MZMedioPagoItem) this.emisionMedioPago.getZ_MedioPagoItem();
+        if (pagoItem.isOwn()){
+            MZMedioPago medioPago = (MZMedioPago) this.emisionMedioPago.getZ_MedioPago();
+            if ((medioPago != null) && (medioPago.get_ID() > 0)){
+                if (!medioPago.isContabilizar()){
+                    facts.add(fact);
+                    return facts;
+                }
+            }
+        }
+
         int cChargeID = this.emisionMedioPago.getC_Charge_ID();
         BigDecimal amtCharge = this.emisionMedioPago.getChargeAmt();
         if (amtCharge == null) amtCharge = Env.ZERO;
@@ -86,8 +99,6 @@ public class Doc_EmisionMedioPago extends Doc {
         // Obtengo numero de medio de pago para luego guardarlo asociado a cada pata del asiento contable.
         String nroMedioPago = null;
         if (this.emisionMedioPago.getZ_MedioPagoItem_ID() > 0){
-
-            MZMedioPagoItem pagoItem = (MZMedioPagoItem) this.emisionMedioPago.getZ_MedioPagoItem();
             nroMedioPago = pagoItem.getNroMedioPago();
             if (pagoItem.getDocumentSerie() != null){
                 if ((bank != null) && (bank.get_ID() > 0)){
@@ -204,7 +215,6 @@ public class Doc_EmisionMedioPago extends Doc {
                 flCharge.setAD_Org_ID(this.emisionMedioPago.getAD_Org_ID());
             }
         }
-
 
         facts.add(fact);
         return facts;
