@@ -846,9 +846,11 @@ public class Doc_Pago extends Doc {
                             }
                         }
                         else{
-                            p_Error = "Debe indicar Tasa de Cambio para moneda Nacional. Debe ingredarlo en la pestaña: Monedas";
-                            log.log(Level.SEVERE, p_Error);
-                            return null;
+                            if (this.isMultiCurrency()){
+                                p_Error = "Debe indicar Tasa de Cambio para moneda Nacional. Debe ingredarlo en la pestaña: Monedas";
+                                log.log(Level.SEVERE, p_Error);
+                                return null;
+                            }
                         }
                     }
                     fl3.saveEx();
