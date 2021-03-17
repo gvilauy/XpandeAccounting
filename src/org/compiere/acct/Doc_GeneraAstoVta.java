@@ -106,7 +106,8 @@ public class Doc_GeneraAstoVta extends Doc {
                     // Si no tengo identificador, pero tengo medio de pago y el mismo esta marcado para que no se contabilice, no lo hago.
                     if (sumMP.getZ_MedioPago_ID() > 0){
                         MZMedioPago medioPago = new MZMedioPago(getCtx(), sumMP.getZ_MedioPago_ID(), null);
-                        if (!medioPago.isContabilizar()){
+                        boolean contabilizar = medioPago.get_ValueAsBoolean("ContabVtaPos");
+                        if (!contabilizar){
                             continue;
                         }
                     }
