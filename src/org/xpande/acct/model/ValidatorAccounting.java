@@ -330,8 +330,7 @@ public class ValidatorAccounting implements ModelValidator {
 
         }
 
-        return message;
+        return null;
     }
-
 
 }
