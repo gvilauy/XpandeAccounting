@@ -163,9 +163,7 @@ public class Doc_ConciliaMedioPago extends Doc {
                 MZAcctFactDet factDet = new MZAcctFactDet(getCtx(), 0, getTrxName());
                 factDet.setFact_Acct_ID(fl2.get_ID());
                 factDet.setAD_Org_ID(this.conciliaMedioPago.getAD_Org_ID());
-
-                factDet.setZ_DepositoMedioPago_ID(this.conciliaMedioPago.get_ID());
-
+                factDet.setZ_ConciliaMedioPago_ID(this.conciliaMedioPago.get_ID());
                 factDet.setZ_MedioPago_ID(conciliaMPagoLin.getZ_MedioPago_ID());
                 factDet.setC_BankAccount_ID(this.conciliaMedioPago.getC_BankAccount_ID());
                 factDet.setNroMedioPago(conciliaMPagoLin.getDocumentNoRef());
