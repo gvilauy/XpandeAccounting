@@ -4,6 +4,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.*;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.xpande.acct.model.MZAcctFactDet;
 import org.xpande.acct.model.X_Z_AcctFactDet;
 import org.xpande.acct.utils.AccountUtils;
@@ -13,6 +14,7 @@ import org.xpande.financial.model.*;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.ResultSet;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -191,6 +193,8 @@ public class Doc_Pago extends Doc {
         BigDecimal grossAmt = getAmount(Doc.AMTTYPE_Gross);
 
         try{
+            Timestamp fechaHoy = TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
+
             BigDecimal amtMediosPago = this.pago.getTotalMediosPago();
             BigDecimal amtDocumentos = this.pago.getPayAmt();
             if (amtMediosPago == null) amtMediosPago = Env.ZERO;
@@ -555,7 +559,16 @@ public class Doc_Pago extends Doc {
                 // CR - Lineas de Medios de Pago - Monto de cada linea - Cuenta contable asociada a la cuenta bancaria.
                 int accountID = -1;
                 if (pagoMedioPago.getC_BankAccount_ID() > 0){
-                    accountID = AccountUtils.getBankValidCombinationID(getCtx(), Doc.ACCTTYPE_BankInTransit, pagoMedioPago.getC_BankAccount_ID(), as, null);
+
+                    // Por defecto muevo la cuenta BankAsset de la cuenta bancaria (la cuenta del banco)
+                    int accountBankType = Doc.ACCTTYPE_BankAsset;
+
+                    // Si el medio de pago maneja folio y la fecha de vencimiento es posterior a hoy, entonces muevo
+                    // la cuenta BanKInTransit de la cuenta bancaria. Esto es para cheques diferidos por ejemplo.
+                    if ((medioPagoAux.isTieneFolio()) && (pagoMedioPago.getDueDate().after(fechaHoy))){
+                        accountBankType = Doc.ACCTTYPE_BankInTransit;
+                    }
+                    accountID = AccountUtils.getBankValidCombinationID(getCtx(), accountBankType, pagoMedioPago.getC_BankAccount_ID(), as, null);
                     if (accountID <= 0){
                         MBankAccount bankAccount = (MBankAccount) pagoMedioPago.getC_BankAccount();
                         p_Error = "No se obtuvo Cuenta Contable (BankInTransit) asociada a la Cuenta Bancaria : " + bankAccount.getName();

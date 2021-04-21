@@ -23,7 +23,7 @@ import org.compiere.util.KeyNamePair;
 
 /** Generated Interface for Z_AcctFactDet
  *  @author Adempiere (generated) 
- *  @version Release 3.9.0
+ *  @version Release 3.9.1
  */
 public interface I_Z_AcctFactDet 
 {
@@ -31,7 +31,7 @@ public interface I_Z_AcctFactDet
     /** TableName=Z_AcctFactDet */
     public static final String Table_Name = "Z_AcctFactDet";
 
-    /** AD_Table_ID=1000227 */
+    /** AD_Table_ID=1000301 */
     public static final int Table_ID = MTable.getTable_ID(Table_Name);
 
     KeyNamePair Model = new KeyNamePair(Table_ID, Table_Name);
@@ -267,6 +267,15 @@ public interface I_Z_AcctFactDet
 
 	/** Get Z_AcctFactDet ID	  */
 	public int getZ_AcctFactDet_ID();
+
+    /** Column name Z_ConciliaMedioPago_ID */
+    public static final String COLUMNNAME_Z_ConciliaMedioPago_ID = "Z_ConciliaMedioPago_ID";
+
+	/** Set Z_ConciliaMedioPago ID	  */
+	public void setZ_ConciliaMedioPago_ID (int Z_ConciliaMedioPago_ID);
+
+	/** Get Z_ConciliaMedioPago ID	  */
+	public int getZ_ConciliaMedioPago_ID();
 
     /** Column name Z_DepositoMedioPago_ID */
     public static final String COLUMNNAME_Z_DepositoMedioPago_ID = "Z_DepositoMedioPago_ID";

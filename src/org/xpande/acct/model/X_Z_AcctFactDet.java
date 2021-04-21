@@ -26,14 +26,14 @@ import org.compiere.util.Env;
 
 /** Generated Model for Z_AcctFactDet
  *  @author Adempiere (generated) 
- *  @version Release 3.9.0 - $Id$ */
+ *  @version Release 3.9.1 - $Id$ */
 public class X_Z_AcctFactDet extends PO implements I_Z_AcctFactDet, I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20200730L;
+	private static final long serialVersionUID = 20210421L;
 
     /** Standard Constructor */
     public X_Z_AcctFactDet (Properties ctx, int Z_AcctFactDet_ID, String trxName)
@@ -223,8 +223,8 @@ public class X_Z_AcctFactDet extends PO implements I_Z_AcctFactDet, I_Persistent
 		return (Timestamp)get_Value(COLUMNNAME_DueDate);
 	}
 
-	/** EstadoMedioPago AD_Reference_ID=1000042 */
-	public static final int ESTADOMEDIOPAGO_AD_Reference_ID=1000042;
+	/** EstadoMedioPago AD_Reference_ID=1000058 */
+	public static final int ESTADOMEDIOPAGO_AD_Reference_ID=1000058;
 	/** ANULADO = ANULADO */
 	public static final String ESTADOMEDIOPAGO_ANULADO = "ANULADO";
 	/** CONCILIADO = CONCILIADO */
@@ -357,6 +357,26 @@ public class X_Z_AcctFactDet extends PO implements I_Z_AcctFactDet, I_Persistent
 	public int getZ_AcctFactDet_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Z_AcctFactDet_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Z_ConciliaMedioPago ID.
+		@param Z_ConciliaMedioPago_ID Z_ConciliaMedioPago ID	  */
+	public void setZ_ConciliaMedioPago_ID (int Z_ConciliaMedioPago_ID)
+	{
+		if (Z_ConciliaMedioPago_ID < 1) 
+			set_Value (COLUMNNAME_Z_ConciliaMedioPago_ID, null);
+		else 
+			set_Value (COLUMNNAME_Z_ConciliaMedioPago_ID, Integer.valueOf(Z_ConciliaMedioPago_ID));
+	}
+
+	/** Get Z_ConciliaMedioPago ID.
+		@return Z_ConciliaMedioPago ID	  */
+	public int getZ_ConciliaMedioPago_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_ConciliaMedioPago_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
