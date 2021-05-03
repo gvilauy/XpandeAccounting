@@ -73,6 +73,51 @@ public class Doc_TransfBancaria extends Doc{
 
         BigDecimal grossAmt = getAmount(Doc.AMTTYPE_Gross);
 
+        if (this.transfBancaria.getC_Currency_ID_To() != this.transfBancaria.getC_Currency_ID()){
+            this.setIsMultiCurrency(true);
+        }
+
+        // DR - Cuenta Bancaria Destino. Importe y cuenta contable ACCTTYPE_BankAsset
+        int accountID = AccountUtils.getBankValidCombinationID(getCtx(), Doc.ACCTTYPE_BankAsset, this.transfBancaria.getC_BankAccount_To_ID(), as, null);
+        if (accountID <= 0){
+            MBankAccount bankAccount = new MBankAccount(getCtx(), this.transfBancaria.getC_BankAccount_To_ID(), null);
+            p_Error = "No se obtuvo Cuenta Contable (BankAsset) asociada a la Cuenta Bancaria : " + bankAccount.getName();
+            log.log(Level.SEVERE, p_Error);
+            facts.add(null);
+            return facts;
+        }
+        MAccount acctBankDr = MAccount.get(getCtx(), accountID);
+        FactLine fl1 = fact.createLine (null, acctBankDr, this.transfBancaria.getC_Currency_ID_To(), this.transfBancaria.getAmtTotalTo(), null);
+        if (fl1 != null){
+            fl1.setAD_Org_ID(this.transfBancaria.getAD_Org_ID());
+            if (this.transfBancaria.getC_Currency_ID_To() != as.getC_Currency_ID()){
+                if (this.transfBancaria.getC_Currency_ID() == as.getC_Currency_ID()){
+                    fl1.setAmtAcctDr(this.transfBancaria.getAmtTotal());
+                }
+            }
+            fl1.saveEx();
+        }
+
+        // CR - Cuenta Bancaria Origen. Importe y cuenta contable ACCTTYPE_BankAsset
+        accountID = AccountUtils.getBankValidCombinationID(getCtx(), Doc.ACCTTYPE_BankAsset, this.transfBancaria.getC_BankAccount_ID(), as, null);
+        if (accountID <= 0){
+            MBankAccount bankAccount = (MBankAccount) this.transfBancaria.getC_BankAccount();
+            p_Error = "No se obtuvo Cuenta Contable (BankAsset) asociada a la Cuenta Bancaria : " + bankAccount.getName();
+            log.log(Level.SEVERE, p_Error);
+            facts.add(null);
+            return facts;
+        }
+        MAccount acctBankCr = MAccount.get(getCtx(), accountID);
+        FactLine fl2 = fact.createLine (null, acctBankCr, this.transfBancaria.getC_Currency_ID(), null, this.transfBancaria.getAmtTotal());
+        if (fl2 != null){
+            fl2.setAD_Org_ID(this.transfBancaria.getAD_Org_ID());
+            if (this.transfBancaria.getC_Currency_ID() != as.getC_Currency_ID()){
+                if (this.transfBancaria.getC_Currency_ID_To() == as.getC_Currency_ID()){
+                    fl2.setAmtAcctCr(this.transfBancaria.getAmtTotalTo());
+                }
+            }
+            fl2.saveEx();
+        }
 
         facts.add(fact);
         return facts;
