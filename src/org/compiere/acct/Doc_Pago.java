@@ -441,18 +441,41 @@ public class Doc_Pago extends Doc {
                         if (!pago.isExtornarAcct()){
                             if (amt.compareTo(Env.ZERO) >= 0){
                                 fl1 = fact.createLine(p_lines[i], MAccount.get(getCtx(), mpEmitidos_ID), getC_Currency_ID(), amt, null);
+                                if (pagoMedioPago.getC_Currency_ID() != this.pago.getC_Currency_ID() &&
+                                        this.pago.getC_Currency_ID() == as.getC_Currency_ID()){
+                                    if (fl1 != null){
+                                        fl1.setAmtAcctDr(pagoMedioPago.getTotalAmtMT());
+                                    }
+                                }
                             }
                             else{
                                 fl1 = fact.createLine(p_lines[i], MAccount.get(getCtx(), mpEmitidos_ID), getC_Currency_ID(), null, amt.negate());
+                                if (pagoMedioPago.getC_Currency_ID() != this.pago.getC_Currency_ID() &&
+                                        this.pago.getC_Currency_ID() == as.getC_Currency_ID()){
+                                    if (fl1 != null){
+                                        fl1.setAmtAcctCr(pagoMedioPago.getTotalAmtMT().negate());
+                                    }
+                                }
                             }
-
                         }
                         else{
                             if (amt.compareTo(Env.ZERO) >= 0){
                                 fl1 = fact.createLine(p_lines[i], MAccount.get(getCtx(), mpEmitidos_ID), getC_Currency_ID(), null, amt);
+                                if (pagoMedioPago.getC_Currency_ID() != this.pago.getC_Currency_ID() &&
+                                        this.pago.getC_Currency_ID() == as.getC_Currency_ID()){
+                                    if (fl1 != null){
+                                        fl1.setAmtAcctCr(pagoMedioPago.getTotalAmtMT());
+                                    }
+                                }
                             }
                             else{
                                 fl1 = fact.createLine(p_lines[i], MAccount.get(getCtx(), mpEmitidos_ID), getC_Currency_ID(), amt.negate(), null);
+                                if (pagoMedioPago.getC_Currency_ID() != this.pago.getC_Currency_ID() &&
+                                        this.pago.getC_Currency_ID() == as.getC_Currency_ID()){
+                                    if (fl1 != null){
+                                        fl1.setAmtAcctDr(pagoMedioPago.getTotalAmtMT().negate());
+                                    }
+                                }
                             }
                         }
 
@@ -504,17 +527,42 @@ public class Doc_Pago extends Doc {
                         if (!pago.isExtornarAcct()){
                             if (amt.compareTo(Env.ZERO) >= 0){
                                 fl11 = fact.createLine(p_lines[i], MAccount.get(getCtx(), emiPendEnt_ID), getC_Currency_ID(), null, amt);
+                                if (pagoMedioPago.getC_Currency_ID() != this.pago.getC_Currency_ID() &&
+                                        this.pago.getC_Currency_ID() == as.getC_Currency_ID()){
+                                    if (fl11 != null){
+                                        fl11.setAmtAcctCr(pagoMedioPago.getTotalAmtMT());
+                                    }
+                                }
+
                             }
                             else{
                                 fl11 = fact.createLine(p_lines[i], MAccount.get(getCtx(), emiPendEnt_ID), getC_Currency_ID(), amt.negate(), null);
+                                if (pagoMedioPago.getC_Currency_ID() != this.pago.getC_Currency_ID() &&
+                                        this.pago.getC_Currency_ID() == as.getC_Currency_ID()){
+                                    if (fl11 != null){
+                                        fl11.setAmtAcctDr(pagoMedioPago.getTotalAmtMT().negate());
+                                    }
+                                }
                             }
                         }
                         else{
                             if (amt.compareTo(Env.ZERO) >= 0){
                                 fl11 = fact.createLine(p_lines[i], MAccount.get(getCtx(), emiPendEnt_ID), getC_Currency_ID(), amt,  null);
+                                if (pagoMedioPago.getC_Currency_ID() != this.pago.getC_Currency_ID() &&
+                                        this.pago.getC_Currency_ID() == as.getC_Currency_ID()){
+                                    if (fl11 != null){
+                                        fl11.setAmtAcctDr(pagoMedioPago.getTotalAmtMT());
+                                    }
+                                }
                             }
                             else{
                                 fl11 = fact.createLine(p_lines[i], MAccount.get(getCtx(), emiPendEnt_ID), getC_Currency_ID(), null, amt.negate());
+                                if (pagoMedioPago.getC_Currency_ID() != this.pago.getC_Currency_ID() &&
+                                        this.pago.getC_Currency_ID() == as.getC_Currency_ID()){
+                                    if (fl11 != null){
+                                        fl11.setAmtAcctCr(pagoMedioPago.getTotalAmtMT().negate());
+                                    }
+                                }
                             }
                         }
                         if (fl11 != null){
@@ -609,17 +657,45 @@ public class Doc_Pago extends Doc {
                     if (!pago.isExtornarAcct()){
                         if (amt.compareTo(Env.ZERO) >= 0){
                             fl22 = fact.createLine (p_lines[i], acctBankCr, getC_Currency_ID(), null, amt);
+                            if (pagoMedioPago.getC_Currency_ID() != this.pago.getC_Currency_ID() &&
+                                    this.pago.getC_Currency_ID() == as.getC_Currency_ID()){
+                                if (fl22 != null){
+                                    fl22.setAmtAcctCr(pagoMedioPago.getTotalAmtMT());
+                                }
+                            }
+
                         }
                         else{
                             fl22 = fact.createLine (p_lines[i], acctBankCr, getC_Currency_ID(), amt.negate(), null);
+                            if (pagoMedioPago.getC_Currency_ID() != this.pago.getC_Currency_ID() &&
+                                    this.pago.getC_Currency_ID() == as.getC_Currency_ID()){
+                                if (fl22 != null){
+                                    fl22.setAmtAcctDr(pagoMedioPago.getTotalAmtMT().negate());
+                                }
+                            }
+
                         }
                     }
                     else{
                         if (amt.compareTo(Env.ZERO) >= 0){
                             fl22 = fact.createLine (p_lines[i], acctBankCr, getC_Currency_ID(), amt, null);
+                            if (pagoMedioPago.getC_Currency_ID() != this.pago.getC_Currency_ID() &&
+                                    this.pago.getC_Currency_ID() == as.getC_Currency_ID()){
+                                if (fl22 != null){
+                                    fl22.setAmtAcctDr(pagoMedioPago.getTotalAmtMT());
+                                }
+                            }
+
                         }
                         else {
                             fl22 = fact.createLine (p_lines[i], acctBankCr, getC_Currency_ID(), null, amt.negate());
+                            if (pagoMedioPago.getC_Currency_ID() != this.pago.getC_Currency_ID() &&
+                                    this.pago.getC_Currency_ID() == as.getC_Currency_ID()){
+                                if (fl22 != null){
+                                    fl22.setAmtAcctCr(pagoMedioPago.getTotalAmtMT().negate());
+                                }
+                            }
+
                         }
                     }
 
