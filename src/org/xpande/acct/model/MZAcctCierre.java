@@ -573,7 +573,8 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 					" and f.c_acctschema_id =" + this.getC_AcctSchema_ID() +
 					" and f.dateacct between '" + this.getStartDate() + "' and '" + this.getDateAcct() + "' " +
 					" and ev.accounttype in ('A','L','O') " +
-					" and ev.issummary='N' ";
+					" and ev.issummary='N' " +
+					" and ev.value ='21304' ";
 
 			// Si tengo que detallar cuentas por socio de negocio
 			if (this.isBPartner()){
@@ -605,8 +606,8 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 				BigDecimal amtSourceCR = amtAcctCR;
 
 				if (elementValue.getC_Currency_ID() != acctSchema.getC_Currency_ID()){
-					amtSourceDR = this.getAccountSumSaldoMO(elementValue.get_ID(), elementValue.getC_Currency_ID(), -1, true, whereClause);
-					amtSourceCR = this.getAccountSumSaldoMO(elementValue.get_ID(), elementValue.getC_Currency_ID(), -1, false, whereClause);
+					amtSourceDR = this.getAccountSumSaldoMO(elementValue.get_ID(), elementValue.getC_Currency_ID(), -1, true, whereClause, false);
+					amtSourceCR = this.getAccountSumSaldoMO(elementValue.get_ID(), elementValue.getC_Currency_ID(), -1, false, whereClause, false);
 				}
 
 				this.setCierreLin(acctSchema, elementValue, elementValue.getC_Currency_ID(), amtAcctDR, amtAcctCR, amtSourceDR, amtSourceCR, -1);
@@ -632,7 +633,7 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 	 * @param whereClause
 	 * @return
 	 */
-	public BigDecimal getAccountSumSaldoMO(int accountID, int cCurrencyID, int cBPartnerID, boolean isDebit, String whereClause){
+	public BigDecimal getAccountSumSaldoMO(int accountID, int cCurrencyID, int cBPartnerID, boolean isDebit, String whereClause, boolean byPartner){
 
 		String sql = "";
 		PreparedStatement pstmt = null;
@@ -644,8 +645,18 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 			String sumField = "amtSourceDr";
 			if (!isDebit) sumField = "amtSourceCr";
 
-			if (cBPartnerID > 0){
-				whereClause += " and f.c_bpartner_id =" + cBPartnerID;
+			if (!byPartner){
+				if (cBPartnerID > 0){
+					whereClause += " and f.c_bpartner_id =" + cBPartnerID;
+				}
+			}
+			else{
+				if (cBPartnerID > 0){
+					whereClause += " and f.c_bpartner_id =" + cBPartnerID;
+				}
+				else{
+					whereClause += " and f.c_bpartner_id is null ";
+				}
 			}
 
 		    sql = " select sum(round(f." + sumField + ",2)) as saldomo " +
@@ -700,7 +711,8 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 					" and f.dateacct between '" + this.getStartDate() + "' and '" + this.getDateAcct() + "' " +
 					" and ev.accounttype in ('A','L','O') " +
 					" and ev.issummary='N' " +
-					" and ev.IsAcctCierreBP ='Y' ";
+					" and ev.IsAcctCierreBP ='Y' " +
+					" and ev.value ='21304' ";
 
 			sql = " select f.account_id, f.c_bpartner_id, " +
 					" sum(round(f.amtacctdr,2)) as sumdr, sum(round(f.amtacctcr,2)) as sumcr " +
@@ -729,9 +741,9 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 
 				if (elementValue.getC_Currency_ID() != acctSchema.getC_Currency_ID()){
 					amtSourceDR = this.getAccountSumSaldoMO(elementValue.get_ID(), elementValue.getC_Currency_ID(),
-															cBPartnerID ,true, whereClause);
+															cBPartnerID ,true, whereClause, true);
 					amtSourceCR = this.getAccountSumSaldoMO(elementValue.get_ID(), elementValue.getC_Currency_ID(),
-															cBPartnerID, false, whereClause);
+															cBPartnerID, false, whereClause, true);
 				}
 
 				this.setCierreLin(acctSchema, elementValue, elementValue.getC_Currency_ID(), amtAcctDR, amtAcctCR, amtSourceDR, amtSourceCR, cBPartnerID);

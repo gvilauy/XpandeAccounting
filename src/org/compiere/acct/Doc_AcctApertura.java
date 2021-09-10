@@ -91,11 +91,12 @@ public class Doc_AcctApertura extends Doc{
         // Habilito el multi-moneda
         this.setIsMultiCurrency(true);
 
-        // DR - CR : Lineas de asiento de cierre
-        for (int i = 0; i < p_lines.length; i++)
-        {
-            MZAcctAperturaLin acctAperturaLin = new MZAcctAperturaLin(getCtx(), p_lines[i].get_ID(), this.getTrxName());
+        List<MZAcctAperturaLin> aperturaLinList = this.acctApertura.getLines();
 
+        // DR - CR : Lineas de asiento de cierre
+        // for (int i = 0; i < p_lines.length; i++)
+        for (MZAcctAperturaLin acctAperturaLin: aperturaLinList)
+        {
             BigDecimal amtDR =  acctAperturaLin.getAmtSourceDr();
             BigDecimal amtCR = acctAperturaLin.getAmtSourceCr();
             this.setC_Currency_ID(acctAperturaLin.getC_Currency_ID());
@@ -110,10 +111,10 @@ public class Doc_AcctApertura extends Doc{
 
             FactLine fl1 = null;
             if (amtDR.compareTo(Env.ZERO) != 0){
-                fl1 = fact.createLine (p_lines[i], acctLin, getC_Currency_ID(), amtDR, null);
+                fl1 = fact.createLine (null, acctLin, getC_Currency_ID(), amtDR, null);
             }
             else if (amtCR.compareTo(Env.ZERO) != 0){
-                fl1 = fact.createLine (p_lines[i], acctLin, getC_Currency_ID(), null, amtCR);
+                fl1 = fact.createLine (null, acctLin, getC_Currency_ID(), null, amtCR);
             }
 
             if (fl1 != null){
