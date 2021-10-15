@@ -208,36 +208,67 @@ public class Doc_DepositoMedioPago extends Doc {
             }
         }
         else{
+            // CR
             // Es un deposito de medio de pago propio
-            // CR - Total del documento - Cuenta contable de la cuenta bancaria o caja destino del deposito
-            int accountID = -1;
-            if (this.depositoMedioPago.getC_BankAccount_ID() > 0){
-                accountID = AccountUtils.getBankValidCombinationID(getCtx(), Doc.ACCTTYPE_BankAsset, this.depositoMedioPago.getC_BankAccount_ID(), as, null);;
+            // Si tengo caja destino seleccionada
+            /*
+            if (this.depositoMedioPago.getC_CashBook_ID() > 0){
+                // CR - Total del documento - Cuenta contable de la cuenta bancaria o caja destino del deposito
+                if (this.depositoMedioPago.getC_BankAccount_ID() > 0){
+                    int accountID = AccountUtils.getBankValidCombinationID(getCtx(), Doc.ACCTTYPE_BankAsset, this.depositoMedioPago.getC_BankAccount_ID(), as, null);;
+                    if (accountID <= 0){
+                        MBankAccount bankAccount = (MBankAccount) this.depositoMedioPago.getC_BankAccount();
+                        p_Error = "No se obtuvo Cuenta Contable (BankAsset) asociada a la Cuenta Bancaria : " + bankAccount.getName();
+                        log.log(Level.SEVERE, p_Error);
+                        facts.add(null);
+                        return facts;
+                    }
+                    MAccount acctBankCr = MAccount.get(getCtx(), accountID);
+                    FactLine fl1 = fact.createLine (null, acctBankCr, getC_Currency_ID(),null, grossAmt);
+                    if (fl1 != null){
+                        fl1.setAD_Org_ID(this.depositoMedioPago.getAD_Org_ID());
+                    }
+                }
+            }
+            */
+            // CR - Monto de Lineas del documento - Cuenta contable del medio de pago de la linea
+            for (int i = 0; i < p_lines.length; i++) {
+
+                BigDecimal amt = p_lines[i].getAmtSource();
+
+                MZDepositoMPagoLin depositoMPagoLin = new MZDepositoMPagoLin(getCtx(), p_lines[i].get_ID(), this.getTrxName());
+                MZMedioPagoItem medioPagoItem = (MZMedioPagoItem) depositoMPagoLin.getZ_MedioPagoItem();
+
+                // CR : Monto del medio de pago - Cuenta Medios de Pago Pendientes de Entrega (cuenta puente)
+                int emiPendEnt_ID = getValidCombination_ID (Doc.ACCTYPE_MP_EmiPendEnt, as);
+                if (emiPendEnt_ID <= 0){
+                    p_Error = "Falta parametrizar Cuenta Contable para Medio de Pago Emitido y Pendiente de Entrega en moneda de este Documento.";
+                    log.log(Level.SEVERE, p_Error);
+                    fact = null;
+                    facts.add(fact);
+                    return facts;
+                }
+                FactLine fl1CR = fact.createLine(null, MAccount.get(getCtx(), emiPendEnt_ID), getC_Currency_ID(), null, amt);
+                if (fl1CR != null){
+                    fl1CR.setAD_Org_ID(this.depositoMedioPago.getAD_Org_ID());
+                }
+
+                // CR : Monto del medio de pago - Cuenta Bancaria del medio de pago
+                int accountID = AccountUtils.getBankValidCombinationID(getCtx(), Doc.ACCTTYPE_BankAsset, medioPagoItem.getZ_MedioPagoFolio().getC_BankAccount_ID(), as, null);;
                 if (accountID <= 0){
-                    MBankAccount bankAccount = (MBankAccount) this.depositoMedioPago.getC_BankAccount();
+                    MBankAccount bankAccount = (MBankAccount) medioPagoItem.getZ_MedioPagoFolio().getC_BankAccount();
                     p_Error = "No se obtuvo Cuenta Contable (BankAsset) asociada a la Cuenta Bancaria : " + bankAccount.getName();
                     log.log(Level.SEVERE, p_Error);
                     facts.add(null);
                     return facts;
                 }
-            }
-            else if (this.depositoMedioPago.getC_CashBook_ID() > 0){
-                accountID = getValidCombination_ID(Doc.ACCTTYPE_CashExpense, as);
-                if (accountID <= 0){
-                    MCashBook cashBook = (MCashBook) this.depositoMedioPago.getC_CashBook();
-                    p_Error = "No se obtuvo Cuenta Contable (CashExpense) asociada a la caja : " + cashBook.getName();
-                    log.log(Level.SEVERE, p_Error);
-                    facts.add(null);
-                    return facts;
+                MAccount acctBankCr = MAccount.get(getCtx(), accountID);
+                FactLine fl2CR = fact.createLine (null, acctBankCr, getC_Currency_ID(),null, grossAmt);
+                if (fl2CR != null){
+                    fl2CR.setAD_Org_ID(this.depositoMedioPago.getAD_Org_ID());
                 }
             }
-
-            MAccount acctBankCr = MAccount.get(getCtx(), accountID);
-            FactLine fl1 = fact.createLine (null, acctBankCr, getC_Currency_ID(),null, grossAmt);
-            if (fl1 != null){
-                fl1.setAD_Org_ID(this.depositoMedioPago.getAD_Org_ID());
-            }
-
+            // DR
             // DR - Monto de Lineas del documento - Cuenta contable del medio de pago de la linea
             for (int i = 0; i < p_lines.length; i++){
 
@@ -246,33 +277,15 @@ public class Doc_DepositoMedioPago extends Doc {
                 MZDepositoMPagoLin depositoMPagoLin = new MZDepositoMPagoLin(getCtx(), p_lines[i].get_ID(), this.getTrxName());
                 MZMedioPagoItem medioPagoItem = (MZMedioPagoItem) depositoMPagoLin.getZ_MedioPagoItem();
 
-                int accountMpID = -1;
-
-                // Si tengo cuenta bancaria y caja destino, quiere decir que el debito es para la cuenta contable de
-                // la caja destino por el total
-                if ((this.getC_BankAccount_ID() > 0) && (this.getC_CashBook_ID() > 0)){
-                    accountMpID = getValidCombination_ID(Doc.ACCTTYPE_CashExpense, as);
-                    if (accountMpID <= 0){
-                        MCashBook cashBook = (MCashBook) this.depositoMedioPago.getC_CashBook();
-                        p_Error = "No se obtuvo Cuenta Contable para la Caja : " + cashBook.getName();
-                        log.log(Level.SEVERE, p_Error);
-                        fact = null;
-                        facts.add(fact);
-                        return facts;
-                    }
+                int accountMpID = AccountUtils.getMedioPagoValidCombinationID(getCtx(), Doc.ACCTYPE_MP_Entregados, depositoMPagoLin.getZ_MedioPago_ID(), getC_Currency_ID(), as, null);
+                if (accountMpID <= 0){
+                    MZMedioPago medioPago = (MZMedioPago) depositoMPagoLin.getZ_MedioPago();
+                    p_Error = "No se obtuvo Cuenta Contable (MP_Entregados) asociada al medio de pago : " + medioPago.getName();
+                    log.log(Level.SEVERE, p_Error);
+                    fact = null;
+                    facts.add(fact);
+                    return facts;
                 }
-                else{
-                    accountMpID = AccountUtils.getMedioPagoValidCombinationID(getCtx(), Doc.ACCTYPE_MP_Entregados, depositoMPagoLin.getZ_MedioPago_ID(), getC_Currency_ID(), as, null);
-                    if (accountMpID <= 0){
-                        MZMedioPago medioPago = (MZMedioPago) depositoMPagoLin.getZ_MedioPago();
-                        p_Error = "No se obtuvo Cuenta Contable (MP_Entregados) asociada al medio de pago : " + medioPago.getName();
-                        log.log(Level.SEVERE, p_Error);
-                        fact = null;
-                        facts.add(fact);
-                        return facts;
-                    }
-                }
-
                 FactLine fl2 = fact.createLine(p_lines[i], MAccount.get(getCtx(), accountMpID), getC_Currency_ID(), amt,null);
                 if (fl2 != null){
                     fl2.setAD_Org_ID(this.depositoMedioPago.getAD_Org_ID());
@@ -302,6 +315,40 @@ public class Doc_DepositoMedioPago extends Doc {
                     factDet.setEstadoMedioPago(X_Z_AcctFactDet.ESTADOMEDIOPAGO_DEPOSITADO);
                     factDet.setDueDate(depositoMPagoLin.getDueDate());
                     factDet.saveEx();
+                }
+                // Si caja destino, quiere decir que el debito es para la cuenta contable de la caja destino
+                if (this.getC_CashBook_ID() > 0){
+                    int accountID = getValidCombination_ID(Doc.ACCTTYPE_CashExpense, as);
+                    if (accountID <= 0){
+                        MCashBook cashBook = (MCashBook) this.depositoMedioPago.getC_CashBook();
+                        p_Error = "No se obtuvo Cuenta Contable para la Caja : " + cashBook.getName();
+                        log.log(Level.SEVERE, p_Error);
+                        fact = null;
+                        facts.add(fact);
+                        return facts;
+                    }
+                    FactLine fl1DR = fact.createLine(null, MAccount.get(getCtx(), accountID), getC_Currency_ID(), amt,null);
+                    if (fl1DR != null){
+                        fl1DR.setAD_Org_ID(this.depositoMedioPago.getAD_Org_ID());
+                    }
+                }
+                else{
+                    if (this.depositoMedioPago.getC_BankAccount_ID() > 0){
+                        // DR : Monto del medio de pago a la cuenta bancaria destinno
+                        int accountID = AccountUtils.getBankValidCombinationID(getCtx(), Doc.ACCTTYPE_BankAsset, this.depositoMedioPago.getC_BankAccount_ID(), as, null);;
+                        if (accountID <= 0){
+                            MBankAccount bankAccount = (MBankAccount) this.depositoMedioPago.getC_BankAccount();
+                            p_Error = "No se obtuvo Cuenta Contable (BankAsset) asociada a la Cuenta Bancaria : " + bankAccount.getName();
+                            log.log(Level.SEVERE, p_Error);
+                            facts.add(null);
+                            return facts;
+                        }
+                        MAccount acctBankCr = MAccount.get(getCtx(), accountID);
+                        FactLine fl2DR = fact.createLine (p_lines[i], acctBankCr, getC_Currency_ID(), amt, null);
+                        if (fl2DR != null){
+                            fl2DR.setAD_Org_ID(this.depositoMedioPago.getAD_Org_ID());
+                        }
+                    }
                 }
             }
         }
