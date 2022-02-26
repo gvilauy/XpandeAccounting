@@ -573,8 +573,7 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 					" and f.c_acctschema_id =" + this.getC_AcctSchema_ID() +
 					" and f.dateacct between '" + this.getStartDate() + "' and '" + this.getDateAcct() + "' " +
 					" and ev.accounttype in ('A','L','O') " +
-					" and ev.issummary='N' " +
-					" and ev.value ='21304' ";
+					" and ev.issummary='N' ";
 
 			// Si tengo que detallar cuentas por socio de negocio
 			if (this.isBPartner()){
@@ -583,7 +582,8 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 			}
 
 			sql = " select f.account_id, " +
-					" sum(round(f.amtacctdr,2)) as sumdr, sum(round(f.amtacctcr,2)) as sumcr " +
+					//" sum(round(f.amtacctdr,2)) as sumdr, sum(round(f.amtacctcr,2)) as sumcr " +
+					" sum(f.amtacctdr) as sumdr, sum(f.amtacctcr) as sumcr " +
 					" from fact_acct f " +
 					" inner join c_elementvalue ev on f.account_id = ev.c_elementvalue_id " +
 					" where " + whereClause +
@@ -711,9 +711,7 @@ public class MZAcctCierre extends X_Z_AcctCierre implements DocAction, DocOption
 					" and f.dateacct between '" + this.getStartDate() + "' and '" + this.getDateAcct() + "' " +
 					" and ev.accounttype in ('A','L','O') " +
 					" and ev.issummary='N' " +
-					" and ev.IsAcctCierreBP ='Y' " +
-					" and ev.value ='21304' ";
-
+					" and ev.IsAcctCierreBP ='Y' ";
 			sql = " select f.account_id, f.c_bpartner_id, " +
 					" sum(round(f.amtacctdr,2)) as sumdr, sum(round(f.amtacctcr,2)) as sumcr " +
 					" from fact_acct f " +

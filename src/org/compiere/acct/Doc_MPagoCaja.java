@@ -111,6 +111,7 @@ public class Doc_MPagoCaja extends Doc {
             MZMedioPago medioPago = (MZMedioPago) pagoCajaLin.getZ_MedioPago();
 
             // DR - Lineas de Medios de Pago - Monto de cada linea
+            this.zMedioPagoID = medioPago.get_ID();
             int accountID = getValidCombination_ID(Doc.ACCTYPE_MP_Recibidos, as);
             if (accountID <= 0){
                 p_Error = "No se obtuvo Cuenta Contable para Medios de Pago recibidos y moneda del documento.";
