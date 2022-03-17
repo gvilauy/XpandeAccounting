@@ -974,6 +974,12 @@ public class Doc_Pago extends Doc {
                 MZPagoMedioPago pagoMedioPago = new MZPagoMedioPago(getCtx(), p_lines[i].get_ID(), this.getTrxName());
                 MZMedioPagoItem medioPagoItem = (MZMedioPagoItem) pagoMedioPago.getZ_MedioPagoItem();
 
+                if (pagoMedioPago.getC_Currency_ID() != this.pago.getC_Currency_ID()){
+                    amt = pagoMedioPago.getTotalAmt();
+                    this.setIsMultiCurrency(true);
+                }
+                this.setC_Currency_ID(pagoMedioPago.getC_Currency_ID());
+
                 int accountID = -1;
                 if (pagoMedioPago.getC_BankAccount_ID() > 0){
                     accountID = AccountUtils.getBankValidCombinationID(getCtx(), Doc.ACCTTYPE_BankAsset, pagoMedioPago.getC_BankAccount_ID(), as, null);
@@ -1037,6 +1043,16 @@ public class Doc_Pago extends Doc {
                             }
                             else {
                                 fl1.setAmtAcctCr(pagoMedioPago.getTotalAmt().negate());
+                            }
+                        }
+                        else{
+                            if (this.pago.getC_Currency_ID() == as.getC_Currency_ID()){
+                                if (amt.compareTo(Env.ZERO) >= 0){
+                                    fl1.setAmtAcctDr(pagoMedioPago.getTotalAmtMT());
+                                }
+                                else {
+                                    fl1.setAmtAcctCr(pagoMedioPago.getTotalAmtMT().negate());
+                                }
                             }
                         }
                     }

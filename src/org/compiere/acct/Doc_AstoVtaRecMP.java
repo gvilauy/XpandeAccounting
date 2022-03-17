@@ -566,6 +566,234 @@ public class Doc_AstoVtaRecMP extends Doc {
                     }
                 }
             }
+            // POS Geocom
+            else if (posVendor.getValue().equalsIgnoreCase("GEOCOM")){
+                List<MZAstoVtaRecMPLinGeo> astoVtaRecMPLinGeoList = this.astoVtaRecMP.getLinesGeocom();
+                for (MZAstoVtaRecMPLinGeo astoVtaRecMPLin: astoVtaRecMPLinGeoList){
+
+                    int cCurrencyID = as.getC_Currency_ID();
+                    if ((!astoVtaRecMPLin.getISO_Code().equalsIgnoreCase("858")) &&
+                            (!astoVtaRecMPLin.getISO_Code().equalsIgnoreCase("UYU"))) {
+                        cCurrencyID = 100;
+                    }
+                    int accountID = 0, cBpartnerID = 0, mProductID = 0;
+
+                    // Busco Identificador segun codigo del medio de pago
+                    int zMedioPagoID = 0, zMedioPagoIdentID = 0, zMPagoIdentProdID = 0;
+
+                    if (astoVtaRecMPLin.getZ_MPagoIdentPos_ID() > 0){
+                        sql = " select z_mediopagoident_id from z_mpagoidentpos where z_mpagoidentpos_id =" + astoVtaRecMPLin.getZ_MPagoIdentPos_ID();
+                        zMedioPagoIdentID = DB.getSQLValueEx(null, sql);
+                        if (zMedioPagoIdentID > 0){
+                            sql = " select max(z_mpagoidentprod_id) as z_mpagoidentprod_id from z_mpagoidentprod where z_mediopagoident_id =" + zMedioPagoIdentID;
+                            zMPagoIdentProdID = DB.getSQLValueEx(null, sql);
+                        }
+                    }
+                    sql = " select z_mediopago_id from z_mediopagopos where z_mediopagopos_id =" + astoVtaRecMPLin.getZ_MedioPagoPos_ID();
+                    zMedioPagoID = DB.getSQLValueEx(null, sql);
+
+                    if ((zMedioPagoIdentID > 0) || (zMedioPagoID > 0)){
+                        if (zMedioPagoIdentID > 0){
+                            MZMedioPagoIdent pagoIdent = new MZMedioPagoIdent(getCtx(), zMedioPagoIdentID, null);
+                            cBpartnerID = pagoIdent.getC_BPartner_ID();
+                            if (zMPagoIdentProdID > 0){
+                                MZMPagoIdentProd pagoIdentProd = new MZMPagoIdentProd(getCtx(), zMPagoIdentProdID, null);
+                                mProductID = pagoIdentProd.getM_Product_ID();
+                            }
+                            // Cuenta contable del identificador si es que tengo
+                            sql = " select mp_recibidos_acct " +
+                                    " from z_mpagoident_acct " +
+                                    " where z_mediopagoident_id =" + zMedioPagoIdentID +
+                                    " and c_acctschema_id =" + as.get_ID() +
+                                    " and c_currency_id =" + cCurrencyID;
+                            accountID = DB.getSQLValueEx(null, sql);
+                        }
+                        if (accountID <= 0){
+                            if (zMedioPagoID > 0){
+                                // Cuenta contable directo del medio de pago
+                                sql = " select mp_recibidos_acct, c_bpartner_id, m_product_id " +
+                                        " from z_mediopago_acct " +
+                                        " where z_mediopago_id =" + zMedioPagoID +
+                                        " and c_acctschema_id =" + as.get_ID() +
+                                        " and c_currency_id =" + cCurrencyID;
+                                pstmt = DB.prepareStatement(sql, null);
+                                rs = pstmt.executeQuery();
+
+                                if (rs.next()){
+                                    accountID = rs.getInt("mp_recibidos_acct");
+                                    if (rs.getInt("c_bpartner_id") > 0){
+                                        cBpartnerID = rs.getInt("c_bpartner_id");
+                                    }
+                                    if (rs.getInt("m_product_id") > 0){
+                                        mProductID = rs.getInt("m_product_id");
+                                    }
+                                }
+                                DB.close(rs, pstmt);
+                            }
+                        }
+                    }
+                    else {
+                        if (zMedioPagoID > 0){
+                            // Cuenta contable directo del medio de pago
+                            sql = " select mp_recibidos_acct, c_bpartner_id, m_product_id " +
+                                    " from z_mediopago_acct " +
+                                    " where z_mediopago_id =" + zMedioPagoID +
+                                    " and c_acctschema_id =" + as.get_ID() +
+                                    " and c_currency_id =" + cCurrencyID;
+                            pstmt = DB.prepareStatement(sql, null);
+                            rs = pstmt.executeQuery();
+
+                            if (rs.next()){
+                                accountID = rs.getInt("mp_recibidos_acct");
+                                if (rs.getInt("c_bpartner_id") > 0){
+                                    cBpartnerID = rs.getInt("c_bpartner_id");
+                                }
+                                if (rs.getInt("m_product_id") > 0){
+                                    mProductID = rs.getInt("m_product_id");
+                                }
+                            }
+                            DB.close(rs, pstmt);
+                        }
+                    }
+
+                    // Si no obtuve cuenta, aviso y salgo
+                    if (accountID <= 0){
+                        if (accountID <= 0){
+                            p_Error = "Falta indicar cuenta contable para Medio de Pago y/o Tarjeta";
+                            log.log(Level.SEVERE, p_Error);
+                            fact = null;
+                            facts.add(fact);
+                            return facts;
+                        }
+                    }
+
+                    FactLine fl1 = fact.createLine(null, MAccount.get(getCtx(), accountID), cCurrencyID, astoVtaRecMPLin.getTotalAmt(), null);
+                    if (fl1 != null){
+                        fl1.setAD_Org_ID(this.astoVtaRecMP.getAD_Org_ID());
+                        if (cBpartnerID > 0){
+                            fl1.setC_BPartner_ID(cBpartnerID);
+                        }
+                        if (mProductID > 0){
+                            fl1.setM_Product_ID(mProductID);
+                        }
+                    }
+
+                    // CR = Cuenta del medio de pago a ser reemplazado
+                    accountID = 0;
+                    cBpartnerID = 0;
+                    mProductID = 0;
+                    zMedioPagoID = 0;
+                    zMedioPagoIdentID = 0;
+                    zMPagoIdentProdID = 0;
+
+                    // Busco Identificador segun codigo del medio de pago
+                    String codMPagoAux = astoVtaRecMPLin.getCodMedioPagoPOS();
+
+                    if ((astoVtaRecMPLin.getnrotarjeta() != null) && (!astoVtaRecMPLin.getnrotarjeta().equalsIgnoreCase(""))){
+                        sql = " select z_mediopagoident_id from z_mpagoidentpos  where codmediopagopos='" + codMPagoAux +
+                                "' and z_posvendor_id = 1000000";
+                        zMedioPagoIdentID = DB.getSQLValueEx(null, sql);
+                        if (zMedioPagoIdentID > 0){
+                            sql = " select max(z_mpagoidentprod_id) as z_mpagoidentprod_id from z_mpagoidentprod where z_mediopagoident_id =" + zMedioPagoIdentID;
+                            zMPagoIdentProdID = DB.getSQLValueEx(null, sql);
+                        }
+                        sql = " select z_mediopago_id from z_mediopagoident where z_mediopagoident_id =" + zMedioPagoIdentID;
+                        zMedioPagoID = DB.getSQLValueEx(null, sql);
+                    }
+                    else{
+                        sql = " select z_mediopago_id from z_mediopagopos where codmediopagopos='" + codMPagoAux +
+                                "' and z_posvendor_id = 1000000 ";
+                        zMedioPagoID = DB.getSQLValueEx(null, sql);
+                    }
+
+                    if ((zMedioPagoIdentID > 0) || (zMedioPagoID > 0)){
+                        if (zMedioPagoIdentID > 0){
+                            MZMedioPagoIdent pagoIdent = new MZMedioPagoIdent(getCtx(), zMedioPagoIdentID, null);
+                            cBpartnerID = pagoIdent.getC_BPartner_ID();
+                            if (zMPagoIdentProdID > 0){
+                                MZMPagoIdentProd pagoIdentProd = new MZMPagoIdentProd(getCtx(), zMPagoIdentProdID, null);
+                                mProductID = pagoIdentProd.getM_Product_ID();
+                            }
+                            // Cuenta contable del identificador si es que tengo
+                            sql = " select mp_recibidos_acct " +
+                                    " from z_mpagoident_acct " +
+                                    " where z_mediopagoident_id =" + zMedioPagoIdentID +
+                                    " and c_acctschema_id =" + as.get_ID() +
+                                    " and c_currency_id =" + cCurrencyID;
+                            accountID = DB.getSQLValueEx(null, sql);
+                        }
+                        if (accountID <= 0){
+                            if (zMedioPagoID > 0){
+                                // Cuenta contable directo del medio de pago
+                                sql = " select mp_recibidos_acct, c_bpartner_id, m_product_id " +
+                                        " from z_mediopago_acct " +
+                                        " where z_mediopago_id =" + zMedioPagoID +
+                                        " and c_acctschema_id =" + as.get_ID() +
+                                        " and c_currency_id =" + cCurrencyID;
+                                pstmt = DB.prepareStatement(sql, null);
+                                rs = pstmt.executeQuery();
+
+                                if (rs.next()){
+                                    accountID = rs.getInt("mp_recibidos_acct");
+                                    if (rs.getInt("c_bpartner_id") > 0){
+                                        cBpartnerID = rs.getInt("c_bpartner_id");
+                                    }
+                                    if (rs.getInt("m_product_id") > 0){
+                                        mProductID = rs.getInt("m_product_id");
+                                    }
+                                }
+                                DB.close(rs, pstmt);
+                            }
+                        }
+                    }
+                    else {
+                        if (zMedioPagoID > 0){
+                            // Cuenta contable directo del medio de pago
+                            sql = " select mp_recibidos_acct, c_bpartner_id, m_product_id " +
+                                    " from z_mediopago_acct " +
+                                    " where z_mediopago_id =" + zMedioPagoID +
+                                    " and c_acctschema_id =" + as.get_ID() +
+                                    " and c_currency_id =" + cCurrencyID;
+                            pstmt = DB.prepareStatement(sql, null);
+                            rs = pstmt.executeQuery();
+
+                            if (rs.next()){
+                                accountID = rs.getInt("mp_recibidos_acct");
+                                if (rs.getInt("c_bpartner_id") > 0){
+                                    cBpartnerID = rs.getInt("c_bpartner_id");
+                                }
+                                if (rs.getInt("m_product_id") > 0){
+                                    mProductID = rs.getInt("m_product_id");
+                                }
+                            }
+                            DB.close(rs, pstmt);
+                        }
+                    }
+
+                    // Si no obtuve cuenta, aviso y salgo
+                    if (accountID <= 0){
+                        if (accountID <= 0){
+                            p_Error = "No se indica Cuenta Contable para Medio de Pago : " + astoVtaRecMPLin.getCodMedioPagoPOS() +
+                                    " - " + astoVtaRecMPLin.getNomMedioPagoPOS();
+                            log.log(Level.SEVERE, p_Error);
+                            fact = null;
+                            facts.add(fact);
+                            return facts;
+                        }
+                    }
+
+                    FactLine fl2 = fact.createLine(null, MAccount.get(getCtx(), accountID), cCurrencyID, null, astoVtaRecMPLin.getTotalAmt());
+                    if (fl2 != null){
+                        fl2.setAD_Org_ID(this.astoVtaRecMP.getAD_Org_ID());
+                        if (cBpartnerID > 0){
+                            fl2.setC_BPartner_ID(cBpartnerID);
+                        }
+                        if (mProductID > 0){
+                            fl2.setM_Product_ID(mProductID);
+                        }
+                    }
+                }
+            }
 
         }
         catch (Exception e){
