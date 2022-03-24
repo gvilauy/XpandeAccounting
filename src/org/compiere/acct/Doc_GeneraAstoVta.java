@@ -442,8 +442,8 @@ public class Doc_GeneraAstoVta extends Doc {
                     }
 
                     if (zMedioPagoIdentID > 0){
-                        sql = " select z_mpagoidentprod_id from z_mpagoidentprod where z_mediopagoident_id =" + zMedioPagoIdentID;
-                        zMPagoIdentProdID = DB.executeUpdateEx(sql, null);
+                        sql = " select max(z_mpagoidentprod_id) as z_mpagoidentprod_id from z_mpagoidentprod where z_mediopagoident_id =" + zMedioPagoIdentID;
+                        zMPagoIdentProdID = DB.getSQLValueEx(null, sql);
                     }
                     if ((zMedioPagoIdentID > 0) || (zMedioPagoID > 0)){
                         if (zMedioPagoIdentID > 0){

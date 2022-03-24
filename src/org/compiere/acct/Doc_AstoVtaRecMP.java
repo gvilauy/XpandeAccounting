@@ -696,9 +696,14 @@ public class Doc_AstoVtaRecMP extends Doc {
                         if (zMedioPagoIdentID > 0){
                             sql = " select max(z_mpagoidentprod_id) as z_mpagoidentprod_id from z_mpagoidentprod where z_mediopagoident_id =" + zMedioPagoIdentID;
                             zMPagoIdentProdID = DB.getSQLValueEx(null, sql);
+                            sql = " select z_mediopago_id from z_mediopagoident where z_mediopagoident_id =" + zMedioPagoIdentID;
+                            zMedioPagoID = DB.getSQLValueEx(null, sql);
                         }
-                        sql = " select z_mediopago_id from z_mediopagoident where z_mediopagoident_id =" + zMedioPagoIdentID;
-                        zMedioPagoID = DB.getSQLValueEx(null, sql);
+                        else{
+                            sql = " select z_mediopago_id from z_mediopagopos where codmediopagopos='" + codMPagoAux +
+                                    "' and z_posvendor_id = 1000000 ";
+                            zMedioPagoID = DB.getSQLValueEx(null, sql);
+                        }
                     }
                     else{
                         sql = " select z_mediopago_id from z_mediopagopos where codmediopagopos='" + codMPagoAux +
