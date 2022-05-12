@@ -613,7 +613,7 @@ public class Doc_Pago extends Doc {
 
                     // Si el medio de pago maneja folio y la fecha de vencimiento es posterior a hoy, entonces muevo
                     // la cuenta BanKInTransit de la cuenta bancaria. Esto es para cheques diferidos por ejemplo.
-                    if ((medioPagoAux.isTieneFolio()) && (pagoMedioPago.getDueDate().after(fechaHoy))){
+                    if ((medioPagoAux.isTieneFolio()) && (pagoMedioPago.getDueDate().after(this.pago.getDateDoc()))){
                         accountBankType = Doc.ACCTTYPE_BankInTransit;
                     }
                     accountID = AccountUtils.getBankValidCombinationID(getCtx(), accountBankType, pagoMedioPago.getC_BankAccount_ID(), as, null);
@@ -1052,6 +1052,27 @@ public class Doc_Pago extends Doc {
                                 }
                                 else {
                                     fl1.setAmtAcctCr(pagoMedioPago.getTotalAmtMT().negate());
+                                }
+                            }
+                        }
+                    }
+                    else{
+                        if (pagoMedioPago.getC_Currency_ID() != as.getC_Currency_ID()){
+                            // Si tengo tasa de cambio ingresada, tomo esa.
+                            MZPagoMoneda pagoMoneda = MZPagoMoneda.getByCurrencyPago(getCtx(), this.pago.get_ID(), as.getC_Currency_ID(), getTrxName());
+                            if ((pagoMoneda != null) && (pagoMoneda.get_ID() > 0)){
+                                if (grossAmt.compareTo(Env.ZERO) >= 0){
+                                    fl1.setAmtAcctDr(amt.multiply(pagoMoneda.getMultiplyRate()).setScale(2, RoundingMode.HALF_UP));
+                                }
+                                else {
+                                    fl1.setAmtAcctCr(amt.negate().multiply(pagoMoneda.getMultiplyRate()).setScale(2, RoundingMode.HALF_UP));
+                                }
+                            }
+                            else{
+                                if (this.isMultiCurrency()){
+                                    p_Error = "Debe indicar Tasa de Cambio para moneda Nacional. Debe ingredarlo en la pestaña: Monedas";
+                                    log.log(Level.SEVERE, p_Error);
+                                    return null;
                                 }
                             }
                         }
