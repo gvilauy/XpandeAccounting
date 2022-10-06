@@ -961,7 +961,7 @@ public class MZGeneraFormDGI extends X_Z_GeneraFormDGI {
 
                             if (linea.getC_Currency_ID() != as.getC_Currency_ID()){
                                 BigDecimal rate = CurrencyUtils.getCurrencyRateToAcctSchemaCurrency(getCtx(), this.getAD_Client_ID(), 0, linea.getC_Currency_ID(),
-                                        as.getC_Currency_ID(), 114, rs.getTimestamp("dateacct"), null);
+                                        as.getC_Currency_ID(), 114, rs.getTimestamp("dateinvoiced"), null);
 
                                 if (rate == null){
 

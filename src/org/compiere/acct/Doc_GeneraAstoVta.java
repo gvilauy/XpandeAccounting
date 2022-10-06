@@ -115,9 +115,14 @@ public class Doc_GeneraAstoVta extends Doc {
 
                 int cCurrencyID = sumMP.getC_Currency_ID();
                 BigDecimal amtMP = sumMP.getAmtTotal1();
+
+                /*
                 if (cCurrencyID == as.getC_Currency_ID()){
                     amtMP = sumMP.getAmtTotal2();
                 }
+                */
+
+
                 BigDecimal currencyRate = Env.ONE;
                 if ((sumMP.getAmtTotal2() != null) && (sumMP.getAmtTotal2().compareTo(Env.ZERO) > 0)){
                     cCurrencyID = sumMP.getC_Currency_2_ID();
@@ -128,6 +133,7 @@ public class Doc_GeneraAstoVta extends Doc {
                 }
 
                 // Obtengo info de cuenta contable a utilizar segun proveedor de pos
+                //if (posVendor.getValue().equalsIgnoreCase("GEOCOM")){
                 if (posVendor.getValue().equalsIgnoreCase("SISTECO")){
 
                     // Obtengo contabilidad asociada al tipo de linea, si es que tiene.

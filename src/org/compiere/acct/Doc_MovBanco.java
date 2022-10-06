@@ -53,6 +53,7 @@ public class Doc_MovBanco extends Doc {
         setDateDoc(this.movBanco.getDateDoc());
         setDateAcct(this.movBanco.getDateAcct());
         setAmount(Doc.AMTTYPE_Gross, this.movBanco.getTotalAmt());
+        setC_Currency_ID(this.movBanco.getC_Currency_ID());
 
         this.docType = (MDocType) this.movBanco.getC_DocType();
         setDocumentType(docType.getDocBaseType());
@@ -156,6 +157,11 @@ public class Doc_MovBanco extends Doc {
             BigDecimal amtSource = mzMovBancoLin.getTotalAmt();
             BigDecimal amtMT = mzMovBancoLin.getTotalAmtMT();
 
+            // Multimoneda
+            if (mzMovBancoLin.getC_Currency_ID() != this.movBanco.getC_Currency_ID()) {
+                this.setIsMultiCurrency(true);
+            }
+
             MAccount acctCharge = MCharge.getAccount(mzMovBancoLin.getC_Charge_ID(), as, amtSource);
             if ((acctCharge == null) || (acctCharge.get_ID() <= 0)){
                 MCharge charge = (MCharge) mzMovBancoLin.getC_Charge();
@@ -173,7 +179,20 @@ public class Doc_MovBanco extends Doc {
             else{
                 fl2 = fact.createLine(p_lines[i], acctCharge, mzMovBancoLin.getC_Currency_ID(), null, amtSource);
             }
-
+            // Multimoneda
+            if (mzMovBancoLin.getC_Currency_ID() != this.movBanco.getC_Currency_ID()) {
+                if (this.movBanco.getC_Currency_ID() == as.getC_Currency_ID()) {
+                    if (fl2 != null) {
+                        if (debitoBancario) {
+                            fl2.setAmtAcctDr(amtMT);
+                        }
+                        else {
+                            fl2.setAmtAcctCr(amtMT);
+                        }
+                        fl2.saveEx();
+                    }
+                }
+            }
             if (fl2 != null){
                 fl2.setAD_Org_ID(this.movBanco.getAD_Org_ID());
             }
