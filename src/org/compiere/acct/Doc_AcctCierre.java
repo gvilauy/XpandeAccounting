@@ -139,8 +139,17 @@ public class Doc_AcctCierre extends Doc {
                 fl1.setAD_Org_ID(this.acctCierre.getAD_Org_ID());
                 if ((acctCierreLin.getCurrencyRate() != null) && (acctCierreLin.getCurrencyRate().compareTo(Env.ZERO) > 0)){
                     fl1.set_ValueOfColumn("CurrencyRate", acctCierreLin.getCurrencyRate());
+                    // 2022-10-13
+                    if (acctCierreLin.getC_Currency_ID() != as.getC_Currency_ID()){
+                        if (amtDR.compareTo(Env.ZERO) != 0){
+                            fl1.setAmtAcctDr(acctCierreLin.getAmtAcctDrTo());
+                        }
+                        else if (amtCR.compareTo(Env.ZERO) != 0){
+                            fl1.setAmtAcctCr(acctCierreLin.getAmtAcctCrTo());
+                        }
+                    }
+                    // Fin 2022-10-13
                 }
-
                 if (acctCierreLin.getC_BPartner_ID() > 0){
                     fl1.setC_BPartner_ID(acctCierreLin.getC_BPartner_ID());
                 }
