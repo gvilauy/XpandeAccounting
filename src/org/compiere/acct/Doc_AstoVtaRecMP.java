@@ -691,7 +691,7 @@ public class Doc_AstoVtaRecMP extends Doc {
 
                     if ((astoVtaRecMPLin.getnrotarjeta() != null) && (!astoVtaRecMPLin.getnrotarjeta().equalsIgnoreCase(""))){
                         sql = " select z_mediopagoident_id from z_mpagoidentpos  where codmediopagopos='" + codMPagoAux +
-                                "' and z_posvendor_id = 1000000";
+                                "' and z_posvendor_id =" + this.astoVtaRecMP.getZ_PosVendor_ID();
                         zMedioPagoIdentID = DB.getSQLValueEx(null, sql);
                         if (zMedioPagoIdentID > 0){
                             sql = " select max(z_mpagoidentprod_id) as z_mpagoidentprod_id from z_mpagoidentprod where z_mediopagoident_id =" + zMedioPagoIdentID;
@@ -701,13 +701,13 @@ public class Doc_AstoVtaRecMP extends Doc {
                         }
                         else{
                             sql = " select z_mediopago_id from z_mediopagopos where codmediopagopos='" + codMPagoAux +
-                                    "' and z_posvendor_id = 1000000 ";
+                                    "' and z_posvendor_id =" + this.astoVtaRecMP.getZ_PosVendor_ID();
                             zMedioPagoID = DB.getSQLValueEx(null, sql);
                         }
                     }
                     else{
                         sql = " select z_mediopago_id from z_mediopagopos where codmediopagopos='" + codMPagoAux +
-                                "' and z_posvendor_id = 1000000 ";
+                                "' and z_posvendor_id =" + this.astoVtaRecMP.getZ_PosVendor_ID();
                         zMedioPagoID = DB.getSQLValueEx(null, sql);
                     }
 
