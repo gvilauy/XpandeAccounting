@@ -549,7 +549,7 @@ public class Doc_GeneraAstoVta extends Doc {
 
                 // CUENTA DE VENTA POR MONTO BASE DE IMPUESTO
 
-                if (sumTax.getTaxBaseAmt().compareTo(Env.ZERO) > 0){
+                if (sumTax.getTaxBaseAmt().compareTo(Env.ZERO) != 0){
 
                     sql = " select p_revenue_acct " +
                             " from z_retailconfigprodacct " +
@@ -567,18 +567,39 @@ public class Doc_GeneraAstoVta extends Doc {
                     BigDecimal taxBaseAmt = sumTax.getTaxBaseAmt();
                     if (accountVtasID == creditosBaseAccountID){
 
-                        // DR- Base impuesto (lo doy vuelta)
-                        FactLine fl3 = fact.createLine(null, MAccount.get(getCtx(), accountVtasID), getC_Currency_ID(), totalTaxBaseAmtCreditos, null);
-                        if (fl3 != null){
-                            fl3.setAD_Org_ID(this.generaAstoVta.getAD_Org_ID());
+                        if (taxBaseAmt.compareTo(Env.ZERO) > 0){
+                            // DR- Base impuesto (lo doy vuelta)
+                            FactLine fl3 = fact.createLine(null, MAccount.get(getCtx(), accountVtasID), getC_Currency_ID(), totalTaxBaseAmtCreditos, null);
+                            if (fl3 != null){
+                                fl3.setAD_Org_ID(this.generaAstoVta.getAD_Org_ID());
+                            }
                         }
-
-                        taxBaseAmt = taxBaseAmt.subtract(totalTaxBaseAmtCreditos);
+                        else{
+                            // DR- Base impuesto (lo doy vuelta)
+                            FactLine fl3 = fact.createLine(null, MAccount.get(getCtx(), accountVtasID), getC_Currency_ID(), null, totalTaxBaseAmtCreditos);
+                            if (fl3 != null){
+                                fl3.setAD_Org_ID(this.generaAstoVta.getAD_Org_ID());
+                            }
+                        }
+                        if (taxBaseAmt.compareTo(Env.ZERO) > 0) {
+                            taxBaseAmt = taxBaseAmt.subtract(totalTaxBaseAmtCreditos);
+                        }
+                        else{
+                            taxBaseAmt = taxBaseAmt.add(totalTaxBaseAmtCreditos);
+                        }
                     }
 
-                    FactLine fl1 = fact.createLine(null, MAccount.get(getCtx(), accountVtasID), getC_Currency_ID(), null, taxBaseAmt);
-                    if (fl1 != null){
-                        fl1.setAD_Org_ID(this.generaAstoVta.getAD_Org_ID());
+                    if (taxBaseAmt.compareTo(Env.ZERO) > 0){
+                        FactLine fl1 = fact.createLine(null, MAccount.get(getCtx(), accountVtasID), getC_Currency_ID(), null, taxBaseAmt);
+                        if (fl1 != null){
+                            fl1.setAD_Org_ID(this.generaAstoVta.getAD_Org_ID());
+                        }
+                    }
+                    else{
+                        FactLine fl1 = fact.createLine(null, MAccount.get(getCtx(), accountVtasID), getC_Currency_ID(), taxBaseAmt.negate(), null);
+                        if (fl1 != null){
+                            fl1.setAD_Org_ID(this.generaAstoVta.getAD_Org_ID());
+                        }
                     }
                 }
 
