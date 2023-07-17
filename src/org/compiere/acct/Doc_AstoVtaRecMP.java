@@ -688,9 +688,13 @@ public class Doc_AstoVtaRecMP extends Doc {
 
                     // Busco Identificador segun codigo del medio de pago
                     String codMPagoAux = astoVtaRecMPLin.getCodMedioPagoPOS();
+                    String codProdTarjeta = codMPagoAux;
+                    if (astoVtaRecMPLin.getcodprodtarjeta() != null){
+                        codProdTarjeta = astoVtaRecMPLin.getcodprodtarjeta();
+                    }
 
                     if ((astoVtaRecMPLin.getnrotarjeta() != null) && (!astoVtaRecMPLin.getnrotarjeta().equalsIgnoreCase(""))){
-                        sql = " select z_mediopagoident_id from z_mpagoidentpos  where codmediopagopos='" + codMPagoAux +
+                        sql = " select z_mediopagoident_id from z_mpagoidentpos  where codmediopagopos='" + codProdTarjeta +
                                 "' and z_posvendor_id =" + this.astoVtaRecMP.getZ_PosVendor_ID();
                         zMedioPagoIdentID = DB.getSQLValueEx(null, sql);
                         if (zMedioPagoIdentID > 0){
